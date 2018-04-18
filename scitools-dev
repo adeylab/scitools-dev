@@ -4438,10 +4438,11 @@ if ($command eq "plot-pcurve") {
 # Defaults
 $xdim = 1;
 $ydim = 2;
+$alpha = 1;
 $theme = "Clean";
 $gradient_def = "YlOrRd";
 
-getopts("O:A:a:C:c:R:x:y:T:Xo:p:l:G:M:", \%opt);
+getopts("O:A:a:C:c:R:x:y:T:Xo:p:l:G:M:f:", \%opt);
 
 $die2 = "
 scitools plot-dims [options] [pcurve prefix]
@@ -4458,6 +4459,7 @@ Options:
                 (if [prefix].centered.lambda is found, it will use that)
    -M   [STR]   Matrix file - will plot each value set in a matrix
                 along the lambda values of the pcurve
+   -f   [FLT]   Alpha of points (for -M plotting; def = $alpha)
    -A   [STR]   Annotation file (to color code points)
    -a   [STR]   Comma separated list of annoations to include in plot
                   (requires -A to be specified)
@@ -4587,10 +4589,10 @@ PointPlot<-ggplot() + ";
 # plot the original dims w/ respective color
 if (!defined $opt{'c'} && !defined $opt{'C'} && !defined $opt{'A'}) {
 	print R "
-	geom_point(aes(x=IN\$V2,y=IN\$V3),color=\"lightsteelblue4\",size=1) +";
+	geom_point(aes(x=IN\$V2,y=IN\$V3),color=\"lightsteelblue4\",size=1,alpha=$alpha) +";
 } else {
 	print R "
-	geom_point(aes(x=IN\$V2,y=IN\$V3,color=IN\$V4)) +
+	geom_point(aes(x=IN\$V2,y=IN\$V3,color=IN\$V4),size=1,alpha=$alpha) +
 	guides(colour = guide_legend(override.aes = list(size=4))) +";
 }
 
