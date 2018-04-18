@@ -4439,10 +4439,11 @@ if ($command eq "plot-pcurve") {
 $xdim = 1;
 $ydim = 2;
 $alpha = 1;
+$ptSize = 1;
 $theme = "Clean";
 $gradient_def = "YlOrRd";
 
-getopts("O:A:a:C:c:R:x:y:T:Xo:p:l:G:M:f:", \%opt);
+getopts("O:A:a:C:c:R:x:y:T:Xo:p:l:G:M:f:s:", \%opt);
 
 $die2 = "
 scitools plot-dims [options] [pcurve prefix]
@@ -4460,6 +4461,7 @@ Options:
    -M   [STR]   Matrix file - will plot each value set in a matrix
                 along the lambda values of the pcurve
    -f   [FLT]   Alpha of points (for -M plotting; def = $alpha)
+   -s   [FLT]   Point size (def = $ptSize)
    -A   [STR]   Annotation file (to color code points)
    -a   [STR]   Comma separated list of annoations to include in plot
                   (requires -A to be specified)
@@ -4493,7 +4495,8 @@ if (defined $opt{'a'} && !defined $opt{'A'}) {die "\nMust provide an annotaiton 
 if (defined $opt{'C'} && defined $opt{'c'}) {die "\nSpecify either a color string (-c) or a color coding file (-C), not both!\n$die2"};
 
 if (defined $opt{'R'}) {$Rscript = $opt{'R'}};
-if (defined $opt{'s'}) {$scitools = $opt{'s'}};
+if (defined $opt{'s'}) {$ptSize = $opt{'s'}};
+if (defined $opt{'f'}) {$alpha = $opt{'f'}};
 if (defined $opt{'A'}) {read_annot($opt{'A'})};
 if (defined $opt{'a'}) {
 	@ANNOT_LIST = split(/,/, $opt{'a'});
@@ -4589,10 +4592,10 @@ PointPlot<-ggplot() + ";
 # plot the original dims w/ respective color
 if (!defined $opt{'c'} && !defined $opt{'C'} && !defined $opt{'A'}) {
 	print R "
-	geom_point(aes(x=IN\$V2,y=IN\$V3),color=\"lightsteelblue4\",size=1,alpha=$alpha) +";
+	geom_point(aes(x=IN\$V2,y=IN\$V3),color=\"lightsteelblue4\",size=$ptSize,alpha=$alpha) +";
 } else {
 	print R "
-	geom_point(aes(x=IN\$V2,y=IN\$V3,color=IN\$V4),size=1,alpha=$alpha) +
+	geom_point(aes(x=IN\$V2,y=IN\$V3,color=IN\$V4),size=$ptSize,alpha=$alpha) +
 	guides(colour = guide_legend(override.aes = list(size=4))) +";
 }
 
