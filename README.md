@@ -1,7 +1,8 @@
 
 The scitools-dev repository is for internal Adey Lab usage only.
 
-Its intent is to be used as a place for developing and testing functions.
+Two versions will be maintained:
+  scitools-dev  is designed to include functions that are unstable and under active development
+  scitools      is for all stable functions - it should be replaced by scitools-dev once new stable functions are established
 
-Stable versions will be separate from unstable and deposited in modules
-on the server.
+Note: This structure is subject to change - we may just maintain one version once everyone is comfortable with branching... baby steps...
