@@ -3669,22 +3669,30 @@ if ($ARGV[0] =~ /\.(lambda|values)$/) {
 	print STDERR "INFO: A lambda or values file was detected - will aggregate in one dimension\n";
 	if (!defined $opt{'D'}) {$opt{'D'} = 1};
 	read_values($ARGV[0]);
+	if (defined $opt{'A'}) {
+		read_annot($opt{'A'});
+	} else {
+		foreach $cellID (keys %CELLID_value) {
+			$CELLID_annot{$cellID} = "Agg";
+		}
+		$ANNOT_include{"Agg"} = 1;
+	}
 } else {
 	read_dims($ARGV[0]);
+	if (defined $opt{'A'}) {
+		read_annot($opt{'A'});
+	} else {
+		foreach $cellID (keys %CELLID_DIMS) {
+			$CELLID_annot{$cellID} = "Agg";
+		}
+		$ANNOT_include{"Agg"} = 1;
+	}
 }
 
 if (!defined $opt{'O'}) {$opt{'O'} = $ARGV[0]};
 $opt{'O'} =~ s/\.(dims|lambda|values)$//;
 
 if (defined $opt{'R'}) {$Rscript = $opt{'R'}};
-if (defined $opt{'A'}) {
-	read_annot($opt{'A'});
-} else {
-	foreach $cellID (keys %CELLID_DIMS) {
-		$CELLID_annot{$cellID} = "Agg";
-	}
-	$ANNOT_include{"Agg"} = 1;
-}
 
 if (defined $opt{'a'}) {
 	@ANNOT_LIST = split(/,/, $opt{'a'});
@@ -3709,13 +3717,24 @@ read_ranges($opt{'D'});
 
 
 if ($ARGV[0] =~ /\.(lambda|values)$/) {
-	
 	# figure out even spaced vs. even cell N
 	# if -K, then will be evenly spaced on lambda - uniform for all annotations
 	# elsif -N, then will be even number of cells - varable for annotations
-	if (defined $opt{'K'}) {
-		
+	if (defined $opt{'K'}) { # find centroids that will be constant across all annotations
+		%CLUST_global_centroid = ();
+		$clust_span = $value_range/$opt{'K'};
+		$center = $clust_span/2;
+		$clustID = 0;
+		$CLUST_global_centroid{$clustID} = $center;
+		for ($clustID = 1; $clustID < $opt{'K'}; $clustID++) {
+			$center += $clust_span;
+			$CLUST_global_centroid{$clustID} = $center;
+		}
 	}
+	# initialize cluster centroid hash for all clusters
+	%CLUST_center = ();
+	# initialize cluster cell list
+	%CLUST_cellIDs = ();
 }
 
 open CNT, ">$opt{'O'}.centroids.dims";
@@ -3725,9 +3744,67 @@ open OUT, ">$opt{'O'}.aggregate.annot";
 foreach $annot (keys %ANNOT_include) {
 if ($ARGV[0] =~ /\.(lambda|values)$/) {
 	# lambda file
-	 ##########################################################################################################################
+	# setup new CLUST center hash for the annot
+	%CLUST_center = (); $assignment_count = 0; %CLUST_assignments = (); %CELLID_initial_cluster = ();
+	# setup cluster centroids based on K or N
+	if (defined $opt{'K'}) { # copy over the clusters and add in the annot
+		foreach $clustID (keys %CLUST_global_centroid) {
+			$CLUST_center{$annot."_".$clustID} = $CLUST_global_centroid{$clustID};
+		}
+		# now do initial assignments based on closest center
+		foreach $cellID (sort {$CELLID_value{$a}<=>$CELLID_value{$b}} keys %CELLID_value) {
+			if ($CELLID_annot{$cellID} eq $annot) {
+				$minDist = "NA"; $winAsn = "NA";
+				foreach $clustID (keys %CLUST_center) {
+					$dist = $CELLID_value{$cellID} - $CLUST_center{$clustID};
+					if ($minDist eq "NA" || $dist<$minDist) {
+						$minDist = $dist;
+						$winAsn = $clustID;
+					}
+				}
+				$CELLID_initial_cluster{$cellID} = $winAsn;
+				push @{$CLUST_cellIDs{$winAsn}}, $cellID;
+				$CLUST_assignments{$winAsn}++;
+				$assignment_count++;
+			}
+		}
+	} else {
+		# go through cells and calculate the center for each grouping - also do initial assignment
+		$clustNum = 0; $clust_sum = 0; $clust_memberCT = 0; $clustID = $annot."_".$clustNum;
+		foreach $cellID (sort {$CELLID_value{$a}<=>$CELLID_value{$b}} keys %CELLID_value) {
+			if ($CELLID_annot{$cellID} eq $annot) {
+				$clust_memberCT++;
+				$clust_sum += $CELLID_value{$cellID};
+				$CELLID_initial_cluster{$cellID} = $clustID;
+				push @{$CLUST_cellIDs{$clustID}}, $cellID;
+				$assignment_count++;
+				if ($clust_memberCT >= $aggN) {
+					$center = $clust_sum/$clust_memberCT;
+					$CLUST_center{$clustID} = $center;
+					$clustNum++; $clust_sum = 0; $clust_memberCT = 0; $clustID = $annot."_".$clustNum; 
+				}
+			}
+		}
+	}
 	
-	
+	# now check if there is oversampling
+	if ($oversample>1) {
+		if (defined $opt{'K'}) { # oversample for each cluster
+			foreach $clustID (keys %CLUST_center) {
+				$target_assignments = int(($CLUST_assignments{$clustID}*$oversample)+1);
+				
+			}
+		} else { # oversampling globally
+			$target_assignments = int(($assignment_count*$oversample)+1);
+		}
+	} else { # no oversampling
+		foreach $clustID (keys %CLUST_center) {
+			print CNT "$clustID\t$CLUST_center{$clustID}\n";
+			foreach $cellID (@{$CLUST_cellIDs{$clustID}}) {
+				print OUT "$cellID\t$clustID\n";
+			}
+		}
+	}
 	
 } else {
 	# Dimensions file
@@ -3880,8 +3957,8 @@ close CNT; close OUT;
 
 # Plot the projections of cells to their centroids
 if ($ARGV[0] =~ /\.(lambda|values)$/) {
-	# labmda data plot
-	
+	# labmda data plots?
+	# NOT CURRENTLY SUPPORTED
 } else {
 # Dimensions data & plot
 open PD, ">$opt{'O'}.aggregate_data";
