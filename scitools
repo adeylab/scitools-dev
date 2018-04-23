@@ -3849,8 +3849,8 @@ if ($ARGV[0] =~ /\.(lambda|values)$/) {
 				print CNT "$clustID\t$CLUST_center{$clustID}\n";
 			}
 		} else {
-			$initial_target = $target_assignments;
-			$target_assignments = int(($initial_target*$oversample)+1);
+			$added_assignments = ($annot_cellCT_in_lambda*($oversample-1));
+			$target_assignments += int(($added_assignments/$clustNum)+1);
 			foreach $clustID (keys %CLUST_center) {
 				%CELLID_dist = ();
 				foreach $cellID (keys %CELLID_value) {
