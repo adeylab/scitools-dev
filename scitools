@@ -9,7 +9,7 @@
 # Location Defaults
 $fastq_input_directory = "/home/groups/oroaklab/fastq"; #DEFAULT=fastq_input_directory
 $SCI_fastq_directory = "/home/groups/oroaklab/demultiplex"; #DEFAULT=SCI_fastq_directory
-$SCI_index_file = "/home/groups/oroaklab/adey_lab/reference_files/index_files/SCI_ALL_current.txt"; #DEFAULT=SCI_index_file
+$SCI_index_file = "/home/groups/oroaklab/src/scitools/scitools-dev/SCI_Indexes.txt"; #DEFAULT=SCI_index_file
 
 # Reference genome shortcuts
 # Note: scitools looks for the following files:
