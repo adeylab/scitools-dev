@@ -3793,6 +3793,8 @@ if ($ARGV[0] =~ /\.(lambda|values)$/) {
 	} else {
 		# go through cells and calculate the center for each grouping - also do initial assignment
 		$clustNum = 0; $clust_sum = 0; $clust_memberCT = 0; $clustID = $annot."_".$clustNum;
+		$cluster_ct = int($ANNOT_count{$annot}/$aggN);
+		$target_assignments = int($ANNOT_count{$annot}/$cluster_ct);
 		foreach $cellID (sort {$CELLID_value{$a}<=>$CELLID_value{$b}} keys %CELLID_value) {
 			if ($CELLID_annot{$cellID} eq $annot) {
 				$clust_memberCT++;
@@ -3800,13 +3802,16 @@ if ($ARGV[0] =~ /\.(lambda|values)$/) {
 				$CELLID_initial_cluster{$cellID} = $clustID;
 				push @{$CLUST_cellIDs{$clustID}}, $cellID;
 				$assignment_count++;
-				if ($clust_memberCT >= $aggN) {
+				if ($clust_memberCT >= $target_assignments) {
 					$center = $clust_sum/$clust_memberCT;
 					$CLUST_center{$clustID} = $center;
 					$clustNum++; $clust_sum = 0; $clust_memberCT = 0; $clustID = $annot."_".$clustNum; 
 				}
 			}
 		}
+		# last one
+		$center = $clust_sum/$clust_memberCT;
+		$CLUST_center{$clustID} = $center;
 	}
 	
 	# now check if there is oversampling
