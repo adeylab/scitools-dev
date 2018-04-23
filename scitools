@@ -3792,9 +3792,18 @@ if ($ARGV[0] =~ /\.(lambda|values)$/) {
 		}
 	} else {
 		# go through cells and calculate the center for each grouping - also do initial assignment
-		$clustNum = 0; $clust_sum = 0; $clust_memberCT = 0; $clustID = $annot."_".$clustNum;
-		$cluster_ct = int($ANNOT_count{$annot}/$aggN);
-		$target_assignments = int($ANNOT_count{$annot}/$cluster_ct);
+		$clustNum = 0; $clust_sum = 0; $clust_memberCT = 0; $clustID = $annot."_".$clustNum; $annot_cellCT_in_lambda = 0;
+		foreach $cellID (keys %CELLID_value) {
+			if ($CELLID_annot{$cellID} eq $annot) {
+				$annot_cellCT_in_lambda++;
+			}
+		}
+		$cluster_ct = int($annot_cellCT_in_lambda/$aggN);
+		if ($cluster_ct < 2) {
+			$cluster_ct = 2;
+			print STDERR "WARNING: The N value specified, $aggN, results in cluster numbers less than 2 (cells in $annot = $annot_cellCT_in_lambda), setting to 2\n";
+		}
+		$target_assignments = int($annot_cellCT_in_lambda/$cluster_ct);
 		foreach $cellID (sort {$CELLID_value{$a}<=>$CELLID_value{$b}} keys %CELLID_value) {
 			if ($CELLID_annot{$cellID} eq $annot) {
 				$clust_memberCT++;
