@@ -3636,6 +3636,7 @@ Options:
                 annotation memberships if >1. (def = $oversample)
    -K   [INT]   Number of clusters (overrides -N to be the min/aggregate)
                 This will utilize standard k-means to aggregate cells
+                For lambda clustering it will evenly space them
    -A   [STR]   Annotation file (will only merge within annot)
    -a   [STR]   Comma separated list of annotations to include
                   (requires -A to be specified)
@@ -3668,13 +3669,32 @@ if (defined $opt{'v'}) {$oversample = $opt{'v'}};
 if ($ARGV[0] =~ /\.(lambda|values)$/) {
 	print STDERR "INFO: A lambda or values file was detected - will aggregate in one dimension\n";
 	if (!defined $opt{'D'}) {$opt{'D'} = 1};
+	read_values($ARGV[0]);
+	if (defined $opt{'A'}) {
+		read_annot($opt{'A'});
+	} else {
+		foreach $cellID (keys %CELLID_value) {
+			$CELLID_annot{$cellID} = "Agg";
+		}
+		$ANNOT_include{"Agg"} = 1;
+	}
+} else {
+	read_dims($ARGV[0]);
+	if (defined $opt{'A'}) {
+		read_annot($opt{'A'});
+	} else {
+		foreach $cellID (keys %CELLID_DIMS) {
+			$CELLID_annot{$cellID} = "Agg";
+		}
+		$ANNOT_include{"Agg"} = 1;
+	}
 }
 
 if (!defined $opt{'O'}) {$opt{'O'} = $ARGV[0]};
 $opt{'O'} =~ s/\.(dims|lambda|values)$//;
 
 if (defined $opt{'R'}) {$Rscript = $opt{'R'}};
-if (defined $opt{'A'}) {read_annot($opt{'A'})};
+
 if (defined $opt{'a'}) {
 	@ANNOT_LIST = split(/,/, $opt{'a'});
 	foreach $annot (@ANNOT_LIST) {
@@ -3685,6 +3705,7 @@ if (defined $opt{'a'}) {
 		$ANNOT_include{$annot} = 1;
 	}
 }
+
 if (defined $opt{'C'}) {read_color_file($opt{'C'})};
 if (defined $opt{'c'}) {read_color_string($opt{'c'})};
 
@@ -3694,25 +3715,185 @@ $xpos = $xdim-1; $ypos = $ydim-1;
 
 read_ranges($opt{'D'});
 
-if (!defined $opt{'A'}) {
-	foreach $cellID (keys %CELLID_DIMS) {
-		$CELLID_annot{$cellID} = "Agg";
+if ($ARGV[0] =~ /\.(lambda|values)$/) {
+	# figure out even spaced vs. even cell N
+	# if -K, then will be evenly spaced on lambda - uniform for all annotations
+	# elsif -N, then will be even number of cells - varable for annotations
+	if (defined $opt{'K'}) { # find centroids that will be constant across all annotations
+		%CLUST_global_centroid = ();
+		$clust_span = $value_range/$opt{'K'};
+		$center = $clust_span/2;
+		$clustID = 0;
+		$CLUST_global_centroid{$clustID} = $center;
+		for ($clustID = 1; $clustID < $opt{'K'}; $clustID++) {
+			$center += $clust_span;
+			$CLUST_global_centroid{$clustID} = $center;
+		}
 	}
-	$ANNOT_include{"Agg"} = 1;
 }
 
 open CNT, ">$opt{'O'}.centroids.dims";
 open OUT, ">$opt{'O'}.aggregate.annot";
 
-# loop through annotaitons individually
+# loop through annotations individually
 foreach $annot (keys %ANNOT_include) {
 if ($ARGV[0] =~ /\.(lambda|values)$/) {
 	# lambda file
-	read_values($ARGV[0]);
+	# setup new CLUST center hash for the annot - all can be annot-only, no need for global to be kept
+	%CLUST_center = (); $assignment_count = 0; %CLUST_assignments = (); %CELLID_initial_cluster = (); %CLUST_cellIDs = ();
+	# setup cluster centroids based on K or N
+	if (defined $opt{'K'}) { # copy over the clusters and add in the annot
+		foreach $clustID (keys %CLUST_global_centroid) {
+			$CLUST_center{$annot."_".$clustID} = $CLUST_global_centroid{$clustID};
+		}
+		# now do initial assignments based on closest center
+		foreach $cellID (keys %CELLID_value) {
+			if ($CELLID_annot{$cellID} eq $annot) {
+				$minDist = 1e9; $winAsn = "NA";
+				foreach $clustID (keys %CLUST_center) {
+					$dist = abs($CELLID_value{$cellID} - $CLUST_center{$clustID});
+					if ($dist<$minDist) {
+						$minDist = $dist;
+						$winAsn = $clustID;
+					}
+				}
+				$CELLID_initial_cluster{$cellID} = $winAsn;
+				push @{$CLUST_cellIDs{$winAsn}}, $cellID;
+				$CLUST_assignments{$winAsn}++;
+				$assignment_count++;
+			}
+		}
+		# now check for reaching min n, remove other clusters and do orphan assignment
+		%CELLID_orphan = ();
+		foreach $clustID (keys %CLUST_center) {
+			if ($CLUST_assignments{$clustID} < $minN) {
+				print STDERR "INFO: Cluster $clustID has $CLUST_assignments{$clustID} cells assigned which is < $minN, and will be removed and have cells re-assigned.\n";
+				delete $CLUST_center{$clustID};
+				foreach $cellID (@{$CLUST_cellIDs{$clustID}}) {
+					$CELLID_orphan{$cellID} = 1;
+				}
+				delete $CLUST_cellIDs{$clustID};
+			}
+		}
+		foreach $cellID (keys %CELLID_orphan) {
+			$minDist = 1e9; $winAsn = "NA";
+			foreach $clustID (keys %CLUST_center) {
+				$dist = abs($CELLID_value{$cellID} - $CLUST_center{$clustID});
+				if ($dist<$minDist) {
+					$minDist = $dist;
+					$winAsn = $clustID;
+				}
+			}
+			$CELLID_initial_cluster{$cellID} = $winAsn;
+			push @{$CLUST_cellIDs{$winAsn}}, $cellID;
+			$CLUST_assignments{$winAsn}++;
+		}
+	} else {
+		# go through cells and calculate the center for each grouping - also do initial assignment
+		$clustNum = 0; $clust_sum = 0; $clust_memberCT = 0; $clustID = $annot."_".$clustNum; $annot_cellCT_in_lambda = 0;
+		foreach $cellID (keys %CELLID_value) {
+			if ($CELLID_annot{$cellID} eq $annot) {
+				$annot_cellCT_in_lambda++;
+			}
+		}
+		$cluster_ct = int($annot_cellCT_in_lambda/$aggN);
+		if ($cluster_ct < 2) {
+			$cluster_ct = 2;
+			print STDERR "WARNING: The N value specified, $aggN, results in cluster numbers less than 2 (cells in $annot = $annot_cellCT_in_lambda), setting to 2\n";
+		}
+		$target_assignments = int($annot_cellCT_in_lambda/$cluster_ct);
+		foreach $cellID (sort {$CELLID_value{$a}<=>$CELLID_value{$b}} keys %CELLID_value) {
+			if ($CELLID_annot{$cellID} eq $annot) {
+				$clust_memberCT++;
+				$clust_sum += $CELLID_value{$cellID};
+				$CELLID_initial_cluster{$cellID} = $clustID;
+				push @{$CLUST_cellIDs{$clustID}}, $cellID;
+				$assignment_count++;
+				if ($clust_memberCT >= $target_assignments) {
+					$center = $clust_sum/$clust_memberCT;
+					$CLUST_center{$clustID} = $center;
+					$clustNum++; $clust_sum = 0; $clust_memberCT = 0; $clustID = $annot."_".$clustNum; 
+				}
+			}
+		}
+		# last one
+		$center = $clust_sum/$clust_memberCT;
+		$CLUST_center{$clustID} = $center;
+	}
+	
+	# now check if there is oversampling
+	if ($oversample>1) {
+		%CELLID_cluster = ();
+		if (defined $opt{'K'}) { # oversample for each cluster
+			foreach $clustID (keys %CLUST_center) {
+				$target_assignments = int(($CLUST_assignments{$clustID}*$oversample)+1);
+				%CELLID_dist = ();
+				foreach $cellID (keys %CELLID_value) {
+					if ($CELLID_annot{$cellID} eq $annot && $CELLID_initial_cluster{$cellID} ne $clustID) {
+						$CELLID_dist{$cellID} = abs($CELLID_value{$cellID} - $CLUST_center{$clustID});
+					} elsif ($CELLID_annot{$cellID} eq $annot && $CELLID_initial_cluster{$cellID} eq $clustID) {
+						$CELLID_cluster{$cellID} .= "$clustID,";
+					}
+				}
+				foreach $cellID (sort {$CELLID_dist{$a}<=>$CELLID_dist{$b}} keys %CELLID_dist) {
+					if ($CLUST_assignments{$clustID}<$target_assignments) {
+						$CELLID_cluster{$cellID} .= "$clustID,";
+						$CLUST_assignments{$clustID}++;
+						push @{$CLUST_cellIDs{$clustID}}, $cellID;
+					}
+				}
+			}
+			foreach $clustID (keys %CLUST_center) { # no center changes, so print centroids
+				print CNT "$clustID\t$CLUST_center{$clustID}\n";
+			}
+		} else {
+			$added_assignments = ($annot_cellCT_in_lambda*($oversample-1));
+			$target_assignments += int(($added_assignments/$clustNum)+1);
+			foreach $clustID (keys %CLUST_center) {
+				%CELLID_dist = ();
+				foreach $cellID (keys %CELLID_value) {
+					if ($CELLID_annot{$cellID} eq $annot && $CELLID_initial_cluster{$cellID} ne $clustID) {
+						$CELLID_dist{$cellID} = abs($CELLID_value{$cellID} - $CLUST_center{$clustID});
+					} elsif ($CELLID_annot{$cellID} eq $annot && $CELLID_initial_cluster{$cellID} eq $clustID) {
+						$CELLID_cluster{$cellID} .= "$clustID,";
+					}
+				}
+				foreach $cellID (sort {$CELLID_dist{$a}<=>$CELLID_dist{$b}} keys %CELLID_dist) {
+					if ($CLUST_assignments{$clustID}<$target_assignments) {
+						$CELLID_cluster{$cellID} .= "$clustID,";
+						$CLUST_assignments{$clustID}++;
+						push @{$CLUST_cellIDs{$clustID}}, $cellID;
+					}
+				}
+			}
+			# remake centroid & print
+			foreach $clustID (keys %CLUST_center) {
+				$clust_sum = 0; $clust_memberCT = 0;
+				foreach $cellID (@{$CLUST_cellIDs{$clustID}}) {
+					$clust_sum+=$CELLID_value{$cellID};
+					$clust_memberCT++;
+				}
+				$CLUST_center{$clustID} = $clust_sum/$clust_memberCT;
+				print CNT "$clustID\t$CLUST_center{$clustID}\n";
+			}
+		}
+		# print out annot
+		foreach $cellID (keys %CELLID_cluster) {
+			$cluster_set = $CELLID_cluster{$cellID};
+			$cluster_set =~ s/,$//;
+			print OUT "$cellID\t$cluster_set\n";
+		}
+	} else { # no oversampling
+		foreach $clustID (keys %CLUST_center) {
+			print CNT "$clustID\t$CLUST_center{$clustID}\n";
+			foreach $cellID (@{$CLUST_cellIDs{$clustID}}) {
+				print OUT "$cellID\t$clustID\n";
+			}
+		}
+	}
 	
 } else {
 	# Dimensions file
-	read_dims($ARGV[0]);
 	
 	%CLUST_include = ();
 	%CELLID_initial_cluster = ();
@@ -3862,8 +4043,8 @@ close CNT; close OUT;
 
 # Plot the projections of cells to their centroids
 if ($ARGV[0] =~ /\.(lambda|values)$/) {
-	# labmda data plot
-	
+	# labmda data plots?
+	# NOT CURRENTLY SUPPORTED
 } else {
 # Dimensions data & plot
 open PD, ">$opt{'O'}.aggregate_data";
