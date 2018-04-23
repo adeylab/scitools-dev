@@ -3636,6 +3636,7 @@ Options:
                 annotation memberships if >1. (def = $oversample)
    -K   [INT]   Number of clusters (overrides -N to be the min/aggregate)
                 This will utilize standard k-means to aggregate cells
+                For lambda clustering it will evenly space them
    -A   [STR]   Annotation file (will only merge within annot)
    -a   [STR]   Comma separated list of annotations to include
                   (requires -A to be specified)
@@ -3731,10 +3732,6 @@ if ($ARGV[0] =~ /\.(lambda|values)$/) {
 			$CLUST_global_centroid{$clustID} = $center;
 		}
 	}
-	# initialize cluster centroid hash for all clusters
-	%CLUST_center = ();
-	# initialize cluster cell list
-	%CLUST_cellIDs = ();
 }
 
 open CNT, ">$opt{'O'}.centroids.dims";
@@ -3744,20 +3741,20 @@ open OUT, ">$opt{'O'}.aggregate.annot";
 foreach $annot (keys %ANNOT_include) {
 if ($ARGV[0] =~ /\.(lambda|values)$/) {
 	# lambda file
-	# setup new CLUST center hash for the annot
-	%CLUST_center = (); $assignment_count = 0; %CLUST_assignments = (); %CELLID_initial_cluster = ();
+	# setup new CLUST center hash for the annot - all can be annot-only, no need for global to be kept
+	%CLUST_center = (); $assignment_count = 0; %CLUST_assignments = (); %CELLID_initial_cluster = (); %CLUST_cellIDs = ();
 	# setup cluster centroids based on K or N
 	if (defined $opt{'K'}) { # copy over the clusters and add in the annot
 		foreach $clustID (keys %CLUST_global_centroid) {
 			$CLUST_center{$annot."_".$clustID} = $CLUST_global_centroid{$clustID};
 		}
 		# now do initial assignments based on closest center
-		foreach $cellID (sort {$CELLID_value{$a}<=>$CELLID_value{$b}} keys %CELLID_value) {
+		foreach $cellID (keys %CELLID_value) {
 			if ($CELLID_annot{$cellID} eq $annot) {
-				$minDist = "NA"; $winAsn = "NA";
+				$minDist = 1e9; $winAsn = "NA";
 				foreach $clustID (keys %CLUST_center) {
-					$dist = $CELLID_value{$cellID} - $CLUST_center{$clustID};
-					if ($minDist eq "NA" || $dist<$minDist) {
+					$dist = abs($CELLID_value{$cellID} - $CLUST_center{$clustID});
+					if ($dist<$minDist) {
 						$minDist = $dist;
 						$winAsn = $clustID;
 					}
