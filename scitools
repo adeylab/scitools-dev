@@ -3811,13 +3811,40 @@ if ($ARGV[0] =~ /\.(lambda|values)$/) {
 	
 	# now check if there is oversampling
 	if ($oversample>1) {
+		%CELLID_cluster = ();
 		if (defined $opt{'K'}) { # oversample for each cluster
 			foreach $clustID (keys %CLUST_center) {
 				$target_assignments = int(($CLUST_assignments{$clustID}*$oversample)+1);
-				
+				%CELLID_dist = ();
+				foreach $cellID (keys %CELLID_value) {
+					if ($CELLID_annot{$cellID} eq $annot && $CELLID_initial_cluster{$cellID} ne $clustID) {
+						$CELLID_dist{$cellID} = abs($CELLID_value{$cellID} - $CLUST_center{$clustID});
+					} elsif ($CELLID_annot{$cellID} eq $annot && $CELLID_initial_cluster{$cellID} eq $clustID) {
+						$CELLID_cluster{$cellID} .= "$clustID,";
+					}
+				}
+				foreach $cellID (sort {$CELLID_dist{$a}<=>$CELLID_dist{$b}} keys %CELLID_dist) {
+					if ($CLUST_assignments{$clustID}<$target_assignments) {
+						$CELLID_cluster{$cellID} .= "$clustID,";
+						$CLUST_assignments{$clustID}++;
+						push @{$CLUST_cellIDs{$clustID}}, $cellID;
+					}
+				}
+			}
+			foreach $clustID (keys %CLUST_center) { # no center changes, so print centroids
+				print CNT "$clustID\t$CLUST_center{$clustID}\n";
 			}
 		} else { # oversampling globally
 			$target_assignments = int(($assignment_count*$oversample)+1);
+			
+			
+			
+		}
+		# print out annot
+		foreach $cellID (keys %CELLID_cluster) {
+			$cluster_set = $CELLID_cluster{$cellID};
+			$cluster_set =~ s/,$//;
+			print OUT "$cellID\t$cluster_set\n";
 		}
 	} else { # no oversampling
 		foreach $clustID (keys %CLUST_center) {
