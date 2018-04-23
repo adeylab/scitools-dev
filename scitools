@@ -3765,6 +3765,31 @@ if ($ARGV[0] =~ /\.(lambda|values)$/) {
 				$assignment_count++;
 			}
 		}
+		# now check for reaching min n, remove other clusters and do orphan assignment
+		%CELLID_orphan = ();
+		foreach $clustID (keys %CLUST_center) {
+			if ($CLUST_assignments{$clustID} < $minN) {
+				print STDERR "INFO: Cluster $clustID has $CLUST_assignments{$clustID} cells assigned which is < $minN, and will be removed and have cells re-assigned.\n";
+				delete $CLUST_center{$clustID};
+				foreach $cellID (@{$CLUST_cellIDs{$clustID}}) {
+					$CELLID_orphan{$cellID} = 1;
+				}
+				delete $CLUST_cellIDs{$clustID};
+			}
+		}
+		foreach $cellID (keys %CELLID_orphan) {
+			$minDist = 1e9; $winAsn = "NA";
+			foreach $clustID (keys %CLUST_center) {
+				$dist = abs($CELLID_value{$cellID} - $CLUST_center{$clustID});
+				if ($dist<$minDist) {
+					$minDist = $dist;
+					$winAsn = $clustID;
+				}
+			}
+			$CELLID_initial_cluster{$cellID} = $winAsn;
+			push @{$CLUST_cellIDs{$winAsn}}, $cellID;
+			$CLUST_assignments{$winAsn}++;
+		}
 	} else {
 		# go through cells and calculate the center for each grouping - also do initial assignment
 		$clustNum = 0; $clust_sum = 0; $clust_memberCT = 0; $clustID = $annot."_".$clustNum;
