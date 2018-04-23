@@ -3715,8 +3715,6 @@ $xpos = $xdim-1; $ypos = $ydim-1;
 
 read_ranges($opt{'D'});
 
-
-
 if ($ARGV[0] =~ /\.(lambda|values)$/) {
 	# figure out even spaced vs. even cell N
 	# if -K, then will be evenly spaced on lambda - uniform for all annotations
@@ -3874,6 +3872,16 @@ if ($ARGV[0] =~ /\.(lambda|values)$/) {
 			$cluster_set = $CELLID_cluster{$cellID};
 			$cluster_set =~ s/,$//;
 			print OUT "$cellID\t$cluster_set\n";
+		}
+		# remake centroid & print
+		foreach $clustID (keys %CLUST_center) {
+			$clust_sum = 0; $clust_memberCT = 0;
+			foreach $cellID (@{$CLUST_cellIDs{$clustID}}) {
+				$clust_sum+=$CELLID_value{$cellID};
+				$clust_memberCT++;
+			}
+			$CLUST_center{$clustID} = $clust_sum/$clust_memberCT;
+			print CNT "$clustID\t$CLUST_center{$clustID}\n";
 		}
 	} else { # no oversampling
 		foreach $clustID (keys %CLUST_center) {
