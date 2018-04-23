@@ -3668,13 +3668,24 @@ if (defined $opt{'v'}) {$oversample = $opt{'v'}};
 if ($ARGV[0] =~ /\.(lambda|values)$/) {
 	print STDERR "INFO: A lambda or values file was detected - will aggregate in one dimension\n";
 	if (!defined $opt{'D'}) {$opt{'D'} = 1};
+	read_values($ARGV[0]);
+} else {
+	read_dims($ARGV[0]);
 }
 
 if (!defined $opt{'O'}) {$opt{'O'} = $ARGV[0]};
 $opt{'O'} =~ s/\.(dims|lambda|values)$//;
 
 if (defined $opt{'R'}) {$Rscript = $opt{'R'}};
-if (defined $opt{'A'}) {read_annot($opt{'A'})};
+if (defined $opt{'A'}) {
+	read_annot($opt{'A'});
+} else {
+	foreach $cellID (keys %CELLID_DIMS) {
+		$CELLID_annot{$cellID} = "Agg";
+	}
+	$ANNOT_include{"Agg"} = 1;
+}
+
 if (defined $opt{'a'}) {
 	@ANNOT_LIST = split(/,/, $opt{'a'});
 	foreach $annot (@ANNOT_LIST) {
@@ -3685,6 +3696,7 @@ if (defined $opt{'a'}) {
 		$ANNOT_include{$annot} = 1;
 	}
 }
+
 if (defined $opt{'C'}) {read_color_file($opt{'C'})};
 if (defined $opt{'c'}) {read_color_string($opt{'c'})};
 
@@ -3694,25 +3706,31 @@ $xpos = $xdim-1; $ypos = $ydim-1;
 
 read_ranges($opt{'D'});
 
-if (!defined $opt{'A'}) {
-	foreach $cellID (keys %CELLID_DIMS) {
-		$CELLID_annot{$cellID} = "Agg";
+
+
+if ($ARGV[0] =~ /\.(lambda|values)$/) {
+	
+	# figure out even spaced vs. even cell N
+	# if -K, then will be evenly spaced on lambda - uniform for all annotations
+	# elsif -N, then will be even number of cells - varable for annotations
+	if (defined $opt{'K'}) {
+		
 	}
-	$ANNOT_include{"Agg"} = 1;
 }
 
 open CNT, ">$opt{'O'}.centroids.dims";
 open OUT, ">$opt{'O'}.aggregate.annot";
 
-# loop through annotaitons individually
+# loop through annotations individually
 foreach $annot (keys %ANNOT_include) {
 if ($ARGV[0] =~ /\.(lambda|values)$/) {
 	# lambda file
-	read_values($ARGV[0]);
+	 ##########################################################################################################################
+	
+	
 	
 } else {
 	# Dimensions file
-	read_dims($ARGV[0]);
 	
 	%CLUST_include = ();
 	%CELLID_initial_cluster = ();
