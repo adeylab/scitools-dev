@@ -41,10 +41,10 @@ use Getopt::Std; %opt = ();
 load_gradient_defaults();
 
 # VERSION INFO
-$version = "0.1.1";
+$version = "0.1.1d";
 %version_info = (
 	"0.1.0" => "180215, alpha - initial development",
-	"0.1.1" => "180418, alpha - dev split"
+	"0.1.1d" => "180418, alpha - dev split"
 );
 
 # COMMAND DIRECTORY
