@@ -5048,8 +5048,8 @@ Options:
    -S   [INT]   Flanking size if gene names are specified
                 (reuires -G, def = $flanking_size)
    -A   [STR]   Annotation file (to color code reads)
-   -a   [STR]   Comma separated list of annoations to include in plot
-                  (requires -A to be specified)
+   -a   [STR]   Comma separated list of annotations to include in plot
+                  (requires -A, will plot annots in the specified order)
    -C   [STR]   Color coding file (annot (tab) #hexColor)
    -c   [STR]   Color coding string
                   Annot=#hexColor,Annot2=#hexColor
@@ -5190,8 +5190,23 @@ while ($l = <IN>) {
 
 if ($reads_in_region>0) {
 
+# order annot if -a specified, otherwise order however
+@ANNOT_ORDER = ();
+if (!defined $opt{'a'}) {
+	foreach $annot (sort keys %ANNOT_ids) {
+		push @ANNOT_ORDER, $annot;
+	}
+} else {
+	for ($i = 0; $i < @ANNOT_LIST; $i++) {
+		if (defined $ANNOT_ids{$ANNOT_LIST[$i]}) {
+			push @ANNOT_ORDER, $annot;
+		}
+	}
+}
+
 $newID = 0;
-foreach $annot (keys %ANNOT_ids) {
+for ($i = 0; $i < @ANNOT_ORDER; $i++) {
+	$annot = $ANNOT_ORDER[$i];
 	if (!defined $opt{'r'}) {
 		foreach $cellID (sort {$ID_randVal{$a}<=>$ID_randVal{$b}} keys %ID_randVal) {
 			if ($CELLID_annot{$cellID} eq $annot) {
