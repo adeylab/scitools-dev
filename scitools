@@ -5029,7 +5029,7 @@ if (!defined $opt{'X'}) {
 exit;
 }
 
-if ($command eq "plot-reads") { ############################################# ADD IN LAMBDA OR VALUE CELL ORDERING... (with reverse option)
+if ($command eq "plot-reads") {
 
 # Defaults
 $height = 6;
@@ -5039,7 +5039,7 @@ $flanking_size = 100000;
 $gene_scale_factor = 1;
 $gene_text_size = 1.5;
 
-getopts("O:A:a:C:c:R:Xs:Dh:w:rp:B:G:S:f:t:", \%opt);
+getopts("O:A:a:C:c:R:Xs:Dh:w:rp:B:G:S:f:t:V:v:", \%opt);
 
 $die2 = "
 scitools plot-reads [options] [rmdup sci bam file] [chrN:start-end] [region 2] ...
@@ -5048,7 +5048,7 @@ Options:
    -O   [STR]   Output prefix (default is input prefix)
    -D           Output to a directory (will add to it if it exists)
    -B   [BED]   Bed file of peaks (optional)
-   -G   [BED]   Gene info (refGene.txt formats)
+   -G   {STR]   Gene info (refGene.txt formats)
                 Defaults: hg38, hg19, mm10 (see scitools -h for more details)
    -S   [INT]   Flanking size if gene names are specified
                 (reuires -G, def = $flanking_size)
@@ -5064,7 +5064,10 @@ Options:
    -f   [FLT]   Gene plot spacing factor (def = $gene_scale_factor)
                   (for -G, larger values = more vertical spread)
    -t   [FLT]   Gene name text size (def = $gene_text_size)
-   -r           Do not randomize cell order (def = randomize)
+   -r           Order cells by start of first read (def = randomize)
+   -V   [STR]   Values or lambda file for cell ordering
+                  (overrides -r, only cells in file will plot)
+   -v           Reverse order of the provided values/lambda file
    -R   [STR]   Rscript call (def = $Rscript)
    -s   [STR]   Samtools call (def = $samtools)
    -X           Do not delete intermediate files (def = delete)
@@ -5209,20 +5212,40 @@ if (!defined $opt{'a'}) {
 	}
 }
 
+# DO reordering stuff here
 $newID = 0;
-for ($i = 0; $i < @ANNOT_ORDER; $i++) {
-	$annot = $ANNOT_ORDER[$i];
-	if (!defined $opt{'r'}) {
-		foreach $cellID (sort {$ID_randVal{$a}<=>$ID_randVal{$b}} keys %ID_randVal) {
-			if ($CELLID_annot{$cellID} eq $annot) {
-				$ANNOT_CELLID_newID{$annot}{$CELLID_id{$cellID}} = $newID;
+if (!defined $opt{'V'}) {
+	for ($i = 0; $i < @ANNOT_ORDER; $i++) {
+		$annot = $ANNOT_ORDER[$i];
+		if (!defined $opt{'r'}) {
+			foreach $cellID (sort {$ID_randVal{$a}<=>$ID_randVal{$b}} keys %ID_randVal) {
+				if ($CELLID_annot{$cellID} eq $annot) {
+					$ANNOT_CELLID_newID{$annot}{$CELLID_id{$cellID}} = $newID;
+					$newID++;
+				}
+			}
+		} else {
+			foreach $cellID (sort {$CELLID_id{$a}<=>$CELLID_id{$b}} keys %CELLID_id) {
+				if ($CELLID_annot{$cellID} eq $annot) {
+					$ANNOT_CELLID_newID{$annot}{$CELLID_id{$cellID}} = $newID;
+					$newID++;
+				}
+			}
+		}
+	}
+} else {
+	read_values($opt{'V'});
+	if (!defined $opt{'v'}) {
+		foreach $cellID (sort {$CELLID_value{$a}<=>$CELLID_value{$b}} keys %CELLID_value) {
+			if (defined $CELLID_id{$cellID} && defined $CELLID_annot{$cellID}) {
+				$ANNOT_CELLID_newID{$CELLID_annot{$cellID}}{$CELLID_id{$cellID}} = $newID;
 				$newID++;
 			}
 		}
 	} else {
-		foreach $cellID (sort {$CELLID_id{$a}<=>$CELLID_id{$b}} keys %CELLID_id) {
-			if ($CELLID_annot{$cellID} eq $annot) {
-				$ANNOT_CELLID_newID{$annot}{$CELLID_id{$cellID}} = $newID;
+		foreach $cellID (sort {$CELLID_value{$b}<=>$CELLID_value{$a}} keys %CELLID_value) {
+			if (defined $CELLID_id{$cellID} && defined $CELLID_annot{$cellID}) {
+				$ANNOT_CELLID_newID{$CELLID_annot{$cellID}}{$CELLID_id{$cellID}} = $newID;
 				$newID++;
 			}
 		}
@@ -5234,8 +5257,10 @@ open OUT, ">$opt{'O'}$region_name.data.full";
 while ($l = <IN>) {
 	chomp $l;
 	($annot,$id,$posn) = split(/\t/, $l);
-	$newID = $ANNOT_CELLID_newID{$annot}{$id};
-	print OUT "READ\t$annot\t$newID\t$posn\n";
+	if (defined $ANNOT_CELLID_newID{$annot}{$id}) {
+		$newID = $ANNOT_CELLID_newID{$annot}{$id};
+		print OUT "READ\t$annot\t$newID\t$posn\n";
+	}
 } close IN;
 
 if (defined $opt{'B'}) {
