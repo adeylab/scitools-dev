@@ -118,7 +118,7 @@ scitools [command] [options] [arguments]
 
 Version: $version ($version_info{$version})
     https://www.adeylab.org
-	https://github.com/adeylab
+    https://github.com/adeylab
 
 scitools is a set of commands for general processing of single-
 cell combinatorial indexing data. It is predominantly a wrapper
