@@ -116,7 +116,13 @@ $color_mapping = "none";
 $die = "
 scitools [command] [options] [arguments]
 
-Version: $version ($version_info{$version}), www.adeylab.org
+Version: $version ($version_info{$version})
+    https://www.adeylab.org
+	https://github.com/adeylab
+
+scitools is a set of commands for general processing of single-
+cell combinatorial indexing data. It is predominantly a wrapper
+for generating R or other scripts that will be stored and executed.
 
 scitools commands are in the form of [class]-[operation], calling
 a tool with just the [class] option will give a more detailed
