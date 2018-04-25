@@ -3609,7 +3609,7 @@ if (!defined $opt{'X'}) {
 exit;
 }
 
-if ($command eq "aggregate-cells" || $command eq "aggregate") { # TODO: LABDA BASED! Also - reassign orphans.
+if ($command eq "aggregate-cells" || $command eq "aggregate") {
 
 # Defaults
 $range_default = "1-2";
@@ -5029,7 +5029,7 @@ if (!defined $opt{'X'}) {
 exit;
 }
 
-if ($command eq "plot-reads") {
+if ($command eq "plot-reads") { ############################################# ADD IN LAMBDA OR VALUE CELL ORDERING... (with reverse option)
 
 # Defaults
 $height = 6;
