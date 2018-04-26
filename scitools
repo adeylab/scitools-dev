@@ -1,51 +1,30 @@
 #!/usr/bin/perl
 
-# START GLOBAL DEFAULTS
-#   To tailor the defaults to your own specified locations
-#   to avoid having to specify them as options for each run, change the
-#   variables below. A setup script may be included in future versions to
-#   perform this for you via a series of prompts.
-
-# Location Defaults
-$fastq_input_directory = "/home/groups/oroaklab/fastq"; #DEFAULT=fastq_input_directory
-$SCI_fastq_directory = "/home/groups/oroaklab/demultiplex"; #DEFAULT=SCI_fastq_directory
-$SCI_index_file = "/home/groups/oroaklab/src/scitools/scitools-dev/SCI_Indexes.txt"; #DEFAULT=SCI_index_file
-
-# Reference genome shortcuts
-# Note: scitools looks for the following files:
-#  [ref.fa].[bwa_index]
-#  [ref.fa].fai
-#  [ref].refGene.txt (for plot-reads)
-# To enable "hg38", "hg19", and "mm10" shorcut usage, ensure all files are present
-$hg19_ref = "/home/groups/oroaklab/refs/hg19/hg19.fa"; #DEFAULT=hg19_ref
-$hg38_ref = "/home/groups/oroaklab/refs/hg38/hg38.fa"; #DEFAULT=hg38_ref
-$mm10_ref = "/home/groups/oroaklab/refs/mm10/mm10.fa"; #DEFAULT=mm10_ref
-
-# Software Defaults
-$gzip = "gzip"; #DEFAULT=gzip
-$zcat = "zcat"; #DEFAULT=zcat
-$bwa = "bwa"; #DEFAULT=bwa
-$samtools = "samtools"; #DEFAULT=samtools
-$scitools = "scitools"; #DEFAULT=scitools
-$macs2 = "macs2"; #DEFAULT=macs2
-$bedtools = "bedtools"; #DEFAULT=bedtools
-$Rscript = "Rscript"; #DEFAULT=Rscript
-
-# END GLOBAL DEFAULTS
-
-# MODULES
-# Note: to decrease dependencies, other modules are not used in favor of
-#   including relevant code within this script tailored to the specific
-#   functions
-use Getopt::Std; %opt = ();
-load_gradient_defaults();
-
 # VERSION INFO
 $version = "0.1.1d";
 %version_info = (
 	"0.1.0" => "180215, alpha - initial development",
 	"0.1.1d" => "180418, alpha - dev split"
 );
+
+# LOAD MODULES (limited for max compatibility)
+use Getopt::Std; %opt = ();
+
+# LOAD DEFAULTS
+$SCITOOLS_DEFAULTS = "/home/groups/oroaklab/src/scitools/scitools-dev/scitools.cfg"; # DEFAULT CONFIG
+if (-e "$ENV{'HOME'}/.scitools.cfg") {
+	$SCITOOLS_DEFAULTS = "$ENV{'HOME'}/.scitools.cfg";
+} elsif (-e "$ENV{'HOME'}/scitools.cfg") {
+	$SCITOOLS_DEFAULTS = "$ENV{'HOME'}/scitools.cfg";
+} elsif ($ARGV[0] =~ /\.cfg$/) {
+	# special config specification as first argument - advanced use only
+	$SCITOOLS_DEFAULTS = shift(@ARGV);
+	print STDERR "INFO: Special config file detected as first argument. ($ARGV[0])\n";
+}
+load_defaults($SCITOOLS_DEFAULTS);
+
+# LOAD GRADIENTS
+load_gradient_defaults();
 
 # COMMAND DIRECTORY
 %COMMANDS = (
@@ -108,9 +87,6 @@ $version = "0.1.1d";
 	"split-data" => 1, "data-split" => 1
 
 );
-
-# GLOBAL EMPTY VARIABLES
-$color_mapping = "none";
 
 # HELP TEXT
 $die = "
@@ -336,7 +312,7 @@ Should be on a pre-filetered since it will plot all barcode combos present.
 Options:
    -O   [STR]   Output prefix, will create a folder (def = input prefix)
    -I   [STR]   Index file
-         (default = $SCI_index_file)
+         (default = $VAR{'SCI_index_file'})
          (Index names must be in form of: [Tier]_[set]_[i5/i7]_[A-H/1-12])
    -A   [STR]   Annotation file (only include cell IDs in the annot file)
    -t   [INT]   Threshold of reads for a plate to include (def = $threshold)
@@ -356,14 +332,14 @@ $opt{'O'} =~ s/\.gz$//; $opt{'O'} =~ s/\.fq$//; $opt{'O'} =~ s/\.bam$//;
 if (-e "$opt{'O'}.index_performance") {die "$opt{'O'}.index_performance Directory already exists! Exiting!\n\n"};
 if (defined $opt{'R'}) {$Rscript = $opt{'R'}};
 if (defined $opt{'s'}) {$samtools = $opt{'s'}};
-if (defined $opt{'I'}) {$SCI_index_file = $opt{'I'}};
+if (defined $opt{'I'}) {$VAR{'SCI_index_file'} = $opt{'I'}};
 if (defined $opt{'t'}) {$threshold = $opt{'t'}};
 if (defined $opt{'A'}) {read_annot($opt{'A'})};
 if (!defined $opt{'G'}) {$opt{'G'} = $gradient_def};
 $gradient_function = get_gradient($opt{'G'});
 $gradient_function =~ s/\)$//; $gradient_function .= ",bias=0.65)";
 
-read_indexes($SCI_index_file);
+read_indexes($VAR{'SCI_index_file'});
 
 %CELLID_count = ();
 if ($ARGV[0] =~ /\.bam$/) {
@@ -560,13 +536,13 @@ Options:
 
 Defaults:
    -F   [STR]   Fastq directory
-         ($fastq_input_directory)
+         ($VAR{'fastq_input_directory'})
    -O   [STR]   Output fastq directory
-         ($SCI_fastq_directory)
+         ($VAR{'SCI_fastq_directory'})
    -o   [STR]   Output prefix
          (def = run name)
    -I   [STR]   SCI index master file
-         ($SCI_index_file)
+         ($VAR{'SCI_index_file'})
 
 To specify specific fastq files instead of defaults:
    (can be comma sep for multiple)
@@ -580,10 +556,10 @@ Will split with a hamming distance of 2
 ";
 
 if (!defined $opt{'R'}) {die $die2};
-if (!defined $opt{'F'}) {$opt{'F'} = $fastq_input_directory};
-if (!defined $opt{'O'}) {$opt{'O'} = $SCI_fastq_directory};
+if (!defined $opt{'F'}) {$opt{'F'} = $VAR{'fastq_input_directory'}};
+if (!defined $opt{'O'}) {$opt{'O'} = $VAR{'SCI_fastq_directory'}};
 if (!defined $opt{'o'}) {$opt{'o'} = $opt{'R'}};
-if (!defined $opt{'I'}) {$opt{'I'} = $SCI_index_file};
+if (!defined $opt{'I'}) {$opt{'I'} = $VAR{'SCI_index_file'}};
 
 open IN, "$opt{'I'}";
 while ($l = <IN>) {
@@ -935,9 +911,7 @@ Options:
    -m   [MEM]   Samtools sort mex memory per thread, K/M/G (def = $memory)
 
 Bwa reference shortcuts:
-   hg19   $hg19_ref
-   hg38   $hg38_ref
-   mm10   $mm10_ref
+$ref_shortcuts
 
 ";
 
@@ -949,9 +923,10 @@ if (defined $opt{'s'}) {$samtools = $opt{'s'}};
 if (!defined $opt{'t'}) {$opt{'t'} = $threads};
 if (!defined $opt{'m'}) {$opt{'m'} = $memory};
 
-if ($ARGV[0] eq "hg19") {$ARGV[0] = $hg19_ref};
-if ($ARGV[0] eq "hg38") {$ARGV[0] = $hg38_ref};
-if ($ARGV[0] eq "mm10") {$ARGV[0] = $mm10_ref};
+if (defined $REF{$ARGV[0]}) {
+	$ref_file = $REF{$ARGV[0]};
+	$ARGV[0] = $ref_file;
+}
 
 system("$bwa mem -t $opt{'t'} $ARGV[0] $ARGV[1] $ARGV[2] 2>> $ARGV[3].align.log | $samtools view -bSu - 2>> $ARGV[3].align.log | $samtools sort -m $opt{'m'} -T $ARGV[3].TMP - > $ARGV[3].bam 2>> $ARGV[3].align.log");
 
@@ -976,7 +951,7 @@ scitools annot-make [options] [annotation_description_1] [annotaiton_description
 Options:
    -O   [STR]   Output annotation file (default = STDOUT)
    -I   [STR]   Index file
-         (default = $SCI_index_file)
+         (default = $VAR{'SCI_index_file'})
          (Index names must be in form of: [Tier]_[set]_[i5/i7]_[A-H/1-12])
    -P   [STR]   Plate descriptor file (instead of written descriptors)
    -p           Print out sample plate file for modificaiton and exit
@@ -991,7 +966,7 @@ scitools annot-make [options] [annotation_description_1] [annotaiton_description
 Options:
    -O   [STR]   Output annotation file (default = STDOUT)
    -I   [STR]   Index file
-         (default = $SCI_index_file)
+         (default = $VAR{'SCI_index_file'})
          (Index names must be in form of: [Tier]_[set]_[i5/i7]_[A-H/1-12])
    -P   [STR]   Plate descriptor file (instead of written descriptors)
    -p           Print out sample plate file for modificaiton and exit
@@ -1081,7 +1056,7 @@ exit;
 if (!defined $ARGV[0] && !defined $opt{'P'}) {die $die2};
 
 # Read in index file
-open IN, $SCI_index_file;
+open IN, $VAR{'SCI_index_file'};
 while ($l = <IN>) {
 	chomp $l;
 	($ID,$pos,$seq) = split(/\t/, $l);
@@ -2153,7 +2128,7 @@ Options:
    -b   [STR]   Bedtools call (def = $bedtools)
    -m   [STR]   Macs2 call (def = $macs2)
    -s   [STR]   Samtools call (def = $samtools)
-   -f   [STR]   Fai file for chr lengths (hg19, hg38, and mm10 are shortcuts)
+   -f   [STR]   Fai file for chr lengths (shorcut examples: hg19, hg38, and mm10 if in .cfg)
                 If toggled will ensure n peaks extend beyond
    -X           Retain intermediate files (def = remove)
 
@@ -2165,12 +2140,8 @@ if (defined $opt{'l'}) {$min_feature_size = $opt{'l'}};
 if (defined $opt{'s'}) {$samtools = $opt{'s'}};
 
 if (defined $opt{'f'}) {
-	if ($opt{'f'} eq "hg19") {
-		open FAI, "$hg19_ref.fai";
-	} elsif ($opt{'f'} eq "mm10") {
-		open FAI, "$mm10_ref.fai";
-	} elsif ($opt{'f'} eq "hg38") {
-		open FAI, "$hg38_ref.fai";
+	if (defined $REF{$opt{'f'}}) {
+		open FAI, "$REF{$opt{'f'}}.fai";
 	} else {
 		open FAI, "$opt{'f'}";
 	}
@@ -5049,7 +5020,7 @@ Options:
    -D           Output to a directory (will add to it if it exists)
    -B   [BED]   Bed file of peaks (optional)
    -G   {STR]   Gene info (refGene.txt formats)
-                Defaults: hg38, hg19, mm10 (see scitools -h for more details)
+                Shortcut eg: hg38, hg19, mm10 (see scitools -h for more details)
    -S   [INT]   Flanking size if gene names are specified
                 (reuires -G, def = $flanking_size)
    -A   [STR]   Annotation file (to color code reads)
@@ -5106,12 +5077,10 @@ if (!defined $opt{'O'}) {$opt{'O'} = $ARGV[0]};
 $opt{'O'} =~ s/\.bam$//;
 
 if (defined $opt{'G'}) {
-	if ($opt{'G'} eq "hg38") {
-		$opt{'G'} = $hg38_ref; $opt{'G'} =~ s/\.fa$/\.refGene.txt/;
-	} elsif ($opt{'G'} eq "hg19") {
-		$opt{'G'} = $hg19_ref; $opt{'G'} =~ s/\.fa$/\.refGene.txt/;
-	} elsif ($opt{'G'} eq "mm10") {
-		$opt{'G'} = $mm10_ref; $opt{'G'} =~ s/\.fa$/\.refGene.txt/;
+	if (defined $REF{$opt{'G'}}) {
+		$ref_file = $REF{$opt{'G'}};
+		$opt{'G'} = $ref_file;
+		$opt{'G'} =~ s/\.fa$/\.refGene.txt/;
 	}
 	read_refgene($opt{'G'});
 }
@@ -5925,6 +5894,46 @@ exit;
 #################### SUBROUTINES ####################
 #####################################################
 
+sub load_defaults {
+	# Some global ones that are not configured
+	$color_mapping = "none";
+	$ref_shortcuts = "";
+	if (-e "$_[0]") {
+		open DEF, "$_[0]";
+		while ($def = <DEF>) {
+			if ($def !~ /^#/) {
+				chomp $def;
+				($var,$val) = split(/=/, $def);
+				if ($var =~ /_ref$/) {
+					$refID = $var; $refID =~ s/_ref$//;
+					$REF{$refID} = $val;
+					$ref_shortcuts .= "\t$refID = $val\n";
+				} else {
+					if ($var eq "gzip") {$gzip = $var}
+					elsif ($var eq "zcat") {$zcat = $var}
+					elsif ($var eq "bwa") {$bwa = $var}
+					elsif ($var eq "samtools") {$samtools = $var}
+					elsif ($var eq "scitools") {$scitools = $var}
+					elsif ($var eq "macs2") {$macs2 = $var}
+					elsif ($var eq "bedtools") {$bedtools = $var}
+					elsif ($var eq "Rscript") {$Rscript = $var}
+					else {$VAR{$var} = $val};
+				}
+			}
+		} close DEF;
+	} else {
+		# No config file = load default executables for convenience
+		$gzip = "gzip"; #DEFAULT=gzip
+		$zcat = "zcat"; #DEFAULT=zcat
+		$bwa = "bwa"; #DEFAULT=bwa
+		$samtools = "samtools"; #DEFAULT=samtools
+		$scitools = "scitools"; #DEFAULT=scitools
+		$macs2 = "macs2"; #DEFAULT=macs2
+		$bedtools = "bedtools"; #DEFAULT=bedtools
+		$Rscript = "Rscript"; #DEFAULT=Rscript
+	}
+}
+
 sub read_annot {
 	%CELLID_annot = (); %ANNOT_count = (); $annot_count = 0;
 	@ANNOT_FILES = split(/,/, $_[0]);
@@ -6191,8 +6200,11 @@ the arguments then just the operation name can be specified.
 
 Dependencies: (command-line callable, can be specified in options)
 Run scitools dependencies to check software and R requirements.
-The default executables can be altered at the start of the scitools
-code in the # GLOBAL DEFAULTS section.
+
+Config file for defaults: scitools has a number of set defaults
+that can be conveniently specified in a scitools.cfg file. There
+is a hardcoded config file location, but the best way for personalized
+defaults, include a '.scitools.cfg' file in your home directory.
 
 Executables:
    gzip         For gzipped fastq files. Default: $gzip & $zcat
@@ -6218,17 +6230,14 @@ R packages:
 
 Some default locations / shortcuts:
    Fastq directory (where bcl2fastq outputs fastq files)
-      $fastq_input_directory
+      $VAR{'fastq_input_directory'}
    Output fastq directory (for processed SCI fastq files)
-      $SCI_fastq_directory
+      $VAR{'SCI_fastq_directory'}
    SCI index file (should comtain all barcodes in the proper format)
-      $SCI_index_file
-   hg19 ([reference.fa], [reference.fa].fai, [reference.fa].[bwa_index], and [reference].refGene.txt)
-      $hg19_ref
-   hg38 ([reference.fa], [reference.fa].fai, [reference.fa].[bwa_index], and [reference].refGene.txt)
-      $hg38_ref
-   mm10 ([reference.fa], [reference.fa].fai, [reference.fa].[bwa_index], and [reference].refGene.txt)
-      $mm10_ref
+      $VAR{'SCI_index_file'}
+
+   Default Refs / shortcuts ([reference.fa], [reference.fa].fai, [reference.fa].[bwa_index], and [reference].refGene.txt)
+$ref_shortcuts
 
 File Types used by scitools:
 
@@ -6266,7 +6275,7 @@ Typical scitools analysis for sci-ATAC-seq:
    2) Demultiplex and reformat raw fastq files:
       scitools fastq-dump -A [mySamples.annot] -R [RUN_NAME, must be in fastq directory]
 
-   3) Align fastq files (if reference defaults are set up use hg38, hg19, or mm10)
+   3) Align fastq files (if reference defaults are set up use the reference shortcut)
       scitools align -t [n threads] [reference_prefix or shortcut] [reads.sampleA.1.fq.gz] [reads.sampleA.2.fq.gz] [sampleA_prefix]
 
    4) Remove duplicates and create complexity file:
