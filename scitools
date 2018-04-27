@@ -69,6 +69,9 @@ load_gradient_defaults();
 	"matrix-nmf" => -1, "nmf" => -1,
 	"matrix-bicluster" => -1, "bicluster" => -1,
 	"matrix-aggregate" => 1, "aggregate-matrix" => 1,
+	"matrix-approx_factors" => 1, "matrix=factors" => 1, "factors" => 1,
+	"matrix-swne" => 1, "swne" => 1, "piglet" => 1,
+	"umap" => 1, "owl" => 1, "matrix-umap" => 1,
 	
 	"dims-kmeans" => 1, "kmeans" => 1,
 	"dims-dbscan" => 1, "dbscan" => 1,
