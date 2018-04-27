@@ -3514,7 +3514,7 @@ $die2 = "
 scitools umap [options] [matrix]
 
 Options:
-   -O   [STR]   Output prefix (default is complexity file 1 prefix)
+   -O   [STR]   Output prefix (default is matrix file prefix)
    -D   [INT]   Dimensions to embed UMAP in (def = $dims)
    -n   [INT]   number of neighbors to use for UMAP high dim embedding (def = $neigh)
    -d   [INT]   min distance for mapping (def = $mdist)
