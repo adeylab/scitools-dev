@@ -212,7 +212,7 @@ if ($command eq "split") {
 ########## GENERAL FUNCTIONS ##########
 if ($command eq "dependencies" || $command eq "depend") { # TODO: Add in checking for default file locations (e.g. hg38 etc...)
 
-getopts("R:F:O:o:I:1:2:A:B:", \%opt);
+getopts("R:F:O:o:I:1:2:A:B:P:", \%opt);
 
 $die2 = "
 scitools dependencies [options] [report output file]
@@ -232,6 +232,7 @@ Options:
    -R   [STR]   Rscript call (def = $Rscript)
    -S   [STR]   Scitools call (def = $scitools)
                 (for self-calling)
+   -P   [STR]   Python call (def = $Pscript)
 
 Hardcoded:      Gzip (def = $gzip)
                 Zcat (def = $zcat)
@@ -245,6 +246,7 @@ if (defined $opt{'B'}) {$bwa = $opt{'B'}};
 if (defined $opt{'m'}) {$macs2 = $opt{'m'}};
 if (defined $opt{'R'}) {$Rscript = $opt{'R'}};
 if (defined $opt{'S'}) {$scitools = $opt{'S'}};
+if (defined $opt{'P'}) {$Rscript = $opt{'P'}};
 
 $executable_warnings = 0;
 $R_package_warnings = 0;
