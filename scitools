@@ -148,7 +148,7 @@ Command:               Description:
    matrix-tsne         tSNE on matrix
    matrix-pca          PCA on matrix
    matrix-nmf          Non-negative Matrix Factorization of matrix
-   matrix-factors      Calculates recunstruction error for NMF and SWNE
+   matrix-factors      Calculates reconstruction error for NMF and SWNE
    matrix-swne 	       SWNE on matrix 
    matrix-umap         UMAP on matrix
    matrix-bicluster    Bicluster and plot a heatmap
