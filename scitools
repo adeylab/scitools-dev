@@ -69,7 +69,7 @@ load_gradient_defaults();
 	"matrix-nmf" => -1, "nmf" => -1,
 	"matrix-bicluster" => -1, "bicluster" => -1,
 	"matrix-aggregate" => 1, "aggregate-matrix" => 1,
-	"matrix-approx_factors" => 1, "matrix=factors" => 1, "factors" => 1,
+	"matrix-approx-factors" => 1, "matrix-factors" => 1, "factors" => 1,
 	"matrix-swne" => 1, "swne" => 1, "piglet" => 1,
 	"umap" => 1, "owl" => 1, "matrix-umap" => 1,
 	
@@ -3262,7 +3262,7 @@ if (!defined $opt{'X'}) {
 exit;
 }
 
-if ($command eq "matrix-approx_factors" || $command eq "matrix-factors" || $command eq "factors") {
+if ($command eq "matrix-approx-factors" || $command eq "matrix-factors" || $command eq "factors") {
 
 getopts("O:XR:", \%opt);
 
@@ -3297,10 +3297,6 @@ norm.counts<-as.matrix(norm,\"dgCMatrix\")
 #or do original matrix and maybe frequency transform
 #norm.counts <- ScaleCounts(counts, batch = NULL, method = \"ft\", adj.var = T)
 
-
-
-
-
 ## Unguided NMF
 loss <- \"mse\" ## Loss function
 #loss <- \"mkl\" ## Loss function
@@ -3332,8 +3328,6 @@ if (!defined $opt{'X'}) {
 
 exit;
 }
-
-
 
 if ($command eq "matrix-swne" || $command eq "swne" || $command eq "piglet") {
 # Defaults
@@ -3495,18 +3489,13 @@ system("cat $opt{'C'} \"factor\t\"black\"\" > $opt{'O'}.Embedded.factors.$k.colo
 exit;
 }
 
-
 if ($command eq "matrix-umap" || $command eq "umap" || $command eq "owl") {
 
-
-
-# Deafults
+# Defaults
 $dims = 2;
 $neigh = 30;
 $mdist=0.1;
 $metric="euclidean";
-
-
 
 getopts("O:n:d:m:D:X:P:", \%opt);
 
@@ -3521,9 +3510,10 @@ Options:
    -m   [STR]   metric to use (def = $metric)
    -X           Retain intermediate files (def = delete)
    -P   [STR]   python script call (def = $Pscript)
-Note: Requires ggplot2 R package
+   
+Note: Requires python, numpy, and umap to be installed and callable
+      This command is a wrapper for executing the python code.
 
-umap on matrix
 ";
 
 if (!defined $ARGV[0]) {die $die2};
@@ -3577,7 +3567,6 @@ if (!defined $opt{'X'}) {
 
 exit;
 }
-
 
 if ($command eq "matrix-aggregate" || $command eq "aggregate-matrix") {
 
@@ -6293,6 +6282,7 @@ sub load_defaults {
 					elsif ($var eq "macs2") {$macs2 = $var}
 					elsif ($var eq "bedtools") {$bedtools = $var}
 					elsif ($var eq "Rscript") {$Rscript = $var}
+					elsif ($var eq "Pscript") {$Pscript = $var}
 					else {$VAR{$var} = $val};
 				}
 			}
@@ -6307,6 +6297,7 @@ sub load_defaults {
 		$macs2 = "macs2"; #DEFAULT=macs2
 		$bedtools = "bedtools"; #DEFAULT=bedtools
 		$Rscript = "Rscript"; #DEFAULT=Rscript
+		$Pscript = "python"; #DEFAULT=Pscript
 	}
 }
 
