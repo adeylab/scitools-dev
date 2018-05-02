@@ -246,7 +246,7 @@ if (defined $opt{'B'}) {$bwa = $opt{'B'}};
 if (defined $opt{'m'}) {$macs2 = $opt{'m'}};
 if (defined $opt{'R'}) {$Rscript = $opt{'R'}};
 if (defined $opt{'S'}) {$scitools = $opt{'S'}};
-if (defined $opt{'P'}) {$Rscript = $opt{'P'}};
+if (defined $opt{'P'}) {$Pscript = $opt{'P'}};
 
 $executable_warnings = 0;
 $R_package_warnings = 0;
