@@ -6656,7 +6656,7 @@ Typical scitools analysis for sci-ATAC-seq:
       scitools fastq-dump -A [mySamples.annot] -R [RUN_NAME, must be in fastq directory]
 
    3) Align fastq files (if reference defaults are set up use the reference shortcut)
-      scitools align -t [n threads] [reference_prefix or shortcut] [reads.sampleA.1.fq.gz] [reads.sampleA.2.fq.gz] [sampleA_prefix]
+      scitools align -t [n threads] [reference_prefix or shortcut] [sampleA_prefix] [reads.sampleA.1.fq.gz] [reads.sampleA.2.fq.gz]
 
    4) Remove duplicates and create complexity file:
       scitools rmdup [sampleA].bam
