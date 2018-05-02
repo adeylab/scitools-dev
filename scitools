@@ -6276,15 +6276,15 @@ sub load_defaults {
 					$REF{$refID} = $val;
 					$ref_shortcuts .= "\t$refID = $val\n";
 				} else {
-					if ($var eq "gzip") {$gzip = $var}
-					elsif ($var eq "zcat") {$zcat = $var}
-					elsif ($var eq "bwa") {$bwa = $var}
-					elsif ($var eq "samtools") {$samtools = $var}
-					elsif ($var eq "scitools") {$scitools = $var}
-					elsif ($var eq "macs2") {$macs2 = $var}
-					elsif ($var eq "bedtools") {$bedtools = $var}
-					elsif ($var eq "Rscript") {$Rscript = $var}
-					elsif ($var eq "Pscript") {$Pscript = $var}
+					if ($var eq "gzip") {$gzip = $val}
+					elsif ($var eq "zcat") {$zcat = $val}
+					elsif ($var eq "bwa") {$bwa = $val}
+					elsif ($var eq "samtools") {$samtools = $val}
+					elsif ($var eq "scitools") {$scitools = $val}
+					elsif ($var eq "macs2") {$macs2 = $val}
+					elsif ($var eq "bedtools") {$bedtools = $val}
+					elsif ($var eq "Rscript") {$Rscript = $val}
+					elsif ($var eq "Pscript") {$Pscript = $val}
 					else {$VAR{$var} = $val};
 				}
 			}
