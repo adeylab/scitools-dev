@@ -257,7 +257,7 @@ print OUT "$ts scitools dependencies check.
 
 Checking command-line executables:\n";
 
-@DEPENDENCIES = ($samtools,$bedtools,$bwa,$macs2,$Rscript,$scitools,$gzip,$zcat);
+@DEPENDENCIES = ($samtools,$bedtools,$bwa,$macs2,$Rscript,$scitools,$gzip,$zcat,$Pscript);
 foreach $dependency (@DEPENDENCIES) {
 	$path = "";
 	open WHICH, "which $dependency 2>/dev/null |";
