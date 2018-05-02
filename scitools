@@ -6582,6 +6582,7 @@ Executables:
    samtools     Bam-related commands. Default: $samtools
    bedtools     Bed-related commands. Default: $bedtools
    Rscript      Numerous R operations. Default: $Rscript
+   python       For calling UMAP. Default: $Pscript
    bwa          For alignment only. Default: $bwa
    macs2        For atac-callpeak only. Default: $macs2
    scitools     Can call itself. Default: $scitools
