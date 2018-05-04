@@ -2248,14 +2248,15 @@ exit;
 
 if ($command eq "atac-count" || $command eq "atac-counts" || $command eq "counts" || $command eq "count") {
 
-getopts("s:b:O:BC:", \%opt);
+getopts("s:b:O:BC:X:", \%opt);
 
 $die2 = "
-scitools atac-count [options] [bam file] [peaks bed file]
+scitools atac-count [options] [bam file] [peaks bed file or matrix]
    or    count(s)
 
 Creates a counts or binary matrix file and a values file
-with the fraction of reads on target for each cell.
+with the fraction of reads on target for each cell. In addition if matrix defined instead of bed file
+can add cells to counts matrix.
 
 Options:
    -O   [STR]   Output prefix (default is peaks prefix)
@@ -2265,11 +2266,50 @@ Options:
    -B           Make it a binary matrix instead of counts matrix
                 (file name will end in .binary.matrix)
    -C   [STR]   Complexity file (speeds up on-target calc)
+   -X 		Remove temp files
 
 ";
 
 if (!defined $ARGV[1]) {die $die2};
 if (!defined $opt{'O'}) {$opt{'O'} = $ARGV[1]; $opt{'O'} =~ s/\.bed//};
+
+#if ends in .matrix then uses peaks from matrix to do counts or binary
+if ($ARGV[1] =~ /\.matrix$/)
+{
+#read in matrix
+read_matrix($ARGV[1]);
+$opt{'O'} = $ARGV[1]; $opt{'O'} =~ s/\.matrix//;
+# create temporary bed file from matrix pre defined peaks
+
+open OUT, ">$opt{'O'}.temp.bed";
+foreach $peak (@MATRIX_ROWNAMES) 
+{
+	print OUT join("\t",split("_",$peak))."\n"}; 
+close(OUT);
+
+#create options string
+	$common_opts = "";
+	if (defined $opt{'b'}) {$common_opts .= "-b $opt{'b'} "};
+	if (defined $opt{'s'}) {$common_opts .= "-s $opt{'s'} "};
+	if (defined $opt{'B'}) {$common_opts .= "-B $opt{'B'} "};
+	if (defined $opt{'C'}) {$common_opts .= "-C $opt{'C'} "};
+	$common_opts =~ s/\s$//;
+	#call same script but on temp bed file
+	system("scitools atac-count $common_opts $ARGV[1] $opt{'O'}.temp.bed");
+	
+	#join matrixes and remove temp matrix and bed file if X is not defined
+	if (defined $opt{'B'}) {
+	system("paste $ARGV[1] $opt{'O'}.binary.temp.matrix > $opt{'O'}.binary.combined.matrix");
+	if (!defined $opt{'X'}) {system("rm -f $opt{'O'}.temp.bed $opt{'O'}.binary.temp.matrix")};
+	}
+	else
+	{
+	system("paste $ARGV[1] $opt{'O'}.counts.temp.matrix > $opt{'O'}.counts.combined.matrix");
+	if (!defined $opt{'X'}) {system("rm -f $opt{'O'}.temp.bed $opt{'O'}.counts.temp.matrix")};
+	}
+}
+else
+{
 
 if (defined $opt{'C'}) {
 	read_complexity($opt{'C'});
@@ -2337,7 +2377,7 @@ for ($i = 0; $i < @CELL_ID_LIST; $i++) {
 		print OUT "$cellID\t$frac\n";
 	}
 } close OUT;
-
+}
 exit;
 }
 
