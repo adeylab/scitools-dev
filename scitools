@@ -2256,7 +2256,7 @@ scitools atac-count [options] [bam file] [peaks bed file or matrix]
 
 Creates a counts or binary matrix file and a values file
 with the fraction of reads on target for each cell. In addition if matrix defined instead of bed file
-can add cells to counts matrix.
+can add cells to counts matrix if cells are new (at moment merge bam if cell name overlap).
 
 Options:
    -O   [STR]   Output prefix (default is peaks prefix)
@@ -2294,10 +2294,11 @@ close(OUT);
 	if (defined $opt{'B'}) {$common_opts .= "-B $opt{'B'} "};
 	if (defined $opt{'C'}) {$common_opts .= "-C $opt{'C'} "};
 	$common_opts =~ s/\s$//;
-	#call same script but on temp bed file
+	#call same script but on temp bed
 	system("scitools atac-count $common_opts $ARGV[1] $opt{'O'}.temp.bed");
 	
 	#join matrixes and remove temp matrix and bed file if X is not defined
+	#DEV: merging matrix files if overlap in cell names
 	if (defined $opt{'B'}) {
 	system("paste $ARGV[1] $opt{'O'}.binary.temp.matrix > $opt{'O'}.binary.combined.matrix");
 	if (!defined $opt{'X'}) {system("rm -f $opt{'O'}.temp.bed $opt{'O'}.binary.temp.matrix")};
