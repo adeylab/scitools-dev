@@ -3823,20 +3823,28 @@ if ($ARGV[0] =~ /\.counts.matrix$/) {$opt{'O'} .= ".merged.counts";} elsif ($ARG
 
 #same style as CELL_FEATURE_VALUE
 read_matrix($ARGV[0]);
-%ANNOT_FEATURE_merged_value=%CELLID_FEATURE_value;
-%All_rowid=;
+%CELLID_FEATURE_merged_value=%CELLID_FEATURE_value;
+foreach $cellID (keys %CELLID_FEATURE_value) {
+foreach $rowID (keys %{$CELLID_FEATURE_value{$cellID}}) {	
+	%All_rowid{$rowID}++;
+	}
+}
 
 for ($matrixID = 1; $annotID < @ARGV; $matrixID++) {
 	read_matrix($ARGV[$annotID]);
 	foreach $cellID (keys %CELLID_FEATURE_value) {
 		
 		
-		if (!defined $ANNOT_FEATURE_merged_value{$cellID})
+		if (!defined $CELLID_FEATURE_merged_value{$cellID})
 		{
-		
-			foreach $rowID (keys %{$CELLID_FEATURE_value{$cellID}}) {
-			$ANNOT_FEATURE_merged_value{$cellID}{$rowID}=
 			
+			
+			foreach $rowID (keys %{$CELLID_FEATURE_value{$cellID}}) {
+			if (defined $All_rowid{$rowID})
+			{
+			$CELLID_FEATURE_merged_value{$cellID}{$rowID}=$CELLID_FEATURE_value{$cellID}{$rowID};
+			#continue from here solve zero values
+			}
 			}	
 		}
 		else {print "ERROR: Overlapping cellIDs, not yet developed\n"; die};
