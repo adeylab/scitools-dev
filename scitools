@@ -3838,7 +3838,18 @@ foreach $cellID (keys %CELLID_FEATURE_value)
 
 for ($matrixID = 1; $annotID < @ARGV; $matrixID++) 
 {
+	print "reading matrix $ARGV[$annotID]\n";
 	read_matrix($ARGV[$annotID]);
+	
+#quick check for cellID overlaps (faster)
+foreach $cellID (keys %CELLID_FEATURE_value) 
+	{
+		if (defined $CELLID_FEATURE_merged_value{$cellID})
+		{
+		print "ERROR: Overlapping cellIDs, renaming not yet developed\nThis is the cell name $cellID\n"; die
+		}
+	}
+	#if no overlap continue
 	foreach $cellID (keys %CELLID_FEATURE_value) 
 	{
 		if (!defined $CELLID_FEATURE_merged_value{$cellID})
