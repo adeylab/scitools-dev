@@ -3823,6 +3823,7 @@ $opt{'O'} = $ARGV[0]; $opt{'O'} =~ s/\.counts.matrix$//; $opt{'O'} =~ s/\.binary
 if ($ARGV[0] =~ /\.counts.matrix$/) {$opt{'O'} .= ".merged.counts";} elsif ($ARGV[0] =~ /\.binary.matrix$/) {$opt{'O'} .= ".merged.binary";} else {print "ERROR: This is not a binary nor a counts matrix, rename\n"; die};
 
 #create a merged matrix with CELLID_FEATURE_value structure
+print "reading matrix $ARGV[0]\n";
 read_matrix($ARGV[0]);
 %CELLID_FEATURE_merged_value=%CELLID_FEATURE_value;
 #create an included rowid hash 
@@ -3836,12 +3837,12 @@ foreach $cellID (keys %CELLID_FEATURE_value)
 #create an all cells Array to preserve order. 
 @MATRIX_ALL_COLNAMES=@MATRIX_COLNAMES;
 
-for ($matrixID = 1; $annotID < @ARGV; $matrixID++) 
+for ($matrixID = 1; $matrixID < @ARGV; $matrixID++) 
 {
-	print "reading matrix $ARGV[$annotID]\n";
-	read_matrix($ARGV[$annotID]);
+	print "reading matrix $ARGV[$matrixID]\n";
+	read_matrix($ARGV[$matrixID]);
 	
-#quick check for cellID overlaps (faster)
+#quick check for cellID overlaps (faster and can change to warning later)
 foreach $cellID (keys %CELLID_FEATURE_value) 
 	{
 		if (defined $CELLID_FEATURE_merged_value{$cellID})
@@ -3868,6 +3869,7 @@ foreach $cellID (keys %CELLID_FEATURE_value)
 			}	
 		}
 		else {print "ERROR: Overlapping cellIDs, renaming not yet developed\nThis is the cell name $cellID\n"; die};
+		#can add part that handles overlapping IDs
 		#need to consider two cases: 1. cellIDs are same because different capacity run on same cells, 2. CellIDs are same but different cells, need to rename
 	}
 	#add new cellnames
