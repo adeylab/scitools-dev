@@ -69,6 +69,7 @@ load_gradient_defaults();
 	"matrix-nmf" => -1, "nmf" => -1,
 	"matrix-bicluster" => -1, "bicluster" => -1,
 	"matrix-aggregate" => 1, "aggregate-matrix" => 1,
+	"matrix-merge" => 1, "merge-matrix" => 1,
 	"matrix-approx-factors" => 1, "matrix-factors" => 1, "factors" => 1,
 	"matrix-swne" => 1, "swne" => 1, "piglet" => 1,
 	"umap" => 1, "owl" => 1, "matrix-umap" => 1,
@@ -2301,14 +2302,14 @@ close(OUT);
 	system("scitools atac-count $common_opts $ARGV[0] $opt{'O'}.temp.bed");
 	
 	#join matrixes and remove temp matrix and bed file if X is not defined
-	#DEV: merging matrix files if overlap in cell names
+	#DEV: merging matrix files if overlap in cell names see notes in merge-matrix
 	if (defined $opt{'B'}) {
-	system("paste $ARGV[1] $opt{'O'}.temp.binary.matrix > $opt{'O'}.binary.combined.matrix");
+	system("scitools matrix-merge -O $opt{'O'}.counts $ARGV[1] $opt{'O'}.temp.binary.matrix");
 	if (!defined $opt{'X'}) {system("rm -f $opt{'O'}.temp.bed $opt{'O'}.binary.temp.matrix")};
 	}
 	else
 	{
-	system("paste $ARGV[1] $opt{'O'}.temp.counts.matrix > $opt{'O'}.counts.combined.matrix");
+	system("scitools matrix-merge -O $opt{'O'}.counts $ARGV[1] $opt{'O'}.temp.counts.matrix");
 	if (!defined $opt{'X'}) {system("rm -f $opt{'O'}.temp.bed $opt{'O'}.counts.temp.matrix")};
 	}
 }
@@ -3806,7 +3807,7 @@ $die2 = "
 scitools matrix-merge [options] [matrix1] [matrix2] (optional matrix N etc...)
    or    merge-matrix
 
-Will merge matrices if names of cells independent
+Will merge matrices if names of cells do not match (others can be further developed). Features will be union of matrix features 
 
 Options:
    -O   [STR]   Output file name / prefix (def = matrix1 prefix w/ merge)
@@ -3817,54 +3818,74 @@ if (!defined $ARGV[1]) {die $die2};
 
 if (!defined $opt{'O'}) {
 $opt{'O'} = $ARGV[0]; $opt{'O'} =~ s/\.counts.matrix$//; $opt{'O'} =~ s/\.binary.matrix$//;
-if ($ARGV[0] =~ /\.counts.matrix$/) {$opt{'O'} .= ".merged.counts";} elsif ($ARGV[0] =~ /\.binary.matrix$/) {$opt{'O'} .= ".merged.binary";} else {print "ERROR: This is not a binary nor a counts matrix\n"; die};
 };
+#if 
+if ($ARGV[0] =~ /\.counts.matrix$/) {$opt{'O'} .= ".merged.counts";} elsif ($ARGV[0] =~ /\.binary.matrix$/) {$opt{'O'} .= ".merged.binary";} else {print "ERROR: This is not a binary nor a counts matrix, rename\n"; die};
 
-
-#same style as CELL_FEATURE_VALUE
+#create a merged matrix with CELLID_FEATURE_value structure
 read_matrix($ARGV[0]);
 %CELLID_FEATURE_merged_value=%CELLID_FEATURE_value;
-foreach $cellID (keys %CELLID_FEATURE_value) {
-foreach $rowID (keys %{$CELLID_FEATURE_value{$cellID}}) {	
-	%All_rowid{$rowID}++;
+#create an included rowid hash 
+foreach $cellID (keys %CELLID_FEATURE_value) 
+{
+	foreach $rowID (keys %{$CELLID_FEATURE_value{$cellID}}) 
+	{	
+	$All_included_rowid{$rowID}=1;
 	}
 }
+#create an all cells Array to preserve order. 
+@MATRIX_ALL_COLNAMES=@MATRIX_COLNAMES;
 
-for ($matrixID = 1; $annotID < @ARGV; $matrixID++) {
+for ($matrixID = 1; $annotID < @ARGV; $matrixID++) 
+{
 	read_matrix($ARGV[$annotID]);
-	foreach $cellID (keys %CELLID_FEATURE_value) {
-		
-		
+	foreach $cellID (keys %CELLID_FEATURE_value) 
+	{
 		if (!defined $CELLID_FEATURE_merged_value{$cellID})
 		{
-			
-			
-			foreach $rowID (keys %{$CELLID_FEATURE_value{$cellID}}) {
-			if (defined $All_rowid{$rowID})
+			foreach $rowID (keys %{$CELLID_FEATURE_value{$cellID}}) 
 			{
-			$CELLID_FEATURE_merged_value{$cellID}{$rowID}=$CELLID_FEATURE_value{$cellID}{$rowID};
-			#continue from here solve zero values
-			}
+				if (defined $All_included_rowid{$rowID})
+				{# add values to the merged matrix
+				$CELLID_FEATURE_merged_value{$cellID}{$rowID}=$CELLID_FEATURE_value{$cellID}{$rowID};
+				}
+				else
+				{# if not defined, define and add values
+				$CELLID_FEATURE_merged_value{$cellID}{$rowID}=$CELLID_FEATURE_value{$cellID}{$rowID};
+				$All_included_rowid{$rowID}=1;
+				}
 			}	
 		}
-		else {print "ERROR: Overlapping cellIDs, not yet developed\n"; die};
+		else {print "ERROR: Overlapping cellIDs, renaming not yet developed\n"; die};
+		#need to consider two cases: 1. cellIDs are same because different capacity run on same cells, 2. CellIDs are same but different cells, need to rename
 	}
+	#add new cellnames
+	push(@MATRIX_ALL_COLNAMES,@MATRIX_COLNAMES);
 	
 }
 
 open OUT, ">$opt{'O'}.matrix";
-foreach $cellID (keys %CELLID_annotCT) {
-	if ($CELLID_annotCT{$cellID} == @ARGV || defined $opt{'x'}) {
-		$new_annot = "";
-		for ($annotID = 0; $annotID < @ARGV; $annotID++) {
-			if (defined $ANNOTID_CELLID_annot{$annotID}{$cellID}) {
-				$new_annot .= $ANNOTID_CELLID_annot{$annotID}{$cellID}.$joiner;
+
+
+
+print OUT join("\t",@MATRIX_ALL_COLNAMES)."\n";
+foreach $rowID (sort keys %All_included_rowid) 
+	{
+	#OUTPUT hash
+	@OUTPUT_line=();
+		foreach $cellID (@MATRIX_ALL_COLNAMES) 
+		{
+			if (defined $CELLID_FEATURE_merged_value{$cellID}{$rowID})
+			{#if defined input value
+			push(@OUTPUT_line,$CELLID_FEATURE_merged_value{$cellID}{$rowID});
+			}
+			else
+			{#if not defined input  0
+			push(@OUTPUT_line,0);
 			}
 		}
-		$new_annot =~ s/$joiner$//;
-		print OUT "$cellID\t$new_annot\n";
+	print OUT join("\t",@OUTPUT_line)."\n";
 	}
-}
 close OUT;
 
 exit;
