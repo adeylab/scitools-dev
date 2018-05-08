@@ -3856,7 +3856,7 @@ for ($matrixID = 1; $annotID < @ARGV; $matrixID++)
 				}
 			}	
 		}
-		else {print "ERROR: Overlapping cellIDs, renaming not yet developed\n"; die};
+		else {print "ERROR: Overlapping cellIDs, renaming not yet developed\nThis is the cell name $cellID\n"; die};
 		#need to consider two cases: 1. cellIDs are same because different capacity run on same cells, 2. CellIDs are same but different cells, need to rename
 	}
 	#add new cellnames
