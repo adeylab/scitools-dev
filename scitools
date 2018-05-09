@@ -6723,6 +6723,8 @@ colors, or hex codes:
 exit;
 }
 
+################## NO COMMAND FOUND ##################
 
+die "\nERROR: It appears you have specified a command that is registered, but does not actually exist. If you see this message, please inform us of the bug.\n";
 
 #################### END SCITOOLS ####################
