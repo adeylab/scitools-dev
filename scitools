@@ -2284,8 +2284,9 @@ print "USING MATRIX FILE, ADDING CELLS: \n";
 read_matrix($ARGV[1]);
 $opt{'O'} = $ARGV[1]; $opt{'O'} =~ s/\.binary.matrix//; $opt{'O'} =~ s/\.counts.matrix//;
 # create temporary bed file from matrix pre defined peaks
-
-open OUT, ">$opt{'O'}.temp.bed";
+$tembedfilename=$ARGV[0];
+$tembedfilename=~ s/\.bam//;
+open OUT, ">$tembedfilename.temp.bed";
 foreach $peak (@MATRIX_ROWNAMES) 
 {
 	print OUT join("\t",split("_",$peak))."\n"}; 
@@ -2299,18 +2300,17 @@ close(OUT);
 	if (defined $opt{'C'}) {$common_opts .= "-C $opt{'C'} "};
 	$common_opts =~ s/\s$//;
 	#call same script but on temp bed
-	system("scitools atac-count $common_opts $ARGV[0] $opt{'O'}.temp.bed");
-	
+	system("perl ~/scitools atac-count $common_opts $ARGV[0] $tembedfilename.temp.bed");
 	#join matrixes and remove temp matrix and bed file if X is not defined
 	#DEV: merging matrix files if overlap in cell names see notes in merge-matrix
 	if (defined $opt{'B'}) {
-	system("scitools matrix-merge -O $opt{'O'}.counts $ARGV[1] $opt{'O'}.temp.binary.matrix");
-	if (!defined $opt{'X'}) {system("rm -f $opt{'O'}.temp.bed $opt{'O'}.binary.temp.matrix")};
+	system("perl ~/scitools matrix-merge -O $opt{'O'}\_$tembedfilename $ARGV[1] $tembedfilename.temp.binary.matrix");
+	if (!defined $opt{'X'}) {system("rm -f $tembedfilename.temp.bed $tembedfilename.binary.temp.matrix")};
 	}
 	else
 	{
-	system("scitools matrix-merge -O $opt{'O'}.counts $ARGV[1] $opt{'O'}.temp.counts.matrix");
-	if (!defined $opt{'X'}) {system("rm -f $opt{'O'}.temp.bed $opt{'O'}.counts.temp.matrix")};
+	system("perl ~/scitools matrix-merge -O $opt{'O'}_$tembedfilename $ARGV[1] $tembedfilename.temp.counts.matrix");
+	if (!defined $opt{'X'}) {system("rm -f $tembedfilename.temp.bed $tembedfilename.counts.temp.matrix")};
 	}
 }
 else
