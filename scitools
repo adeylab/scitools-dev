@@ -3555,7 +3555,7 @@ $neigh = 30;
 $mdist=0.1;
 $metric="euclidean";
 
-getopts("O:n:d:m:D:X:P:", \%opt);
+getopts("O:n:d:m:D:XP:", \%opt);
 
 $die2 = "
 scitools umap [options] [matrix]
