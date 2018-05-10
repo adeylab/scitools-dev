@@ -2282,7 +2282,7 @@ if ($ARGV[1] =~ /\.matrix$/)
 print "USING MATRIX FILE, ADDING CELLS: \n";
 #read in matrix
 read_matrix($ARGV[1]);
-$opt{'O'} = $ARGV[1]; $opt{'O'} =~ s/\.binary.matrix//; $opt{'O'} =~ s/\.counts.matrix//;
+$opt{'O'} = $ARGV[1]; $opt{'O'} =~ s/\.binary.matrix//; $opt{'O'} =~ s/\.counts.matrix//; $opt{'O'} =~ s/\.matrix//;
 # create temporary bed file from matrix pre defined peaks
 $tembedfilename=$ARGV[0];
 $tembedfilename=~ s/\.bam//;
@@ -2301,16 +2301,16 @@ close(OUT);
 	if (defined $opt{'C'}) {$common_opts .= "-C $opt{'C'} "};
 	$common_opts =~ s/\s$//;
 	#call same script but on temp bed
-	system("perl scitools atac-count $common_opts $ARGV[0] $tembedfilename.temp.bed");
+	system("scitools atac-count $common_opts $ARGV[0] $tembedfilename.temp.bed");
 	#join matrixes and remove temp matrix and bed file if X is not defined
 	#DEV: merging matrix files if overlap in cell names see notes in merge-matrix
 	if (defined $opt{'B'}) {
-	system("perl scitools matrix-merge -O $opt{'O'}_$tembedfilename $ARGV[1] $tembedfilename.temp.binary.matrix");
+	system("scitools matrix-merge -O $opt{'O'}_$tembedfilename $ARGV[1] $tembedfilename.temp.binary.matrix");
 	if (!defined $opt{'X'}) {system("rm -f $tembedfilename.temp.bed $tembedfilename.binary.temp.matrix")};
 	}
 	else
 	{
-	system("perl scitools matrix-merge -O $opt{'O'}_$tembedfilename $ARGV[1] $tembedfilename.temp.counts.matrix");
+	system("scitools matrix-merge -O $opt{'O'}_$tembedfilename $ARGV[1] $tembedfilename.temp.counts.matrix");
 	if (!defined $opt{'X'}) {system("rm -f $tembedfilename.temp.bed $tembedfilename.counts.temp.matrix")};
 	}
 }
@@ -3818,10 +3818,13 @@ Options:
 if (!defined $ARGV[1]) {die $die2};
 
 if (!defined $opt{'O'}) {
-$opt{'O'} = $ARGV[0]; $opt{'O'} =~ s/\.counts.matrix$//; $opt{'O'} =~ s/\.binary.matrix$//;
+$opt{'O'} = $ARGV[0]; $opt{'O'} =~ s/\.counts.matrix$//; $opt{'O'} =~ s/\.binary.matrix$//; $opt{'O'} =~ s/\.matrix$//;
 };
-#if 
-if ($ARGV[0] =~ /\.counts.matrix$/) {$opt{'O'} .= ".merged.counts";} elsif ($ARGV[0] =~ /\.binary.matrix$/) {$opt{'O'} .= ".merged.binary";} else {print "ERROR: This is not a binary nor a counts matrix, rename\n"; die};
+#
+if ($ARGV[0] =~ /\.matrix$/) 
+{
+if ($ARGV[0] =~ /\.counts.matrix$/) {$opt{'O'} .= ".merged.counts";} elsif ($ARGV[0] =~ /\.binary.matrix$/) {$opt{'O'} .= ".merged.binary";} else {print "Warning: Type of matrix not in name\n"; $opt{'O'} .= ".merged";};
+} else {print "ERROR: This is not a matrix, rename\n"; die};
 
 #create a merged matrix with CELLID_FEATURE_value structure
 print "reading matrix $ARGV[0]\n";
