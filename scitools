@@ -3808,7 +3808,8 @@ $die2 = "
 scitools matrix-merge [options] [matrix1] [matrix2] (optional matrix N etc...)
    or    merge-matrix
 
-Will merge matrices if names of cells do not match (others can be further developed). Features will be union of matrix features 
+Will merge matrices if names of cells do not match (others can be further developed).
+Features will be union of matrix features.
 
 Options:
    -O   [STR]   Output file name / prefix (def = matrix1 prefix w/ merge)
@@ -3907,12 +3908,6 @@ close OUT;
 
 exit;
 }
-
-
-
-
-
-
 
 
 ########## DIMENSION FILE FUNCTIONS ##########
