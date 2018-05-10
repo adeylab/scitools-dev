@@ -3891,6 +3891,7 @@ foreach $rowID (sort keys %All_included_rowid)
 	{
 	#OUTPUT hash
 	@OUTPUT_line=();
+	push(@OUTPUT_line,$rowID);
 		foreach $cellID (@MATRIX_ALL_COLNAMES) 
 		{
 			if (defined $CELLID_FEATURE_merged_value{$cellID}{$rowID})
