@@ -69,6 +69,7 @@ load_gradient_defaults();
 	"matrix-nmf" => -1, "nmf" => -1,
 	"matrix-bicluster" => -1, "bicluster" => -1,
 	"matrix-aggregate" => 1, "aggregate-matrix" => 1,
+	"matrix-merge" => 1, "merge-matrix" => 1,
 	"matrix-approx-factors" => 1, "matrix-factors" => 1, "factors" => 1,
 	"matrix-swne" => 1, "swne" => 1, "piglet" => 1,
 	"umap" => 1, "owl" => 1, "matrix-umap" => 1,
@@ -153,6 +154,7 @@ Command:               Description:
    matrix-umap         UMAP on matrix
    matrix-bicluster    Bicluster and plot a heatmap
    matrix-aggregate    Aggregate cells in counts matrix by annotation
+   matrix-merge        Merge matrices, no overlap in cell names assumed
    
    dims-kmeans         Kmeans clustering on dims file
    dims-dbscan         Density-base (dbscan) clustering on dims file
@@ -193,6 +195,7 @@ if ($command eq "merge") {
 	elsif ($ARGV[(@ARGV-1)] =~ /\.fq.gz$/ || $ARGV[(@ARGV-1)] =~ /\.fq$/ || $ARGV[(@ARGV-1)] =~ /\.fastq.gz$/ || $ARGV[(@ARGV-1)] =~ /\.fastq$/) {$command eq "fastq-merge"}
 	elsif ($ARGV[(@ARGV-1)] =~ /\.bed$/) {$command eq "atac-mergepeak"}
 	elsif ($ARGV[(@ARGV-1)] =~ /\.annot$/) {$command eq "annot-merge"}
+	elsif ($ARGV[(@ARGV-1)] =~ /\.matrix$/) {$command eq "matrix-merge"}
 	else {die "\n\nscitools merge was specified, but the type of files to merge cannot be detected. Please specify: bam-merge, atac-mergepeak, OR annot-merge\n\n"}
 }
 
@@ -2248,14 +2251,15 @@ exit;
 
 if ($command eq "atac-count" || $command eq "atac-counts" || $command eq "counts" || $command eq "count") {
 
-getopts("s:b:O:BC:", \%opt);
+getopts("s:b:O:BC:X:", \%opt);
 
 $die2 = "
-scitools atac-count [options] [bam file] [peaks bed file]
+scitools atac-count [options] [bam file] [peaks bed file or matrix]
    or    count(s)
 
 Creates a counts or binary matrix file and a values file
-with the fraction of reads on target for each cell.
+with the fraction of reads on target for each cell. In addition if matrix defined instead of bed file
+can add cells to counts matrix if cells are new (at moment merge bam if cell names do not overlap).
 
 Options:
    -O   [STR]   Output prefix (default is peaks prefix)
@@ -2265,11 +2269,53 @@ Options:
    -B           Make it a binary matrix instead of counts matrix
                 (file name will end in .binary.matrix)
    -C   [STR]   Complexity file (speeds up on-target calc)
+   -X 		Remove temp files
 
 ";
 
 if (!defined $ARGV[1]) {die $die2};
 if (!defined $opt{'O'}) {$opt{'O'} = $ARGV[1]; $opt{'O'} =~ s/\.bed//};
+
+#if ends in .matrix then uses peaks from matrix to do counts or binary
+if ($ARGV[1] =~ /\.matrix$/)
+{
+print "USING MATRIX FILE, ADDING CELLS: \n";
+#read in matrix
+read_matrix($ARGV[1]);
+$opt{'O'} = $ARGV[1]; $opt{'O'} =~ s/\.binary.matrix//; $opt{'O'} =~ s/\.counts.matrix//; $opt{'O'} =~ s/\.matrix//;
+# create temporary bed file from matrix pre defined peaks
+$tembedfilename=$ARGV[0];
+$tembedfilename=~ s/\.bam//;
+$tembedfilename=~ s/.*\///;
+open OUT, ">$tembedfilename.temp.bed";
+foreach $peak (@MATRIX_ROWNAMES) 
+{
+	print OUT join("\t",split("_",$peak))."\n"}; 
+close(OUT);
+
+#create options string
+	$common_opts = "";
+	if (defined $opt{'b'}) {$common_opts .= "-b $opt{'b'} "};
+	if (defined $opt{'s'}) {$common_opts .= "-s $opt{'s'} "};
+	if (defined $opt{'B'}) {$common_opts .= "-B $opt{'B'} "};
+	if (defined $opt{'C'}) {$common_opts .= "-C $opt{'C'} "};
+	$common_opts =~ s/\s$//;
+	#call same script but on temp bed
+	system("scitools atac-count $common_opts $ARGV[0] $tembedfilename.temp.bed");
+	#join matrixes and remove temp matrix and bed file if X is not defined
+	#DEV: merging matrix files if overlap in cell names see notes in merge-matrix
+	if (defined $opt{'B'}) {
+	system("scitools matrix-merge -O $opt{'O'}_$tembedfilename $ARGV[1] $tembedfilename.temp.binary.matrix");
+	if (!defined $opt{'X'}) {system("rm -f $tembedfilename.temp.bed $tembedfilename.binary.temp.matrix")};
+	}
+	else
+	{
+	system("scitools matrix-merge -O $opt{'O'}_$tembedfilename $ARGV[1] $tembedfilename.temp.counts.matrix");
+	if (!defined $opt{'X'}) {system("rm -f $tembedfilename.temp.bed $tembedfilename.counts.temp.matrix")};
+	}
+}
+else
+{
 
 if (defined $opt{'C'}) {
 	read_complexity($opt{'C'});
@@ -2337,7 +2383,7 @@ for ($i = 0; $i < @CELL_ID_LIST; $i++) {
 		print OUT "$cellID\t$frac\n";
 	}
 } close OUT;
-
+}
 exit;
 }
 
@@ -3751,6 +3797,122 @@ close LOG;
 
 exit;
 }
+
+if ($command eq "matrix-merge" || $command eq "merge-matrix") {
+
+$joiner = "_";
+
+getopts("O:", \%opt);
+
+$die2 = "
+scitools matrix-merge [options] [matrix1] [matrix2] (optional matrix N etc...)
+   or    merge-matrix
+
+Will merge matrices if names of cells do not match (others can be further developed). Features will be union of matrix features 
+
+Options:
+   -O   [STR]   Output file name / prefix (def = matrix1 prefix w/ merge)
+
+";
+
+if (!defined $ARGV[1]) {die $die2};
+
+if (!defined $opt{'O'}) {
+$opt{'O'} = $ARGV[0]; $opt{'O'} =~ s/\.counts.matrix$//; $opt{'O'} =~ s/\.binary.matrix$//; $opt{'O'} =~ s/\.matrix$//;
+};
+#
+if ($ARGV[0] =~ /\.matrix$/) 
+{
+if ($ARGV[0] =~ /\.counts.matrix$/) {$opt{'O'} .= ".merged.counts";} elsif ($ARGV[0] =~ /\.binary.matrix$/) {$opt{'O'} .= ".merged.binary";} else {print "Warning: Type of matrix not in name\n"; $opt{'O'} .= ".merged";};
+} else {print "ERROR: This is not a matrix, rename\n"; die};
+
+#create a merged matrix with CELLID_FEATURE_value structure
+print "reading matrix $ARGV[0]\n";
+read_matrix($ARGV[0]);
+%CELLID_FEATURE_merged_value=%CELLID_FEATURE_value;
+#create an included rowid hash 
+foreach $cellID (keys %CELLID_FEATURE_value) 
+{
+	foreach $rowID (keys %{$CELLID_FEATURE_value{$cellID}}) 
+	{	
+	$All_included_rowid{$rowID}=1;
+	}
+}
+#create an all cells Array to preserve order. 
+@MATRIX_ALL_COLNAMES=@MATRIX_COLNAMES;
+
+for ($matrixID = 1; $matrixID < @ARGV; $matrixID++) 
+{
+	print "reading matrix $ARGV[$matrixID]\n";
+	read_matrix($ARGV[$matrixID]);
+	
+#quick check for cellID overlaps (faster and can change to warning later)
+foreach $cellID (keys %CELLID_FEATURE_value) 
+	{
+		if (defined $CELLID_FEATURE_merged_value{$cellID})
+		{
+		print "ERROR: Overlapping cellIDs, renaming not yet developed\nThis is the cell name $cellID\n"; die
+		}
+	}
+	#if no overlap continue
+	foreach $cellID (keys %CELLID_FEATURE_value) 
+	{
+		if (!defined $CELLID_FEATURE_merged_value{$cellID})
+		{
+			foreach $rowID (keys %{$CELLID_FEATURE_value{$cellID}}) 
+			{
+				if (defined $All_included_rowid{$rowID})
+				{# add values to the merged matrix
+				$CELLID_FEATURE_merged_value{$cellID}{$rowID}=$CELLID_FEATURE_value{$cellID}{$rowID};
+				}
+				else
+				{# if not defined, define and add values
+				$CELLID_FEATURE_merged_value{$cellID}{$rowID}=$CELLID_FEATURE_value{$cellID}{$rowID};
+				$All_included_rowid{$rowID}=1;
+				}
+			}	
+		}
+		else {print "ERROR: Overlapping cellIDs, renaming not yet developed\nThis is the cell name $cellID\n"; die};
+		#can add part that handles overlapping IDs
+		#need to consider two cases: 1. cellIDs are same because different capacity run on same cells, 2. CellIDs are same but different cells, need to rename
+	}
+	#add new cellnames
+	push(@MATRIX_ALL_COLNAMES,@MATRIX_COLNAMES);
+	
+}
+
+open OUT, ">$opt{'O'}.matrix";
+
+
+
+print OUT join("\t",@MATRIX_ALL_COLNAMES)."\n";
+foreach $rowID (sort keys %All_included_rowid) 
+	{
+	#OUTPUT hash
+	@OUTPUT_line=();
+		foreach $cellID (@MATRIX_ALL_COLNAMES) 
+		{
+			if (defined $CELLID_FEATURE_merged_value{$cellID}{$rowID})
+			{#if defined input value
+			push(@OUTPUT_line,$CELLID_FEATURE_merged_value{$cellID}{$rowID});
+			}
+			else
+			{#if not defined input  0
+			push(@OUTPUT_line,0);
+			}
+		}
+	print OUT join("\t",@OUTPUT_line)."\n";
+	}
+close OUT;
+
+exit;
+}
+
+
+
+
+
+
 
 
 ########## DIMENSION FILE FUNCTIONS ##########
