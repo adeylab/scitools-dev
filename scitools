@@ -1110,7 +1110,7 @@ if (defined $opt{'P'}) {
 		chomp $l;
 		if ($l =~ /^#/) {
 			($class,$annot,$combo,$subset) = split(/,/, $l);;
-			$class =~ s/^#//;
+			$class =~ s/^#//; $annot =~ s/ /_/g;
 			if (!defined $ANNOT_flag{$annot}) {
 				$ANNOT_flag{$annot} = $class;
 			} else {
