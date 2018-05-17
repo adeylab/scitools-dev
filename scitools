@@ -5022,8 +5022,15 @@ print R "
    scale_x_continuous(limits=c(0,100)) +
    scale_y_continuous(limits=c(0,6)) +
    xlab(\"Complexity\") +
-   ylab(\"log10 Unique Reads\") +
-   theme(legend.background=element_blank(),legend.title=element_blank())
+   ylab(\"log10 Unique Reads\") +";
+if (defined $opt{'A'}) {
+print R "
+	theme(legend.background=element_blank(),legend.title=element_blank())";
+} else {
+print R "
+	theme(legend.position=\"none\")";
+}
+print R "
 ggsave(plot=PLT,filename=\"$opt{'O'}.png\",width=7,height=6)
 ggsave(plot=PLT,filename=\"$opt{'O'}.pdf\",width=7,height=6)
 ";
@@ -5083,8 +5090,15 @@ if (defined $opt{'C'} || defined $opt{'c'}) {
 print R "
 	xlab(\"log10 Unique Reads\") +
 	ylab(\"Counts\") +
-	scale_x_continuous(limits=c(0,6)) +
-	theme(legend.background=element_blank(),legend.title=element_blank())
+	scale_x_continuous(limits=c(0,6)) +";
+if (defined $opt{'A'}) {
+print R "
+	theme(legend.background=element_blank(),legend.title=element_blank())";
+} else {
+print R "
+	theme(legend.position=\"none\")";
+}
+print R "
 ggsave(plot=PLT,filename=\"$opt{'O'}.hist.png\",width=7,height=6)
 ggsave(plot=PLT,filename=\"$opt{'O'}.hist.pdf\",width=7,height=6)
 ";
@@ -5270,10 +5284,11 @@ if ($color_mapping !~ /none/i && !defined $opt{'V'}) {
 	scale_colour_manual(values = c($color_mapping)) +";
 } elsif (defined $opt{'V'}) {
 	print R "
-	scale_colour_gradientn(colours=gradient_funct(21),limits=c($minV,$maxV)) +"
+	scale_colour_gradientn(colours=gradient_funct(21),limits=c($minV,$maxV)) +";
 }
 
 if ($theme =~ /Clean/i) {
+	if (defined $opt{'A'}) {
 	print R "
 	theme_bw() +
 	theme(panel.border=element_blank(),
@@ -5288,9 +5303,29 @@ if ($theme =~ /Clean/i) {
 		  axis.title.y=element_blank(),
 		  plot.background=element_blank(),
 		  plot.margin=unit(c(0,0,0,0),\"pt\"))\n";
+	} else {
+	print R "
+	theme_bw() +
+	theme(panel.border=element_blank(),
+		  panel.grid=element_blank(),
+		  axis.line=element_blank(),
+		  axis.ticks=element_blank(),
+		  legend.position=\"none\",
+		  panel.background=element_blank(),
+		  axis.text=element_blank(),
+		  axis.title.x=element_blank(),
+		  axis.title.y=element_blank(),
+		  plot.background=element_blank(),
+		  plot.margin=unit(c(0,0,0,0),\"pt\"))\n";
+	}
 } else {
+	if (defined $opt{'A'}) {
 	print R "
 	theme_bw()\n";
+	} else {
+	print R "
+	theme_bw(legend.position=\"none\")\n";
+	}
 }
 
 print R "
@@ -5480,13 +5515,22 @@ if ($color_mapping !~ /none/i) {
 	scale_colour_manual(values = c($color_mapping)) +";
 }
 
-	print R "
+print R "
 geom_smooth(aes(x=IN\$V2,y=IN\$V3)) +
-theme_bw() + xlab(\"Lambda\") + ylab(\"Feature value\") +
-theme(legend.background=element_blank(),
-legend.title=element_blank(),
-panel.background=element_blank(),
-plot.background=element_blank())
+theme_bw() + xlab(\"Lambda\") + ylab(\"Feature value\") +";
+if (defined $opt{'A'}) {
+print R "
+	theme(legend.background=element_blank(),
+		legend.title=element_blank(),
+		panel.background=element_blank(),
+		plot.background=element_blank())";
+} else {
+print R "
+	theme(legend.position=\"none\",
+		panel.background=element_blank(),
+		plot.background=element_blank())";
+}
+print R "
 
 ggsave(plot=PointPlot,filename=\"$opt{'O'}.$matrix_out\pcurve/$feature_polished.lambda.png\",width=5,height=4,dpi=900)
 ggsave(plot=PointPlot,filename=\"$opt{'O'}.$matrix_out\pcurve/$feature_polished.lambda.plot.pdf\",width=5,height=4)
@@ -5513,11 +5557,20 @@ write(output2,file=\"$opt{'O'}.$matrix_out\pcurve/corr.spearman.txt\",append=TRU
 	# Make the corr distribution plot
 	
 	HISTPlot<-ggplot(IN,aes(x=V2)) + geom_histogram()+ 
-	theme_bw() + xlab(\"Correlation\") + ylab(\"Counts\") +
+	theme_bw() + xlab(\"Correlation\") + ylab(\"Counts\") +";
+if (defined $opt{'A'}) {
+print R "
 	theme(legend.background=element_blank(),
-	legend.title=element_blank(),
-	panel.background=element_blank(),
-	plot.background=element_blank())
+		legend.title=element_blank(),
+		panel.background=element_blank(),
+		plot.background=element_blank())";
+} else {
+print R "
+	theme(legend.position=\"none\",
+		panel.background=element_blank(),
+		plot.background=element_blank())";
+}
+print R "
 
 	ggsave(plot=HISTPlot,filename=\"$opt{'O'}.$matrix_out\pcurve/Hist.corr.Pearson.lambda.png\",width=5,height=4,dpi=900)
 	ggsave(plot=HISTPlot,filename=\"$opt{'O'}.$matrix_out\pcurve/Hist.corr.Pearson.lambda.plot.pdf\",width=5,height=4)
@@ -5526,11 +5579,20 @@ write(output2,file=\"$opt{'O'}.$matrix_out\pcurve/corr.spearman.txt\",append=TRU
 	# Make the corr distribution plot
 	
 	HISTPlot<-ggplot(IN,aes(x=V2)) + geom_histogram()+ 
-	theme_bw() + xlab(\"Correlation\") + ylab(\"Counts\") +
+	theme_bw() + xlab(\"Correlation\") + ylab(\"Counts\") +";
+if (defined $opt{'A'}) {
+print R "
 	theme(legend.background=element_blank(),
-	legend.title=element_blank(),
-	panel.background=element_blank(),
-	plot.background=element_blank())
+		legend.title=element_blank(),
+		panel.background=element_blank(),
+		plot.background=element_blank())";
+} else {
+print R "
+	theme(legend.position=\"none\",
+		panel.background=element_blank(),
+		plot.background=element_blank())";
+}
+print R "
 
 	ggsave(plot=HISTPlot,filename=\"$opt{'O'}.$matrix_out\pcurve/Hist.corr.Spearman.lambda.png\",width=5,height=4,dpi=900)
 	ggsave(plot=HISTPlot,filename=\"$opt{'O'}.$matrix_out\pcurve/Hist.corr.Spearman.lambda.plot.pdf\",width=5,height=4)
@@ -5602,6 +5664,7 @@ print R "
 
 # set theme
 if ($theme =~ /Clean/i) {
+	if (defined $opt{'A'}) {
 	print R "
 	theme_bw() +
 	theme(panel.border=element_blank(),
@@ -5614,10 +5677,31 @@ if ($theme =~ /Clean/i) {
 		  axis.text=element_blank(),
 		  axis.title.x=element_blank(),
 		  axis.title.y=element_blank(),
-		  plot.background=element_blank())\n";
+		  plot.background=element_blank(),
+		  plot.margin=unit(c(0,0,0,0),\"pt\"))\n";
+	} else {
+	print R "
+	theme_bw() +
+	theme(panel.border=element_blank(),
+		  panel.grid=element_blank(),
+		  axis.line=element_blank(),
+		  axis.ticks=element_blank(),
+		  legend.position=\"none\",
+		  panel.background=element_blank(),
+		  axis.text=element_blank(),
+		  axis.title.x=element_blank(),
+		  axis.title.y=element_blank(),
+		  plot.background=element_blank(),
+		  plot.margin=unit(c(0,0,0,0),\"pt\"))\n";
+	}
 } else {
+	if (defined $opt{'A'}) {
 	print R "
 	theme_bw()\n";
+	} else {
+	print R "
+	theme_bw(legend.position=\"none\")\n";
+	}
 }
 
 # plot them
@@ -5640,6 +5724,7 @@ print R "geom_segment(aes(x=IN\$odim1,xend=IN\$pdim1,y=IN\$odim2,yend=IN\$pdim2)
 
 # set theme
 if ($theme =~ /Clean/i) {
+	if (defined $opt{'A'}) {
 	print R "
 	theme_bw() +
 	theme(panel.border=element_blank(),
@@ -5647,14 +5732,36 @@ if ($theme =~ /Clean/i) {
 		  axis.line=element_blank(),
 		  axis.ticks=element_blank(),
 		  legend.background=element_blank(),
+		  legend.title=element_blank(),
 		  panel.background=element_blank(),
 		  axis.text=element_blank(),
 		  axis.title.x=element_blank(),
 		  axis.title.y=element_blank(),
-		  plot.background=element_blank())\n";
+		  plot.background=element_blank(),
+		  plot.margin=unit(c(0,0,0,0),\"pt\"))\n";
+	} else {
+	print R "
+	theme_bw() +
+	theme(panel.border=element_blank(),
+		  panel.grid=element_blank(),
+		  axis.line=element_blank(),
+		  axis.ticks=element_blank(),
+		  legend.position=\"none\",
+		  panel.background=element_blank(),
+		  axis.text=element_blank(),
+		  axis.title.x=element_blank(),
+		  axis.title.y=element_blank(),
+		  plot.background=element_blank(),
+		  plot.margin=unit(c(0,0,0,0),\"pt\"))\n";
+	}
 } else {
+	if (defined $opt{'A'}) {
 	print R "
 	theme_bw()\n";
+	} else {
+	print R "
+	theme_bw(legend.position=\"none\")\n";
+	}
 }
 
 # plot them
@@ -5680,8 +5787,21 @@ if ($color_mapping !~ /none/i) {
 	scale_colour_manual(values = c($color_mapping)) +";
 }
 print R "
-	theme_bw() + xlab(\"Lambda\") +	ylab(\"Density\") + theme(legend.background=element_blank(),legend.title=element_blank())";
+	theme_bw() + xlab(\"Lambda\") +	ylab(\"Density\") +";
+if (defined $opt{'A'}) {
 print R "
+	theme(legend.background=element_blank(),
+		legend.title=element_blank(),
+		panel.background=element_blank(),
+		plot.background=element_blank())";
+} else {
+print R "
+	theme(legend.position=\"none\",
+		panel.background=element_blank(),
+		plot.background=element_blank())";
+}
+print R "
+
 ggsave(plot=DensityPlot,filename=\"$opt{'O'}.lambda.png\",width=5,height=3,dpi=900)
 ggsave(plot=DensityPlot,filename=\"$opt{'O'}.lambda.pdf\",width=5,height=3)";
 
@@ -6138,12 +6258,22 @@ print R "
 		panel.grid.major.x=element_blank(),
 		panel.grid.minor.x=element_blank(),";
 }
-print R "
+if (defined $opt{'A'}) {
+	print R "
 		axis.ticks.y=element_blank(),
 		axis.text.y=element_blank(),
 		legend.title=element_blank(),
 		panel.background=element_blank(),
-		plot.background=element_blank())
+		plot.background=element_blank())";
+} else {
+	print R "
+		axis.ticks.y=element_blank(),
+		axis.text.y=element_blank(),
+		legend.position=\"none\",
+		panel.background=element_blank(),
+		plot.background=element_blank())";
+}
+print R "
 ggsave(PLT,filename=\"$opt{'O'}$region_name.png\",width=$width,height=$height,dpi=900)
 ggsave(PLT,filename=\"$opt{'O'}$region_name.pdf\",width=$width,height=$height)
 ";
