@@ -4956,7 +4956,7 @@ if ($command eq "pcurve-prune" || $command eq "prune-pcurve") {
 # Defaults
 $prune = 0.1;
 
-getopts("O:e:", \%opt);
+getopts("O:o:p:l:e:", \%opt);
 
 $die2 = "
 scitools pcurve-prune [options] [pcurve prefix]
@@ -5028,9 +5028,9 @@ foreach $cellID (keys %CELLID_DIMS) {
 }
 
 # figure out which ones to keep & print to new lambda file
-system("cp $opt{'o'} $out.pruned.orig.dims"); # this stays the same
-open LAMBDA, ">$out.pruned.lambda";
-open PROJ, ">$out.pruned.proj.dims";
+system("cp $opt{'o'} $opt{'O'}.pruned.orig.dims"); # this stays the same
+open LAMBDA, ">$opt{'O'}.pruned.lambda";
+open PROJ, ">$opt{'O'}.pruned.proj.dims";
 $excluded_ct = 0; $checked_ct = 0;
 foreach $cellID (sort {$CELLID_pcurveDist{$b}<=>$CELLID_pcurveDist{$a}} keys %CELLID_pcurveDist) {
 	$checked_ct++;
