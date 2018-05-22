@@ -5588,7 +5588,7 @@ if (defined $opt{'M'}) {
 			} else {
 				$annot = "Cell";
 			}
-			if (defined $CELLID_FEATURE_value{$cellID}{$feature} && ($annot !~ /Exclude/i)) {
+			if (defined $CELLID_FEATURE_value{$cellID}{$feature} && $CELLID_value{$cellID} && ($annot !~ /Exclude/i)) {
 				print VALS "$cellID\t$CELLID_value{$cellID}\t$CELLID_FEATURE_value{$cellID}{$feature}\t$annot\n";
 			}
 		} close VALS;
