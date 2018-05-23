@@ -3310,7 +3310,7 @@ open R, ">$opt{'O'}.naomit.r";
 print R "
 IN<-read.table(\"$ARGV[0]\")
 IN_NA_rem<-na.omit(as.matrix(IN))
-write.table(IN_NA_rem,file=\"$opt{'O'}.naomit.matrix\",sep=\"\\t\",row.names=FALSE,col.names=FALSE,quote=FALSE)
+write.table(IN_NA_rem,file=\"$opt{'O'}.naomit.matrix\",sep=\"\\t\",row.names=TRUE,col.names=TRUE,quote=FALSE)
 ";
 close R;
 
