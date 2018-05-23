@@ -3299,7 +3299,7 @@ if (!defined $opt{'O'}) {
 $matrix_NA=0;
 open IN, $ARGV[0];
 while ($line = <IN>) {
-if ($line=~ m/NA"/)
+if ($line=~ m/NA/)
 {
 	$matrix_NA++;
 }
@@ -3315,6 +3315,7 @@ write.table(IN_NA_rem,file=\"$opt{'O'}.naomit.matrix\",sep=\"\\t\",row.names=FAL
 close R;
 
 system("$Rscript $opt{'O'}.naomit.r");
+system("rm -f $opt{'O'}.naomit.r");
 
 
 open LOG, ">$opt{'O'}.log";
