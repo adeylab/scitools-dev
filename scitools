@@ -61,6 +61,7 @@ load_gradient_defaults();
 	"atac-cicero" => -1, "cicero" => -1,
 	
 	"matrix-filter" => 1, "filter-matrix" => 1,
+	"matrix-naomit" => 1, "naomit-matrix" => 1,
 	"matrix-summarize" => 0, "summarize-matrix" => 0,
 	"matrix-tf" => 1, "tf" => 1,
 	"matrix-tfidf" => 1, "tfidf" => 1,
@@ -147,6 +148,7 @@ Command:               Description:
    
    matrix-summarize    Generate a summary and plots on matrix properties
    matrix-filter       Filter a sci-ATAC-seq counts matrix
+   matrix-naomit       Filter out 
    matrix-tf           Normalize only by term frequency
    matrix-tfidf        Perform tf-idf on counts matrix
    matrix-lsi          Perform Latent Semantic Indexing on matrix
@@ -3269,6 +3271,71 @@ close LOG;
 
 exit;
 }
+
+if ($command eq "matrix-naomit" || $command eq "naomit-matrix") { 
+
+
+getopts("O:", \%opt);
+
+$die2 = "
+scitools matrix-naomit [options] [matrix]
+   or    naomit-matrix
+   
+Note: Print out number of NA's in matrix then remove NA's from matrix
+
+Options:
+   -O   [STR]   Output prefix (default is [input].naomit.matrix)
+
+
+";
+
+if (!defined $ARGV[0]) {die $die2};
+
+if (!defined $opt{'O'}) {
+	$opt{'O'} = $ARGV[0];
+	$opt{'O'} =~ s/\.matrix$//;
+}
+#count how many
+$matrix_NA=0;
+open IN, $ARGV[0];
+while ($line = <IN>) {
+if ($line=~ m/NA"/)
+{
+	$matrix_NA++;
+}
+	} close IN;
+
+
+open R, ">$opt{'O'}.naomit.r";
+print R "
+IN<-read.table(\"$ARGV[0]\")
+IN_NA_rem<-na.omit(as.matrix(IN))
+write.table(IN_NA_rem,file=\"$opt{'O'}.naomit.matrix\",sep=\"\\t\",row.names=FALSE,col.names=FALSE,quote=FALSE)
+";
+close R;
+
+system("$Rscript $opt{'O'}.naomit.r");
+
+
+open LOG, ">$opt{'O'}.log";
+$ts = localtime(time);
+print LOG "$ts scitools naomit
+Matrix file = $ARGV[0]
+Options:
+";
+foreach $option (keys %opt) {
+	print LOG "   $option   $opt{$option}\n";
+}
+print LOG "
+Total rows with NA: $matrix_NA. \n
+";
+close LOG;
+
+
+exit;
+}
+
+
 
 if ($command eq "matrix-tf" || $command eq "tf") {
 
