@@ -134,7 +134,6 @@ Command:               Description:
    
    annot-make          Make annotation file
    annot-merge         Merge annotation files
-   
    rename-cells        Rename cells
    
    atac-callpeak       Call peaks on bam file using macs2
@@ -148,14 +147,14 @@ Command:               Description:
    
    matrix-summarize    Generate a summary and plots on matrix properties
    matrix-filter       Filter a sci-ATAC-seq counts matrix
-   matrix-naomit       Filter out 
+   matrix-naomit       Filter out rows with NA values
    matrix-tf           Normalize only by term frequency
    matrix-tfidf        Perform tf-idf on counts matrix
    matrix-lsi          Perform Latent Semantic Indexing on matrix
    matrix-tsne         tSNE on matrix
    matrix-pca          PCA on matrix
-   matrix-nmf          Non-negative Matrix Factorization of matrix
    matrix-factors      Calculates reconstruction error for NMF and SWNE
+   matrix-nmf          Non-negative Matrix Factorization of matrix
    matrix-swne 	       SWNE on matrix 
    matrix-umap         UMAP on matrix
    matrix-bicluster    Bicluster and plot a heatmap
@@ -3298,25 +3297,15 @@ if (!defined $opt{'O'}) {
 #count how many
 $matrix_NA=0;
 open IN, $ARGV[0];
+open OUT, ">$opt{'O'}.naomit.matrix";
+$head = <IN>; print OUT "$head";
 while ($line = <IN>) {
-if ($line=~ m/NA/)
-{
-	$matrix_NA++;
-}
-	} close IN;
-
-
-open R, ">$opt{'O'}.naomit.r";
-print R "
-IN<-read.table(\"$ARGV[0]\")
-IN_NA_rem<-na.omit(as.matrix(IN))
-write.table(IN_NA_rem,file=\"$opt{'O'}.naomit.matrix\",sep=\"\\t\",row.names=TRUE,col.names=TRUE,quote=FALSE)
-";
-close R;
-
-system("$Rscript $opt{'O'}.naomit.r");
-system("rm -f $opt{'O'}.naomit.r");
-
+	if ($line=~ m/NA/) {
+		$matrix_NA++;
+	} else {
+		print OUT "$line";
+	}
+} close IN; close OUT;
 
 open LOG, ">$opt{'O'}.log";
 $ts = localtime(time);
@@ -3331,7 +3320,6 @@ print LOG "
 Total rows with NA: $matrix_NA. \n
 ";
 close LOG;
-
 
 exit;
 }
