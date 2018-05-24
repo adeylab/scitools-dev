@@ -2680,8 +2680,8 @@ if (!defined $opt{'O'}) {$opt{'O'} = $ARGV[1]; $opt{'O'} =~ s/\.bam//};
 if (defined $opt{'R'}) {$Rscript = $opt{'R'}};
 if (!defined $opt{'g'}) {$opt{'g'} = "hg38"};
 if (!defined $GENOMES{$opt{'g'}}) {die "\n\nERROR: Genome $opt{'g'} is not a prper genome reference! Exiting!\n"} else {$genome = $GENOMES{$opt{'g'}}};
-if (defined $opt{'M'}) {$motif_set = $opt{'M'}};
-if (!defined $MOTIF_SETS{$motif_set}) {die "\n\nERROR: The motif set provided ($motif_set) does not exist in chromVARmotifs\n"};
+if (!defined $opt{'M'}) {$opt{'M'} = "human_pwms_v2"};
+if (!defined $MOTIF_SETS{$opt{'M'}}) {die "\n\nERROR: The motif set provided ($opt{'M'}) does not exist in chromVARmotifs\n"};
 if (defined $opt{'c'}) {($count_cutoff,$frac_in_peaks) = split(/,/, $opt{'c'})};
 
 if (-e "$opt{'O'}.chromVAR") {
@@ -2717,6 +2717,8 @@ library(SummarizedExperiment)
 library(Matrix)
 library(BiocParallel)
 register(MulticoreParam(8))
+library(JASPAR2016)
+library(ggplot2)
 
 # load motifs and genome
 library($genome)
@@ -2733,6 +2735,7 @@ counts <- filterSamples(counts, min_depth = $count_cutoff, min_in_peaks = $frac_
 counts <- filterPeaks(counts, non_overlapping = TRUE)
 
 # make motif index
+motifs <- getJasparMotifs()
 motif_ix <- matchMotifs(motifs, counts, genome = $genome)
 
 # calculate & print deviations
@@ -2742,11 +2745,15 @@ write.table(as.matrix(deviationScores(dev)),file = \"$opt{'O'}.chromVAR/deviatio
 
 # calculate & print variabilities
 var <- computeVariability(dev)
-write.table(as.matrix(var),file = \"$opt{'O'}.chromVAR/variabiltiy.txt\", col.names = TRUE, row.names = TRUE, sep = \"\\t\", quote = FALSE)
+write.table(as.matrix(var),file = \"$opt{'O'}.chromVAR/variability.txt\", col.names = TRUE, row.names = TRUE, sep = \"\\t\", quote = FALSE)
+plot<-plotVariability(var,use_plotly=FALSE)
+ggsave(plot,file = \"$opt{'O'}.chromVAR/variability.png\")
 
 # generate tSNE on the deviations
-tsne <- deviationsTsne(dev, threshold = 1.5, perplexity = 30, shiny = FALSE)
-write.table(as.matrix(tsne),file = \"$opt{'O'}.chromVAR/tsne.txt\", col.names = TRUE, row.names = TRUE, sep = \"\\t\", quote = FALSE)
+#############tsne causes segmentation faults############
+###################needs to be corrected###############
+#tsne <- deviationsTsne(dev, threshold = 1.5, perplexity = 10, shiny = FALSE)
+#write.table(as.matrix(tsne),file = \"$opt{'O'}.chromVAR/tsne.dims\", col.names = TRUE, row.names = TRUE, sep = \"\\t\", quote = FALSE)
 
 "; close R;
 
