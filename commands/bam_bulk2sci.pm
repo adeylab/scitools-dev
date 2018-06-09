@@ -1,6 +1,5 @@
 package commands::bam_bulk2sci;
 
-use lib "/home/adey/GitHub/scitools-dev"; #LIB#
 use commands::general;
 use Getopt::Std; %opt = ();
 use Exporter "import";

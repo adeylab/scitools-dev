@@ -1,6 +1,5 @@
 package commands::general;
 
-use lib "/home/adey/scitools-dev"; #LIB#
 use Getopt::Std; %opt = ();
 use Exporter "import";
 @EXPORT = (

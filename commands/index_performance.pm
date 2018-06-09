@@ -1,6 +1,5 @@
 package commands::index_performance;
 
-use lib "/home/adey/scitools-dev"; #LIB#
 use commands::general;
 use Getopt::Std; %opt = ();
 use Exporter "import";

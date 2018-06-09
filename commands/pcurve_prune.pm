@@ -1,6 +1,5 @@
 package commands::pcurve_prune;
 
-use lib "/home/adey/GitHub/scitools-dev"; #LIB#
 use commands::general;
 use Getopt::Std; %opt = ();
 use Exporter "import";

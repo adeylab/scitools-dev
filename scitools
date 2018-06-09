@@ -1,5 +1,11 @@
 #!/usr/bin/perl
 
+BEGIN {
+	use FindBin '$Bin';
+	push @INC, $Bin;
+	print "ADDED $Bin to INC\n";
+}
+
 # VERSION INFO
 $version = "0.1.2";
 %version_info = (
@@ -10,11 +16,10 @@ $version = "0.1.2";
 
 # LOAD MODULES
 use Getopt::Std; %opt = ();
-use lib "/home/adey/scitools-dev"; #LIB#
 use commands::general;
 
 # LOAD DEFAULTS
-$SCITOOLS_DEFAULTS = "/home/adey/GitHub/scitools-dev/scitools.cfg"; #CONFIG#
+$SCITOOLS_DEFAULTS = "$Bin/scitools.cfg";
 if (-e "$ENV{'HOME'}/.scitools.cfg") {
 	$SCITOOLS_DEFAULTS = "$ENV{'HOME'}/.scitools.cfg";
 } elsif (-e "$ENV{'HOME'}/scitools.cfg") {
