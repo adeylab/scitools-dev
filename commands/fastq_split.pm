@@ -8,6 +8,8 @@ use Exporter "import";
 
 sub fastq_split {
 
+@ARGV = @_;
+
 getopts("A:O:X", \%opt);
 
 $die2 = "

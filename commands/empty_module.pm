@@ -8,6 +8,8 @@ use Exporter "import";
 
 sub command_name {
 
+@ARGV = @_;
+
 
 }
 1;

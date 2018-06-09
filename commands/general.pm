@@ -33,7 +33,8 @@ use Exporter "import";
 		qw(%GENENAME_coords),qw(%GENEID_coords),qw(%GENECOORDS_refGene),
 	"get_gradient",
 	"load_gradient_defaults",
-		qw(%COLOR_GRADIENT)
+		qw(%COLOR_GRADIENT),
+	"print_gradients"
 );
 	
 
@@ -375,6 +376,28 @@ $COLOR_GRADIENT{'WtRd'} = "gradient_funct<-colorRampPalette(c(\"white\",\"#fff5f
 $COLOR_GRADIENT{'BuGo'} = "gradient_funct<-colorRampPalette(c(\"lightblue\",\"blue\",\"red\",\"orange\",\"gold\"))";
 $COLOR_GRADIENT{'BuG90Rd'} = "gradient_funct<-colorRampPalette(c(\"blue\",\"gray90\",\"red\"))";
 
+}
+
+sub print_gradients {
+print "
+scitools available gradients and gradient specification. For a number 
+of plotting options, a gradient can be specified. Scitools has several
+default gradients shown below, or a custom gradient can be specified.
+These commands will add in a color ramp function in R.
+
+Default Gradients: (name, R color function)
+";
+
+foreach $gradient (sort keys %COLOR_GRADIENT) {
+	print "   $gradient\t($COLOR_GRADIENT{$gradient})\n";
+}
+
+print "
+To specify a custom gradient, specify a comma-separated list of R
+colors, or hex codes:
+   eg.   red,yellow,blue   would be a gradient of those three colors.
+   
+";
 }
 
 1;

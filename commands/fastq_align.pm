@@ -8,6 +8,8 @@ use Exporter "import";
 
 sub fastq_align {
 
+@ARGV = @_;
+
 # Defaults
 $threads = 1;
 $memory = "2G";

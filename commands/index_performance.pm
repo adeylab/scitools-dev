@@ -8,6 +8,8 @@ use Exporter "import";
 
 sub index_performance {
 
+@ARGV = @_;
+
 # Defaults
 $gradient_def = "BuYlRd";
 

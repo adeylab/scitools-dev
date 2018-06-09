@@ -8,6 +8,8 @@ use Exporter "import";
 
 sub fastq_merge {
 
+@ARGV = @_;
+
 getopts("O:r:", \%opt);
 
 $die2 = "
