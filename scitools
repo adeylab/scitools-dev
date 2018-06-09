@@ -36,6 +36,11 @@ load_gradient_defaults();
 
 # COMMAND DIRECTORY
 %COMMANDS = (
+
+	# IN DEVELOPMENT COMMANDS
+	"fastq-dump-mode" => 0,
+	
+	# OTHER
 	"help" => 0,
 	"merge" => 0, "filter" => 0, "split" => 0,
 	"dependencies" => 0, "depend" => 0,
@@ -201,6 +206,9 @@ if ($COMMANDS{$command}==0) {
 } elsif ($COMMANDS{$command}<0) {
 	die "\nERROR: The command you have specified ($command) is very much an aspirational command and has no actual code written for it. Feel free to volunteer.\n";
 }
+
+########## IN DEVELOPMENT COMMANDS ##########
+if ($command eq "fastq-dump-mode") {use commands::fastq_dump_mode; fastq_dump_mode(@ARGV); exit};
 
 ########## GENERAL FUNCTIONS ##########
 if ($command eq "dependencies" || $command eq "depend") {use commands::dependencies; dependencies(@ARGV); exit};
