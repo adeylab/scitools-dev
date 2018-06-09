@@ -123,7 +123,7 @@ if (!defined $MODE_GROUP_CLASS_PARTS{$ALIAS_mode{$mode_name}}) {
 }
 
 # read in indexes
-read_indexes($opt{'I'});
+read_indexdir($opt{'I'});
 #print STDERR "INFO: $indexes_loaded indexes read.\n";
 foreach $type (keys %INDEX_TYPE_SEQ_seq) {
 	#print STDERR "\tIndex type: $type found.\n";

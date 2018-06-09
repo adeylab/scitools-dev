@@ -2,6 +2,8 @@ package commands::general;
 
 use Getopt::Std; %opt = ();
 use Exporter "import";
+
+# Export all of the subroutines and variables that should be passed to scitools
 @EXPORT = (
 	"load_defaults",
 		qw($color_mapping),qw($ref_shortcuts),qw(@BASES),qw(%REF),qw(%VAR),qw($gzip),qw($zcat),
@@ -28,6 +30,8 @@ use Exporter "import";
 		qw(%MODE_GROUP_CLASS_PARTS),qw(%ALIAS_mode),
 	"read_indexes",
 		qw(%INDEX_POS_SEQ_id),qw(%INDEX_POS_SEQ_well),
+	"read_indexdir",
+		qw(%INDEX_TYPE_SEQ_seq),qw(%INDEX_TYPE_SEQ_id),qw(%INDEX_TYPE_length),qw($indexes_loaded),
 	"read_refgene",
 		qw(%GENENAME_coords),qw(%GENEID_coords),qw(%GENECOORDS_refGene),
 	"get_gradient",
@@ -35,7 +39,7 @@ use Exporter "import";
 		qw(%COLOR_GRADIENT),
 	"print_gradients"
 );
-	
+
 
 sub load_defaults {
 	# Some global ones that are not configured
@@ -240,6 +244,34 @@ sub read_ranges {
 	$range_R_set .= ")";
 }
 
+sub read_indexdir {
+	%INDEX_TYPE_SEQ_seq = ();
+	%INDEX_TYPE_SEQ_id = ();
+	%INDEX_TYPE_length = ();
+	$indexes_loaded = 0;
+	@INDEX_FILES = split(/,/, $_[0]);
+	foreach $index_specification (@INDEX_FILES) {
+		($index_name,$target) = split(/=/, $index_specification);
+		if ($index_name =~ /DIR/i) {
+			$target =~ s/\/$//;
+			open INDEX, "cat $target/*.txt |";
+		} else {
+			open INDEX, "$target";
+		}
+		while ($index_line = <INDEX>) {
+			chomp $index_line;
+			($index_id,$index_type_raw,$index_seq_raw) = split(/\t/, $index_line);
+			$index_type = lc($index_type_raw);
+			$index_seq = uc($index_seq_raw);
+			($id_tier,$id_set,$id_side,$id_well) = split(/_/, $index_id);
+			$INDEX_TYPE_SEQ_seq{$index_type}{$index_seq} = $index_seq;
+			$INDEX_TYPE_length{$index_type} = length($index_seq);
+			$INDEX_TYPE_SEQ_id{$index_type}{$index_seq} = $index_id;
+			$indexes_loaded++;
+		} close INDEX;
+	}
+}
+
 sub read_mode { # FOR MODE IMPLEMENTATION
 	$sci_modes_file = $_[0];
 	%MODE_GROUP_CLASS_PARTS = ();
@@ -400,31 +432,3 @@ colors, or hex codes:
 }
 
 1;
-
-#sub read_indexes { # NEW MODE
-#	%INDEX_TYPE_SEQ_seq = ();
-#	%INDEX_TYPE_SEQ_id = ();
-#	%INDEX_TYPE_length = ();
-#	$indexes_loaded = 0;
-#	@INDEX_FILES = split(/,/, $_[0]);
-#	foreach $index_specification (@INDEX_FILES) {
-#		($index_name,$target) = split(/=/, $index_specification);
-#		if ($index_name =~ /DIR/i) {
-#			$target =~ s/\/$//;
-#			open INDEX, "cat $target/*.txt |";
-#		} else {
-#			open INDEX, "$target";
-#		}
-#		while ($index_line = <INDEX>) {
-#			chomp $index_line;
-#			($index_id,$index_type_raw,$index_seq_raw) = split(/\t/, $index_line);
-#			$index_type = lc($index_type_raw);
-#			$index_seq = uc($index_seq_raw);
-#			($id_tier,$id_set,$id_side,$id_well) = split(/_/, $index_id);
-#			$INDEX_TYPE_SEQ_seq{$index_type}{$index_seq} = $index_seq;
-#			$INDEX_TYPE_length{$index_type} = length($index_seq);
-#			$INDEX_TYPE_SEQ_id{$index_type}{$index_seq} = $index_id;
-#			$indexes_loaded++;
-#		} close INDEX;
-#	}
-#}
