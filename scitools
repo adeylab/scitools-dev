@@ -1,8 +1,8 @@
 #!/usr/bin/perl
 
 BEGIN {
-	use FindBin '$Bin';
-	push @INC, $Bin;
+	use FindBin '$RealBin';
+	push @INC, $RealBin;
 }
 
 # VERSION INFO
@@ -18,7 +18,7 @@ use Getopt::Std; %opt = ();
 use commands::general;
 
 # LOAD DEFAULTS
-$SCITOOLS_DEFAULTS = "$Bin/scitools.cfg";
+$SCITOOLS_DEFAULTS = "$RealBin/scitools.cfg";
 if (-e "$ENV{'HOME'}/.scitools.cfg") {
 	$SCITOOLS_DEFAULTS = "$ENV{'HOME'}/.scitools.cfg";
 } elsif (-e "$ENV{'HOME'}/scitools.cfg") {
