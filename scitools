@@ -3,7 +3,6 @@
 BEGIN {
 	use FindBin '$Bin';
 	push @INC, $Bin;
-	print "ADDED $Bin to INC\n";
 }
 
 # VERSION INFO

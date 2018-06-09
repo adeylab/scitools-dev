@@ -314,7 +314,8 @@ while ($r1tag = <R1>) {
 					$r2tag = <R2>; chomp $r2tag; $r2seq = <R2>; chomp $r2seq; $null = <R2>; $r2qual = <R2>; chomp $r2qual;
 					$READ_status{'read2'} = 1;
 				}
-			} elsif (##############
+			}
+			######################################################################################################
 			if ($item ne "name" && $item ne "read_outputs") {
 				for ($read_partID = 0; $read_partID < @{$MODE_GROUP_CLASS_PARTS{$mode_name}[$mode_group]{$item}{'name'}}; $read_partID++) {
 					$part_name = $MODE_GROUP_CLASS_PARTS{$mode_name}[$mode_group]{$item}{'name'}[$read_partID];
