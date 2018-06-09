@@ -14,7 +14,7 @@ use lib "/home/adey/scitools-dev"; #LIB#
 use commands::general;
 
 # LOAD DEFAULTS
-$SCITOOLS_DEFAULTS = "/home/adey/scitools-dev/scitools.cfg"; #CONFIG#
+$SCITOOLS_DEFAULTS = "/home/groups/oroaklab/src/scitools/scitools-dev/scitools.cfg"; #CONFIG#
 if (-e "$ENV{'HOME'}/.scitools.cfg") {
 	$SCITOOLS_DEFAULTS = "$ENV{'HOME'}/.scitools.cfg";
 } elsif (-e "$ENV{'HOME'}/scitools.cfg") {
