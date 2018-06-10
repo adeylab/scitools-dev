@@ -1,5 +1,6 @@
 #!/usr/bin/perl
 
+# INITIALIZE LOCATION
 BEGIN {
 	use FindBin '$RealBin';
 	push @INC, $RealBin;
@@ -16,6 +17,7 @@ $version = "0.1.2";
 # LOAD MODULES
 use Getopt::Std; %opt = ();
 use commands::general;
+use Exporter "import";
 
 # LOAD DEFAULTS
 $SCITOOLS_DEFAULTS = "$RealBin/scitools.cfg";
@@ -29,88 +31,21 @@ if (-e "$ENV{'HOME'}/.scitools.cfg") {
 	print STDERR "INFO: Special config file detected as first argument. ($ARGV[0])\n";
 }
 load_defaults($SCITOOLS_DEFAULTS);
-
-# LOAD GRADIENTS
 load_gradient_defaults();
 
-# COMMAND DIRECTORY
-%COMMANDS = (
+# LOAD COMMANDS DIRECTLY FROM MODULE FILES
+opendir CMDS, "$RealBin/commands" || die "ERROR: Cannot locate the commands directory.\nERROR: It should be present in the same directory as the scitools executable: $RealBin\n";
+while ($command_module_name = readdir(CMDS)) {
+	if ($command_module_name !~ /(^\.|general|empty_module|test)/ && $command_module_name =~ /\.pm$/) { # exceptions -> do not show as available commands
+		$command_module_name =~ s/\.pm$//;
+		$COMMAND_NAMES{$command_module_name} = 1;
+	}
+} closedir CMDS;
 
-	# IN DEVELOPMENT COMMANDS
-	"fastq-dump-mode" => 0,
-	
-	# OTHER
-	"help" => 0,
-	"merge" => 0, "filter" => 0, "split" => 0,
-	"dependencies" => 0, "depend" => 0,
-	"gradient" => 0, "gradients" => 0,
-	
-	"fastq-dump" => 0, "dump-fastq" => 0,
-	"fastq-dump-new" => 0,
-	"fastq-split" => 0, "split-fastq" => 0,
-	"fastq-merge" => 0, "merge-fastq" => 0,
-	"fastq-align" => 0, "align-fastq" => 0, "align" => 0,
-	
-	"bam-bulk2sci" => 0, "bulk2sci" => 0,
-	"bam-addrg" => 0, "addrg" => 0,
-	"bam-rmdup" => 0, "rmdup" => 0,
-	"bam-split" => 0, "split-bam" => 0,
-	"bam-filter" => 0, "filter-bam" => 0,
-	"bam-merge" => 0, "merge-bam" => 0,
-	"bam-project" => 0, "project-bam" => 0, "project" => 0,
-	"bam-aggregate" => 0, "aggregate-bam" => 0,
-	
-	"signal-make" => 0, "make-signal" => 0,
-	"plot-signal" => 0, "signal-plot" => 0,
-	
-	"annot-make" => 0, "make-annot" => 0,
-	"annot-merge" => 0, "merge-annot" => 0,
-	"rename-cells" => 0,
-	
-	"atac-callpeaks" => 0, "atac-callpeak" => 0, "callpeak" => 0, "callpeaks" => 0,
-	"atac-mergepeaks" => 0, "atac-mergepeak" => 0, "mergepeak" => 0, "mergepeaks" => 0,
-	"atac-counts" => 0, "atac-count" => 0, "count" => 0, "counts" => 0,
-	"atac-chromvar" => 0, "chromvar" => 0,
-	"atac-cicero" => 0, "cicero" => 0,
-	
-	"matrix-filter" => 0, "filter-matrix" => 0,
-	"matrix-naomit" => 0, "naomit-matrix" => 0,
-	"matrix-summarize" => 0, "summarize-matrix" => 0,
-	"matrix-tf" => 0, "tf" => 0,
-	"matrix-tfidf" => 0, "tfidf" => 0,
-	"matrix-lsi" => 0, "lsi" => 0,
-	"matrix-zscore" => 0, "zscore-matrix" => 0,
-	"matrix-tsne" => 0, "tsne" => 0,
-	"matrix-pca" => 0, "pca" => 0,
-	"matrix-nmf" => -1, "nmf" => -1,
-	"matrix-bicluster" => -1, "bicluster" => -1,
-	"matrix-aggregate" => 0, "aggregate-matrix" => 0,
-	"matrix-merge" => 0, "merge-matrix" => 0,
-	"matrix-approx-factors" => 0, "matrix-factors" => 0, "factors" => 0,
-	"matrix-swne" => 0, "swne" => 0, "piglet" => 0,
-	"umap" => 0, "owl" => 0, "matrix-umap" => 0,
-	
-	"dims-kmeans" => 0, "kmeans" => 0,
-	"dims-dbscan" => 0, "dbscan" => 0,
-	"dims-pcurve" => 0, "pcurve" => 0,
-	"pcurve-center" => 0, "center-pcurve" => 0, "lambda-center" => 0, "center-lambda" => 0,
-	"prune-pcurve" => 0, "pcurve-prune" => 0,
-	
-	"aggregate-cells" => 0, "aggregate" => 0,
+# LOAD ALIASES (optional for each command)
+load_aliases();
 
-	"plot-complexity" => 0,
-	"plot-dims" => 0,
-	"plot-pcurve" => 0,
-	"plot-reads" => 0,
-	"plot-factors" => 0,
-	
-	"index-performance" => 0, "index-perform" => 0,
-	"combine-data" => 0, "data-combine" => 0,
-	"split-data" => 0, "data-split" => 0
-
-);
-
-# HELP TEXT
+# DIE MESSAGE
 $die = "
 scitools [command] [options] [arguments]
 
@@ -121,312 +56,151 @@ scitools is a set of commands for general processing of single-
 cell combinatorial indexing data. It is predominantly a wrapper
 for generating R or other scripts that will be stored and executed.
 
-scitools commands are in the form of [class]-[operation], calling
-a tool with just the [class] option will give a more detailed
-description and a refined set of commands. Many commands can be
-called using only the [operation] if it is unique to the class.
+scitools commands are typically in the form of [class]-[operation].
 
-Command:               Description:
+run 'scitools list' to print out a list of commands and descriptions.\n\n";
 
-   help                Display additional scitools descriptions
-   dependencies        Check dependencies
-   gradient            Print out color gradient pre-sets and details
-
-   fastq-dump          Go from illumina fastqs to SCI fastq format
-   fastq-split         Split SCI fastq files using annotation file
-   fastq-merge         Merge fastq files that have the same barcodes
-   fastq-align         Align fastq files and sort resulting bam file
-
-   bam-bulk2sci        Merge multiple bulk bam files to one SCI bam
-   bam-addrg           Add RG lines to bam
-   bam-rmdup           Barcode-based duplicate removal
-   bam-filter          Filter bam based on a variety of options
-   bam-split           Split bam by annotation file
-   bam-merge           Merges one or more bam files
-   bam-project         Use complexity to project additional sequence
-   bam-aggregate       Aggregate cells in bam by annotation file
-   
-   annot-make          Make annotation file
-   annot-merge         Merge annotation files
-   rename-cells        Rename cells
-   
-   atac-callpeak       Call peaks on bam file using macs2
-   atac-mergepeak      Merge ATAC-seq peak files
-   atac-counts         Bam and peak file to a counts matrix
-   atac-chromvar       Run chromVAR wrapper on sci-ATAC-seq data
-   atac-cicero         Run cicero wrapper on sci-ATAC-seq data
-   
-   signal-make         Generate windowed signal over features from bam
-   signal-plot         Plot windowed signal views
-   
-   matrix-summarize    Generate a summary and plots on matrix properties
-   matrix-filter       Filter a sci-ATAC-seq counts matrix
-   matrix-naomit       Filter out rows with NA values
-   matrix-zscore       Z-scores matrix by rows, columns, or globally
-   matrix-tf           Normalize only by term frequency
-   matrix-tfidf        Perform tf-idf on counts matrix
-   matrix-lsi          Perform Latent Semantic Indexing on matrix
-   matrix-tsne         tSNE on matrix
-   matrix-pca          PCA on matrix
-   matrix-factors      Calculates reconstruction error for NMF and SWNE
-   matrix-nmf          Non-negative Matrix Factorization of matrix
-   matrix-swne 	       SWNE on matrix 
-   matrix-umap         UMAP on matrix
-   matrix-bicluster    Bicluster and plot a heatmap
-   matrix-aggregate    Aggregate cells in counts matrix by annotation
-   matrix-merge        Merge matrices, no overlap in cell names assumed
-   
-   dims-kmeans         Kmeans clustering on dims file
-   dims-dbscan         Density-base (dbscan) clustering on dims file
-   dims-pcurve         Project a principle curve through dims file
-   pcurve-center       Centers and normalizes a pcurve lambda
-   pcurve-prune        Prunes cells distant from the pcurve
-   aggregate-cells     Aggregate cells in proximity with one another
-
-   plot-complexity     Plot complexity data
-   plot-dims           Plot tSNE or other dimensions file
-   plot-pcurve         Genrate multiple princurve plots
-   plot-factors        Generates factor vs reconstruction error plot
-   plot-reads          Plot reads as points in genomic window
-   
-   index-perform       Index performance on fastq or bam
-   combine-data        Combine matrixes, annotations, dims to a table
-   split-data          Breaks a combined data file into component files
-
-";
-
-# PULL COMMAND OR DIE
-$command = lc(shift(@ARGV));
-if (!defined $COMMANDS{$command}) {die $die};
-
-# IN DEVELOPMENT WARNING
-if ($COMMANDS{$command}==0) {
-	print STDERR "\nWARNING: The command you have specified ($command) is either currently being developed or unverified!\n";
-} elsif ($COMMANDS{$command}<0) {
-	die "\nERROR: The command you have specified ($command) is very much an aspirational command and has no actual code written for it. Feel free to volunteer.\n";
+# PULL COMMAND
+if (defined $ARGV[0]) {
+	if ($ARGV[0] =~ /list/) {
+		load_descriptions();
+		$die .= "   Command:             Description:\n\n";
+		foreach $command_module_name (sort {$a cmp $b} keys %COMMAND_NAMES) {
+			$list_command = sprintf("%-20s", $command_module_name);
+			$list_command =~ s/_/-/g;
+			if (defined $COMMAND_DESCRIPTOR{$command_module_name}) {
+				$die .= "   $list_command $COMMAND_DESCRIPTOR{$command_module_name}\n";
+			} else {
+				$die .= "   $list_command WARNING: No description listed.\n";
+			}
+		}
+		die "$die\n";
+	} else {
+		$called_command = lc(shift(@ARGV));
+		$called_command =~ s/-/_/g;
+		if (defined $COMMAND_ALIAS{$called_command}) {
+			$command = $COMMAND_ALIAS{$called_command};
+		} else {$command = $called_command};
+#		if (defined $COMMAND_CALL->{$command}) {
+		if (defined $COMMAND_NAMES{$command}) {
+			require "commands/$command.pm";
+			import "commands::$command", "$command";
+			\&$command->(@ARGV);
+		} else {
+			$command =~ s/_/-/g;
+			die "ERROR: There is no command '$command', verify the command call name.\n$die";
+		}
+	}
+} else {
+	die $die;
 }
 
-########## IN DEVELOPMENT COMMANDS ##########
-if ($command eq "fastq-dump-mode") {use commands::fastq_dump_mode; fastq_dump_mode(@ARGV); exit};
-
-########## GENERAL FUNCTIONS ##########
-if ($command eq "dependencies" || $command eq "depend") {use commands::dependencies; dependencies(@ARGV); exit};
-if ($command eq "index-perform" || $command eq "index-performance") {use commands::index_performance; index_performance(@ARGV); exit};
-if ($command eq "gradient" || $command eq "gradients" || $command eq "print-gradients") {print_gradients(); exit};
-
-########## FASTQ FUNCTIONS ##########
-if ($command eq "fastq-dump" || $command eq "dump-fastq") {use commands::fastq_dump; fastq_dump(@ARGV); exit};
-if ($command eq "fastq-split" || $command eq "split-fastq") {use commands::fastq_split; fastq_split(@ARGV); exit};
-if ($command eq "fastq-merge" || $command eq "merge-fastq") {use commands::fastq_merge; fastq_merge(@ARGV); exit};
-if ($command eq "fastq-align" || $command eq "align-fastq" || $command eq "align") {use commands::fastq_align; fastq_align(@ARGV); exit};
-
-########## ANNOTATION FUNCTIONS ##########
-if ($command eq "annot-make" || $command eq "make-annot") {use commands::annot_make; annot_make(@ARGV); exit};
-if ($command eq "annot-merge" || $command eq "merge-annot") {use commands::annot_merge; annot_merge(@ARGV); exit};
-if ($command eq "rename-cells") {use commands::rename_cells; rename_cells(@ARGV); exit};
-
-########## BAM FUNCTIONS ##########
-if ($command eq "bam-bulk2sci" || $command eq "bulk2sci") {use commands::bam_bulk2sci; bam_bulk2sci(@ARGV); exit};
-if ($command eq "bam-rmdup" || $command eq "rmdup") {use commands::bam_rmdup; bam_rmdup(@ARGV); exit};
-if ($command eq "bam-filter" || $command eq "filter-bam") {use commands::bam_filter; bam_filter(@ARGV); exit};
-if ($command eq "bam-split" || $command eq "split-bam") {use commands::bam_split; bam_split(@ARGV); exit};
-if ($command eq "bam-merge" || $command eq "merge-bam") {use commands::bam_merge; bam_merge(@ARGV); exit};
-if ($command eq "bam-addrg" || $command eq "addrg") {use commands::bam_addrg; bam_addrg(@ARGV); exit};
-if ($command eq "bam-aggregate" || $command eq "aggregate-bam") {use commands::bam_aggregate; bam_aggregate(@ARGV); exit};
-if ($command eq "bam-project" || $command eq "project-bam" || $command eq "project") {use commands::bam_project; bam_project(@ARGV); exit};
-	# TODO: Add in memory efficiency modification from standalone version
-
-########## ATAC FUNCTIONS ##########
-if ($command eq "atac-callpeak" || $command eq "atac-callpeaks" || $command eq "callpeak" || $command eq "callpeaks") {use commands::atac_callpeak; atac_callpeak(@ARGV); exit};
-if ($command eq "atac-mergepeak" || $command eq "atac-mergepeaks" || $command eq "mergepeak" || $command eq "mergepeaks") {use commands::atac_mergepeak; atac_mergepeak(@ARGV); exit};
-if ($command eq "atac-count" || $command eq "atac-counts" || $command eq "counts" || $command eq "count") {use commands::atac_count; atac_count(@ARGV); exit};
-if ($command eq "atac-chromvar" || $command eq "chromvar") {use commands::atac_chromvar; atac_chromvar(@ARGV); exit};
-
-########## SIGNAL FUNCTIONS ##########
-if ($command eq "signal-make" || $command eq "make-signal") {use commands::signal_make; signal_make(@ARGV); exit};
-
-########## MATRIX FUNCTIONS ##########
-if ($command eq "matrix-summarize" || $command eq "summarize-matrix") {use commands::matrix_summarize; matrix_summarize(@ARGV); exit};
-if ($command eq "matrix-filter" || $command eq "filter-matrix") {use commands::matrix_filter; matrix_filter(@ARGV); exit};
-	# TODO: Mem efficiency (at some point)
-if ($command eq "matrix-naomit" || $command eq "naomit-matrix") {use commands::matrix_naomit; matrix_naomit(@ARGV); exit};
-if ($command eq "matrix-tf" || $command eq "tf") {use commands::matrix_tf; matrix_tf(@ARGV); exit};
-if ($command eq "matrix-tfidf" || $command eq "tfidf") {use commands::matrix_tfidf; matrix_tfidf(@ARGV); exit};
-if ($command eq "matrix-lsi" || $command eq "lsi") {use commands::matrix_lsi; matrix_lsi(@ARGV); exit};
-if ($command eq "matrix-zscore" || $command eq "zscore-matrix") {use commands::matrix_zscore; matrix_zscore(@ARGV); exit};
-if ($command eq "matrix-tsne" || $command eq "tsne") {use commands::matrix_tsne; matrix_tsne(@ARGV); exit};
-if ($command eq "matrix-pca" || $command eq "pca") {use commands::matrix_pca; matrix_pca(@ARGV); exit};
-if ($command eq "matrix-approx-factors" || $command eq "matrix-factors" || $command eq "factors") {use commands::matrix_factors; matrix_factors(@ARGV); exit};
-if ($command eq "matrix-swne" || $command eq "swne" || $command eq "piglet") {use commands::matrix_swne; matrix_swne(@ARGV); exit};
-if ($command eq "matrix-umap" || $command eq "umap" || $command eq "owl") {use commands::matrix_umap; matrix_umap(@ARGV); exit};
-if ($command eq "matrix-aggregate" || $command eq "aggregate-matrix") {use commands::matrix_aggregate; matrix_aggregate(@ARGV); exit};
-if ($command eq "matrix-merge" || $command eq "merge-matrix") {use commands::matrix_merge; matrix_merge(@ARGV); exit};
-
-########## DIMENSION FILE FUNCTIONS ##########
-if ($command eq "dims-kmeans" || $command eq "kmeans") {use commands::dims_kmeans; dims_kmeans(@ARGV); exit};
-if ($command eq "dims-dbscan" || $command eq "dbscan") {use commands::dims_dbscan; dims_dbscan(@ARGV); exit};
-if ($command eq "aggregate-cells" || $command eq "aggregate") {use commands::aggregate_cells; aggregate_cells(@ARGV); exit};
-if ($command eq "dims-pcurve" || $command eq "pcurve") {use commands::dims_pcurve; dims_pcurve(@ARGV); exit};
-if ($command eq "pcurve-center" || $command eq "center-pcurve" || $command eq "lambda-center" || $command eq "center-lambda") {use commands::pcurve_center; pcurve_center(@ARGV); exit};
-if ($command eq "pcurve-prune" || $command eq "prune-pcurve") {use commands::pcurve_prune; pcurve_prune(@ARGV); exit};
-
-########## PLOTTING FUNCTIONS ##########
-if ($command eq "plot-complexity") {use commands::plot_complexity; plot_complexity(@ARGV); exit};
-if ($command eq "plot-dims") {use commands::plot_dims; plot_dims(@ARGV); exit};
-if ($command eq "plot-pcurve") {use commands::plot_pcurve; plot_pcurve(@ARGV); exit};
-if ($command eq "plot-factors") {use commands::plot_factors; plot_factors(@ARGV); exit};
-if ($command eq "plot-reads") {use commands::plot_reads; plot_reads(@ARGV); exit};
-if ($command eq "plot-signal" || $command eq "signal-plot") {use commands::plot_signal; plot_signal(@ARGV); exit};
-
-########## DATA ARCHIVE FUNCTIONS ##########
-if ($command eq "combine-data" || $command eq "data-combine") {use commands::data_combine; data_combine(@ARGV); exit};
-if ($command eq "split-data" || $command eq "data-split") {use commands::data_split; data_split(@ARGV); exit};
-
-########################################################################
-#################### HELP TEXT & OTHER SUCH OPTIONS ####################
-########################################################################
-
-if ($command eq "help") {
-
-$help = "
-
-scitools Version: $version ($version_info{$version})
-Adey Lab (www.adeylab.org)
-
-scitools is a set of scripts designed for working with single-cell
-combinatorial indexing data. It includes tools to go from fastq files
-off of the sequencer (after bcl2fastq) to a processed dataset. It
-includes a number of external tools and R packages that are called
-by scitools. If scitools is used, be sure to cite those tools!
-
-scitools commands are in the form of [class]-[operation]. Most can
-be specified in reverse order, or if the operation is unique to the
-class of files or the class type can be determined by the files in
-the arguments then just the operation name can be specified.
-
-Dependencies: (command-line callable, can be specified in options)
-Run scitools dependencies to check software and R requirements.
-
-Config file for defaults: scitools has a number of set defaults
-that can be conveniently specified in a scitools.cfg file. There
-is a hardcoded config file location, but the best way for personalized
-defaults, include a '.scitools.cfg' file in your home directory.
-
-Executables:
-   gzip         For gzipped fastq files. Default: $gzip & $zcat
-                (these are hardoded at the beginning of the scitools
-                 code and not available as options)
-   samtools     Bam-related commands. Default: $samtools
-   bedtools     Bed-related commands. Default: $bedtools
-   Rscript      Numerous R operations. Default: $Rscript
-   python       For calling UMAP. Default: $Pscript
-   bwa          For alignment only. Default: $bwa
-   macs2        For atac-callpeak only. Default: $macs2
-   scitools     Can call itself. Default: $scitools
-
-R packages:
-   ggplot2         For plotting commands
-   svd             For Latent Semantic Indexing (LSI)
-   Rtsne           For tSNE visualization
-   methods         For PCA
-   dbscan          For density-based clustering
-   princurve       Principle curve projections
-   chromVAR        For chromVAR only
-   chromVARmotifs  For chromVAR only
-   cicero          For cicero only
-
-Some default locations / shortcuts:
-   Fastq directory (where bcl2fastq outputs fastq files)
-      $VAR{'fastq_input_directory'}
-   Output fastq directory (for processed SCI fastq files)
-      $VAR{'SCI_fastq_directory'}
-   SCI index file (should comtain all barcodes in the proper format)
-      $VAR{'SCI_index_file'}
-
-   Default Refs / shortcuts ([reference.fa], [reference.fa].fai, [reference.fa].[bwa_index], and [reference].refGene.txt)
-$ref_shortcuts
-
-File Types used by scitools:
-
-   fastq    Standard fastq files, input can be gzipped or not, output fastq
-               files will always be gzipped.
-   
-   bam      Bam files. For scitools, it is expected the barcode sequence
-               or cellID is in the read name ([barcode]:[read_number])
-               Sam files are not supported to encourage (force) space saving
-			   
-   annot    Annotation file: tab delimited, 2 columns
-               Col 1 = cellID (barcode), could also be feature name
-               Col 2 = annotation information (e.g. experimental condition)
-            values file A special case of an annotaiton file where the
-               annotation is a continuous variable and not discrete.
-			   
-   matrix   Matrix file, tab delimited
-               Row 1 = CellIDs, has 1 less column than all other rows
-               Rows = field 1 is name, then 1 field for each cellID
-			   
-   dims     Dimensions file, tab delimited
-               Col 1 = cellID
-               Col 2-N = dimensions for each cell
-            range    Range format is not a file type but a way to input a
-               range of values (e.g. which dimensions to use from a dims file)
-               This is a comma separated list and can include dashes for a
-               range of values (e.g. 1,3-6,8-10,13)
-
-Typical scitools analysis for sci-ATAC-seq:
-
-   1) Make an annotation file for demultiplexing a sequencing run:
-      scitools annot-make -p   # this will output an example annot csv file, edit in excel
-      scitools annot-make -P [myExperimentDescriptorFile.csv] > [mySamples.annot]
-
-   2) Demultiplex and reformat raw fastq files:
-      scitools fastq-dump -A [mySamples.annot] -R [RUN_NAME, must be in fastq directory]
-
-   3) Align fastq files (if reference defaults are set up use the reference shortcut)
-      scitools align -t [n threads] [reference_prefix or shortcut] [sampleA_prefix] [reads.sampleA.1.fq.gz] [reads.sampleA.2.fq.gz]
-
-   4) Remove duplicates and create complexity file:
-      scitools rmdup [sampleA].bam
-
-   5) Plot complexity file to assess library performance and determine bam filters:
-      scitools plot-complexity [sampleA].complexity.txt
-         Note: if multiple conditions are present in the sample, create a condition annot file as in step 1
-               you can then add '-A [myConditions.annot]' to the above command to plot by conditions.
-               It is also possible to specify colors for plotting conditions using -C or -c
-
-   6) Determine performance and filter bam to remove noise reads:
-      scitools bam-filter -N [read threshold, ~1000] -C [sampleA].complexity.txt -c [min compl, 0],[max compl, 60]
-
-   7) Examine index-based perfoemance on filtered bam:
-      scitools index-performance [sampleA].bbrd.q10.filt.bam
-
-   8) Call ATAC peaks (macs2):
-      scitools callpeak -f [reference.fai file] [sampleA].bbrd.q10.filt.bam
-
-   9) Make a counts matrix:
-      scitools atac-counts [sampleA].bbrd.q10.filt.bam [sampleA].bbrd.q10.filt.bed
-
-   10) Filter the counts matrix:
-      scitools matrix-filter [sampleA counts matrix]
-
-   11) Perform term-frequency inverse-document-frequency tarnsformation:
-      scitools tfidf [sampleA filtered matrix]
-
-   12) Latent semantic indexing:
-      scitools lsi [sampleA tfidf matrix]
-
-   13) Visualize via tSNE:
-      scitools tsne [sampleA LSI matrix]
-
-   14) Plot tSNE:
-      scitools plot-dims -A [myConditions.annot] [sampleA LSI].tsne.dims
-";
-
-die "$help";
+# SUBROUTINES
+sub load_aliases {
+	foreach $alias ("dependencies", "depend") {$COMMAND_ALIAS{$alias} = "dependencies"};
+	foreach $alias ("fastq_dump", "dump_fastq") {$COMMAND_ALIAS{$alias} = "fastq_dump"};
+	foreach $alias ("fastq_split", "split_fastq") {$COMMAND_ALIAS{$alias} = "fastq_split"};
+	foreach $alias ("fastq_merge", "merge_fastq") {$COMMAND_ALIAS{$alias} = "fastq_merge"};
+	foreach $alias ("fastq_align", "align_fastq", "align") {$COMMAND_ALIAS{$alias} = "fastq_align"};
+	foreach $alias ("bam_bulk2sci", "bulk2sci") {$COMMAND_ALIAS{$alias} = "bam_bulk2sci"};
+	foreach $alias ("bam_addrg", "addrg") {$COMMAND_ALIAS{$alias} = "bam_addrg"};
+	foreach $alias ("bam_rmdup", "rmdup") {$COMMAND_ALIAS{$alias} = "bam_rmdup"};
+	foreach $alias ("bam_split", "split_bam") {$COMMAND_ALIAS{$alias} = "bam_split"};
+	foreach $alias ("bam_filter", "filter_bam") {$COMMAND_ALIAS{$alias} = "bam_filter"};
+	foreach $alias ("bam_merge", "merge_bam") {$COMMAND_ALIAS{$alias} = "bam_merge"};
+	foreach $alias ("bam_project", "project_bam", "project") {$COMMAND_ALIAS{$alias} = "bam_project"};
+	foreach $alias ("bam_aggregate", "aggregate_bam") {$COMMAND_ALIAS{$alias} = "bam_aggregate"};
+	foreach $alias ("signal_make", "make_signal") {$COMMAND_ALIAS{$alias} = "signal_make"};
+	foreach $alias ("plot_signal", "signal_plot") {$COMMAND_ALIAS{$alias} = "plot_signal"};
+	foreach $alias ("annot_make", "make_annot") {$COMMAND_ALIAS{$alias} = "annot_make"};
+	foreach $alias ("annot_merge", "merge_annot") {$COMMAND_ALIAS{$alias} = "annot_merge"};
+	foreach $alias ("rename_cells") {$COMMAND_ALIAS{$alias} = "rename_cells"};
+	foreach $alias ("atac_callpeaks", "atac_callpeak", "callpeak", "callpeaks") {$COMMAND_ALIAS{$alias} = "atac_callpeak"};
+	foreach $alias ("atac_mergepeaks", "atac_mergepeak", "mergepeak", "mergepeaks") {$COMMAND_ALIAS{$alias} = "atac_mergepeak"};
+	foreach $alias ("atac_counts", "atac_count", "count", "counts") {$COMMAND_ALIAS{$alias} = "atac_count"};
+	foreach $alias ("atac_chromvar", "chromvar") {$COMMAND_ALIAS{$alias} = "atac_chromvar"};
+	foreach $alias ("matrix_filter", "filter_matrix") {$COMMAND_ALIAS{$alias} = "matrix_filter"};
+	foreach $alias ("matrix_naomit", "naomit_matrix") {$COMMAND_ALIAS{$alias} = "matrix_naomit"};
+	foreach $alias ("matrix_summarize", "summarize_matrix") {$COMMAND_ALIAS{$alias} = "matrix_summarize"};
+	foreach $alias ("matrix_tf", "tf") {$COMMAND_ALIAS{$alias} = "matrix_tf"};
+	foreach $alias ("matrix_tfidf", "tfidf") {$COMMAND_ALIAS{$alias} = "matrix_tfidf"};
+	foreach $alias ("matrix_lsi", "lsi") {$COMMAND_ALIAS{$alias} = "matrix_lsi"};
+	foreach $alias ("matrix_zscore", "zscore_matrix") {$COMMAND_ALIAS{$alias} = "matrix_zscore"};
+	foreach $alias ("matrix_tsne", "tsne") {$COMMAND_ALIAS{$alias} = "matrix_tsne"};
+	foreach $alias ("matrix_pca", "pca") {$COMMAND_ALIAS{$alias} = "matrix_pca"};
+	foreach $alias ("matrix_aggregate", "aggregate_matrix") {$COMMAND_ALIAS{$alias} = "matrix_aggregate"};
+	foreach $alias ("matrix_merge", "merge_matrix") {$COMMAND_ALIAS{$alias} = "matrix_merge"};
+	foreach $alias ("matrix_approx_factors", "matrix_factors", "factors") {$COMMAND_ALIAS{$alias} = "matrix_factors"};
+	foreach $alias ("matrix_swne", "swne", "piglet") {$COMMAND_ALIAS{$alias} = "matrix_swne"};
+	foreach $alias ("umap", "owl", "matrix_umap") {$COMMAND_ALIAS{$alias} = "matrix_umap"};
+	foreach $alias ("dims_kmeans", "kmeans") {$COMMAND_ALIAS{$alias} = "dims_kmeans"};
+	foreach $alias ("dims_dbscan", "dbscan") {$COMMAND_ALIAS{$alias} = "dims_dbscan"};
+	foreach $alias ("dims_pcurve", "pcurve") {$COMMAND_ALIAS{$alias} = "dims_pcurve"};
+	foreach $alias ("pcurve_center", "center_pcurve", "lambda_center", "center_lambda") {$COMMAND_ALIAS{$alias} = "pcurve_center"};
+	foreach $alias ("prune_pcurve", "pcurve_prune") {$COMMAND_ALIAS{$alias} = "pcurve_prune"};
+	foreach $alias ("aggregate_cells", "aggregate") {$COMMAND_ALIAS{$alias} = "aggregate_cells"};
+	foreach $alias ("plot_complexity") {$COMMAND_ALIAS{$alias} = "plot_complexity"};
+	foreach $alias ("plot_dims") {$COMMAND_ALIAS{$alias} = "plot_dims"};
+	foreach $alias ("plot_pcurve") {$COMMAND_ALIAS{$alias} = "plot_pcurve"};
+	foreach $alias ("plot_reads") {$COMMAND_ALIAS{$alias} = "plot_reads"};
+	foreach $alias ("plot_factors") {$COMMAND_ALIAS{$alias} = "plot_factors"};
+	foreach $alias ("index_performance", "index_perform") {$COMMAND_ALIAS{$alias} = "index_performance"};
+	foreach $alias ("combine_data", "data_combine") {$COMMAND_ALIAS{$alias} = "data_combine"};
+	foreach $alias ("split_data", "data_split") {$COMMAND_ALIAS{$alias} = "data_split"};
 }
 
-################## NO COMMAND FOUND ##################
-
-die "\nERROR: It appears you have specified a command that is registered, but does not actually exist. If you see this message, please inform us of the bug.\n";
-
-#################### END SCITOOLS ####################
+sub load_descriptions {
+	$COMMAND_DESCRIPTOR{"dependencies"} = "Check dependencies";
+	$COMMAND_DESCRIPTOR{"gradient"} = "Print out color gradient pre-sets and details";
+	$COMMAND_DESCRIPTOR{"fastq_dump"} = "Go from illumina fastqs to SCI fastq format";
+	$COMMAND_DESCRIPTOR{"fastq_split"} = "Split SCI fastq files using annotation file";
+	$COMMAND_DESCRIPTOR{"fastq_merge"} = "Merge fastq files that have the same barcodes";
+	$COMMAND_DESCRIPTOR{"fastq_align"} = "Align fastq files and sort resulting bam file";
+	$COMMAND_DESCRIPTOR{"bam_bulk2sci"} = "Merge multiple bulk bam files to one SCI bam";
+	$COMMAND_DESCRIPTOR{"bam_addrg"} = "Add RG lines to bam";
+	$COMMAND_DESCRIPTOR{"bam_rmdup"} = "Barcode-based duplicate removal";
+	$COMMAND_DESCRIPTOR{"bam_filter"} = "Filter bam based on a variety of options";
+	$COMMAND_DESCRIPTOR{"bam_split"} = "Split bam by annotation file";
+	$COMMAND_DESCRIPTOR{"bam_merge"} = "Merges one or more bam files";
+	$COMMAND_DESCRIPTOR{"bam_project"} = "Use complexity to project additional sequence";
+	$COMMAND_DESCRIPTOR{"bam_aggregate"} = "Aggregate cells in bam by annotation file";
+	$COMMAND_DESCRIPTOR{"annot_make"} = "Make annotation file";
+	$COMMAND_DESCRIPTOR{"annot_merge"} = "Merge annotation files";
+	$COMMAND_DESCRIPTOR{"rename_cells"} = "Rename cells";
+	$COMMAND_DESCRIPTOR{"atac_callpeak"} = "Call peaks on bam file using macs2";
+	$COMMAND_DESCRIPTOR{"atac_mergepeak"} = "Merge ATAC_seq peak files";
+	$COMMAND_DESCRIPTOR{"atac_count"} = "Bam and peak file to a counts matrix";
+	$COMMAND_DESCRIPTOR{"atac_chromvar"} = "Run chromVAR wrapper on sci-ATAC-seq data";
+	$COMMAND_DESCRIPTOR{"signal_make"} = "Generate windowed signal over features from bam";
+	$COMMAND_DESCRIPTOR{"plot_signal"} = "Plot windowed signal views";
+	$COMMAND_DESCRIPTOR{"matrix_summarize"} = "Generate a summary and plots on matrix properties";
+	$COMMAND_DESCRIPTOR{"matrix_filter"} = "Filter a sci-ATAC-seq counts matrix";
+	$COMMAND_DESCRIPTOR{"matrix_naomit"} = "Filter out rows with NA values";
+	$COMMAND_DESCRIPTOR{"matrix_zscore"} = "Z-scores matrix by rows, columns, or globally";
+	$COMMAND_DESCRIPTOR{"matrix_tf"} = "Normalize only by term frequency";
+	$COMMAND_DESCRIPTOR{"matrix_tfidf"} = "Perform tf-idf on counts matrix";
+	$COMMAND_DESCRIPTOR{"matrix_lsi"} = "Perform Latent Semantic Indexing on matrix";
+	$COMMAND_DESCRIPTOR{"matrix_tsne"} = "tSNE on matrix";
+	$COMMAND_DESCRIPTOR{"matrix_pca"} = "PCA on matrix";
+	$COMMAND_DESCRIPTOR{"matrix_factors"} = "Calculates reconstruction error for NMF and SWNE";
+	$COMMAND_DESCRIPTOR{"matrix_nmf"} = "Non-negative Matrix Factorization of matrix";
+	$COMMAND_DESCRIPTOR{"matrix_swne"} = "SWNE on matrix ";
+	$COMMAND_DESCRIPTOR{"matrix_umap"} = "UMAP on matrix";
+	$COMMAND_DESCRIPTOR{"matrix_bicluster"} = "Bicluster and plot a heatmap";
+	$COMMAND_DESCRIPTOR{"matrix_aggregate"} = "Aggregate cells in counts matrix by annotation";
+	$COMMAND_DESCRIPTOR{"matrix_merge"} = "Merge matrices, no overlap in cell names assumed";
+	$COMMAND_DESCRIPTOR{"dims_kmeans"} = "Kmeans clustering on dims file";
+	$COMMAND_DESCRIPTOR{"dims_dbscan"} = "Density-base (dbscan) clustering on dims file";
+	$COMMAND_DESCRIPTOR{"dims_pcurve"} = "Project a principle curve through dims file";
+	$COMMAND_DESCRIPTOR{"pcurve_center"} = "Centers and normalizes a pcurve lambda";
+	$COMMAND_DESCRIPTOR{"pcurve_prune"} = "Prunes cells distant from the pcurve";
+	$COMMAND_DESCRIPTOR{"aggregate_cells"} = "Aggregate cells in proximity with one another";
+	$COMMAND_DESCRIPTOR{"plot_complexity"} = "Plot complexity data";
+	$COMMAND_DESCRIPTOR{"plot_dims"} = "Plot tSNE or other dimensions file";
+	$COMMAND_DESCRIPTOR{"plot_pcurve"} = "Genrate multiple princurve plots";
+	$COMMAND_DESCRIPTOR{"plot_factors"} = "Generates factor vs reconstruction error plot";
+	$COMMAND_DESCRIPTOR{"plot_reads"} = "Plot reads as points in genomic window";
+	$COMMAND_DESCRIPTOR{"index_performance"} = "Index performance on fastq or bam";
+	$COMMAND_DESCRIPTOR{"data_combine"} = "Combine matrixes, annotations, dims to a table";
+	$COMMAND_DESCRIPTOR{"data_split"} = "Breaks a combined data file into component files";
+}
