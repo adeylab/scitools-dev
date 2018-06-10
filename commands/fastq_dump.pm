@@ -3,8 +3,7 @@ package commands::fastq_dump;
 use commands::general;
 use Getopt::Std; %opt = ();
 use Exporter "import";
-@ISA = qw(Exporter);
-@EXPORT = qw(fastq_dump);
+@EXPORT = "fastq_dump";
 
 sub fastq_dump {
 
