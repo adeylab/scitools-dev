@@ -58,7 +58,9 @@ for generating R or other scripts that will be stored and executed.
 
 scitools commands are typically in the form of [class]-[operation].
 
-run 'scitools list' to print out a list of commands and descriptions.\n\n";
+run 'scitools list' to print out a list of commands and descriptions.
+To list a subset of commands include an additional argument with the
+search term, e.g. 'scitools list fastq'\n\n";
 
 # PULL COMMAND
 if (defined $ARGV[0]) {
@@ -66,12 +68,14 @@ if (defined $ARGV[0]) {
 		load_descriptions();
 		$die .= "   Command:             Description:\n\n";
 		foreach $command_module_name (sort {$a cmp $b} keys %COMMAND_NAMES) {
-			$list_command = sprintf("%-20s", $command_module_name);
-			$list_command =~ s/_/-/g;
-			if (defined $COMMAND_DESCRIPTOR{$command_module_name}) {
-				$die .= "   $list_command $COMMAND_DESCRIPTOR{$command_module_name}\n";
-			} else {
-				$die .= "   $list_command WARNING: No description listed.\n";
+			if (!defined $ARGV[1] || $command_module_name =~ /$ARGV[1]/) {
+				$list_command = sprintf("%-20s", $command_module_name);
+				$list_command =~ s/_/-/g;
+				if (defined $COMMAND_DESCRIPTOR{$command_module_name}) {
+					$die .= "   $list_command $COMMAND_DESCRIPTOR{$command_module_name}\n";
+				} else {
+					$die .= "   $list_command WARNING: No description listed.\n";
+				}
 			}
 		}
 		die "$die\n";
