@@ -154,6 +154,7 @@ sub load_aliases {
 }
 
 sub load_descriptions {
+	$COMMAND_DESCRIPTOR{"check_vars"} = "Debugging tool to test vars passed to a command";
 	$COMMAND_DESCRIPTOR{"dependencies"} = "Check dependencies";
 	$COMMAND_DESCRIPTOR{"gradient"} = "Print out color gradient pre-sets and details";
 	$COMMAND_DESCRIPTOR{"fastq_dump"} = "Go from illumina fastqs to SCI fastq format";
