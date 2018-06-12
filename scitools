@@ -101,6 +101,9 @@ if (defined $ARGV[0]) {
 
 # SUBROUTINES
 sub load_aliases {
+
+	# FOR PULIC RELEASE
+	
 	foreach $alias ("dependencies", "depend") {$COMMAND_ALIAS{$alias} = "dependencies"};
 	foreach $alias ("fastq_dump", "dump_fastq") {$COMMAND_ALIAS{$alias} = "fastq_dump"};
 	foreach $alias ("fastq_split", "split_fastq") {$COMMAND_ALIAS{$alias} = "fastq_split"};
@@ -122,7 +125,6 @@ sub load_aliases {
 	foreach $alias ("atac_callpeaks", "atac_callpeak", "callpeak", "callpeaks") {$COMMAND_ALIAS{$alias} = "atac_callpeak"};
 	foreach $alias ("atac_mergepeaks", "atac_mergepeak", "mergepeak", "mergepeaks") {$COMMAND_ALIAS{$alias} = "atac_mergepeak"};
 	foreach $alias ("atac_counts", "atac_count", "count", "counts") {$COMMAND_ALIAS{$alias} = "atac_count"};
-	foreach $alias ("atac_chromvar", "chromvar") {$COMMAND_ALIAS{$alias} = "atac_chromvar"};
 	foreach $alias ("matrix_filter", "filter_matrix") {$COMMAND_ALIAS{$alias} = "matrix_filter"};
 	foreach $alias ("matrix_naomit", "naomit_matrix") {$COMMAND_ALIAS{$alias} = "matrix_naomit"};
 	foreach $alias ("matrix_summarize", "summarize_matrix") {$COMMAND_ALIAS{$alias} = "matrix_summarize"};
@@ -134,9 +136,6 @@ sub load_aliases {
 	foreach $alias ("matrix_pca", "pca") {$COMMAND_ALIAS{$alias} = "matrix_pca"};
 	foreach $alias ("matrix_aggregate", "aggregate_matrix") {$COMMAND_ALIAS{$alias} = "matrix_aggregate"};
 	foreach $alias ("matrix_merge", "merge_matrix") {$COMMAND_ALIAS{$alias} = "matrix_merge"};
-	foreach $alias ("matrix_approx_factors", "matrix_factors", "factors") {$COMMAND_ALIAS{$alias} = "matrix_factors"};
-	foreach $alias ("matrix_swne", "swne", "piglet") {$COMMAND_ALIAS{$alias} = "matrix_swne"};
-	foreach $alias ("umap", "owl", "matrix_umap") {$COMMAND_ALIAS{$alias} = "matrix_umap"};
 	foreach $alias ("dims_kmeans", "kmeans") {$COMMAND_ALIAS{$alias} = "dims_kmeans"};
 	foreach $alias ("dims_dbscan", "dbscan") {$COMMAND_ALIAS{$alias} = "dims_dbscan"};
 	foreach $alias ("dims_pcurve", "pcurve") {$COMMAND_ALIAS{$alias} = "dims_pcurve"};
@@ -147,14 +146,24 @@ sub load_aliases {
 	foreach $alias ("plot_dims") {$COMMAND_ALIAS{$alias} = "plot_dims"};
 	foreach $alias ("plot_pcurve") {$COMMAND_ALIAS{$alias} = "plot_pcurve"};
 	foreach $alias ("plot_reads") {$COMMAND_ALIAS{$alias} = "plot_reads"};
-	foreach $alias ("plot_factors") {$COMMAND_ALIAS{$alias} = "plot_factors"};
 	foreach $alias ("index_performance", "index_perform") {$COMMAND_ALIAS{$alias} = "index_performance"};
 	foreach $alias ("combine_data", "data_combine") {$COMMAND_ALIAS{$alias} = "data_combine"};
 	foreach $alias ("split_data", "data_split") {$COMMAND_ALIAS{$alias} = "data_split"};
+	
+	# INTERNAL / DEVELOPMENT COMMANDS
+
+	foreach $alias ("atac_chromvar", "chromvar") {$COMMAND_ALIAS{$alias} = "atac_chromvar"};
+	foreach $alias ("matrix_approx_factors", "matrix_factors", "factors") {$COMMAND_ALIAS{$alias} = "matrix_factors"};
+	foreach $alias ("matrix_swne", "swne", "piglet") {$COMMAND_ALIAS{$alias} = "matrix_swne"};
+	foreach $alias ("umap", "owl", "matrix_umap") {$COMMAND_ALIAS{$alias} = "matrix_umap"};
+	foreach $alias ("plot_factors") {$COMMAND_ALIAS{$alias} = "plot_factors"};
+
 }
 
 sub load_descriptions {
-	$COMMAND_DESCRIPTOR{"check_vars"} = "Debugging tool to test vars passed to a command";
+
+	# FOR PULIC RELEASE
+	
 	$COMMAND_DESCRIPTOR{"dependencies"} = "Check dependencies";
 	$COMMAND_DESCRIPTOR{"gradient"} = "Print out color gradient pre-sets and details";
 	$COMMAND_DESCRIPTOR{"fastq_dump"} = "Go from illumina fastqs to SCI fastq format";
@@ -175,7 +184,6 @@ sub load_descriptions {
 	$COMMAND_DESCRIPTOR{"atac_callpeak"} = "Call peaks on bam file using macs2";
 	$COMMAND_DESCRIPTOR{"atac_mergepeak"} = "Merge ATAC_seq peak files";
 	$COMMAND_DESCRIPTOR{"atac_count"} = "Bam and peak file to a counts matrix";
-	$COMMAND_DESCRIPTOR{"atac_chromvar"} = "Run chromVAR wrapper on sci-ATAC-seq data";
 	$COMMAND_DESCRIPTOR{"signal_make"} = "Generate windowed signal over features from bam";
 	$COMMAND_DESCRIPTOR{"plot_signal"} = "Plot windowed signal views";
 	$COMMAND_DESCRIPTOR{"matrix_summarize"} = "Generate a summary and plots on matrix properties";
@@ -187,11 +195,6 @@ sub load_descriptions {
 	$COMMAND_DESCRIPTOR{"matrix_lsi"} = "Perform Latent Semantic Indexing on matrix";
 	$COMMAND_DESCRIPTOR{"matrix_tsne"} = "tSNE on matrix";
 	$COMMAND_DESCRIPTOR{"matrix_pca"} = "PCA on matrix";
-	$COMMAND_DESCRIPTOR{"matrix_factors"} = "Calculates reconstruction error for NMF and SWNE";
-	$COMMAND_DESCRIPTOR{"matrix_nmf"} = "Non-negative Matrix Factorization of matrix";
-	$COMMAND_DESCRIPTOR{"matrix_swne"} = "SWNE on matrix ";
-	$COMMAND_DESCRIPTOR{"matrix_umap"} = "UMAP on matrix";
-	$COMMAND_DESCRIPTOR{"matrix_bicluster"} = "Bicluster and plot a heatmap";
 	$COMMAND_DESCRIPTOR{"matrix_aggregate"} = "Aggregate cells in counts matrix by annotation";
 	$COMMAND_DESCRIPTOR{"matrix_merge"} = "Merge matrices, no overlap in cell names assumed";
 	$COMMAND_DESCRIPTOR{"dims_kmeans"} = "Kmeans clustering on dims file";
@@ -203,9 +206,21 @@ sub load_descriptions {
 	$COMMAND_DESCRIPTOR{"plot_complexity"} = "Plot complexity data";
 	$COMMAND_DESCRIPTOR{"plot_dims"} = "Plot tSNE or other dimensions file";
 	$COMMAND_DESCRIPTOR{"plot_pcurve"} = "Genrate multiple princurve plots";
-	$COMMAND_DESCRIPTOR{"plot_factors"} = "Generates factor vs reconstruction error plot";
 	$COMMAND_DESCRIPTOR{"plot_reads"} = "Plot reads as points in genomic window";
 	$COMMAND_DESCRIPTOR{"index_performance"} = "Index performance on fastq or bam";
 	$COMMAND_DESCRIPTOR{"data_combine"} = "Combine matrixes, annotations, dims to a table";
 	$COMMAND_DESCRIPTOR{"data_split"} = "Breaks a combined data file into component files";
+	
+	# INTERNAL / DEVELOPMENT COMMANDS
+	
+	$COMMAND_DESCRIPTOR{"check_vars"} = "Debugging tool to test vars passed to a command";
+	$COMMAND_DESCRIPTOR{"atac_chromvar"} = "Run chromVAR wrapper on sci-ATAC-seq data";
+	$COMMAND_DESCRIPTOR{"matrix_factors"} = "Calculates reconstruction error for NMF and SWNE";
+	$COMMAND_DESCRIPTOR{"matrix_nmf"} = "Non-negative Matrix Factorization of matrix";
+	$COMMAND_DESCRIPTOR{"matrix_swne"} = "SWNE on matrix ";
+	$COMMAND_DESCRIPTOR{"matrix_umap"} = "UMAP on matrix";
+	$COMMAND_DESCRIPTOR{"plot_factors"} = "Generates factor vs reconstruction error plot";
+	
+	$COMMAND_DESCRIPTOR{"matrix_bicluster"} = "Bicluster and plot a heatmap";
+	
 }
