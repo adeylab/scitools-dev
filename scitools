@@ -89,7 +89,7 @@ if (defined $ARGV[0]) {
 		if (defined $COMMAND_NAMES{$command}) {
 			require "commands/$command.pm";
 			import "commands::$command", "$command";
-			\&$command->(@ARGV);
+			\&$command(@ARGV);
 		} else {
 			$command =~ s/_/-/g;
 			die "ERROR: There is no command '$command', verify the command call name.\n$die";
