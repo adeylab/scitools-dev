@@ -145,7 +145,7 @@ foreach $cellID (keys %CELLID_DIMS) {
 			print DATA "$cellID\t$annot\t$CELLID_DIMS{$cellID}[$xdim]\t$CELLID_DIMS{$cellID}[$ydim]\n";
 		} else { # value annotations
 			if (defined $CELLID_value{$cellID}) {
-				print DATA "$cellID\t$CELLID_value{$cellID}\t$CELLID_DIMS{$cellID}[$xdim]\t$CELLID_DIMS{$cellID}[$ydim]\n";
+				print DATA "$cellID\t$CELLID_value{$cellID}\t$CELLID_DIMS{$cellID}[$xdim]\t$CELLID_DIMS{$cellID}[$ydim]\t$annot\n";
 			} else {
 				print STDERR "WARNING: $cellID does not have values specified in $opt{'V'}, skipping.\n";
 			}
@@ -227,6 +227,25 @@ print R "
 ggsave(plot=PLT,filename=\"$opt{'O'}.plot.png\",width=5,height=4,dpi=900)
 ggsave(plot=PLT,filename=\"$opt{'O'}.plot.pdf\",width=6,height=5)
 ";
+
+if (defined $opt{'A'} && defined $opt{'V'}) {
+print R "
+#Violin plot over opt A 
+
+Violin<-ggplot() + theme_bw() +
+	geom_violin(aes(IN\$V5,IN\$V2,fill=IN\$V5),alpha=0.5,color=\"gray30\",size=0.5) +
+	geom_jitter(aes(IN\$V5,IN\$V2),color=\"gray30\",size=0.15) +";
+if ($color_mapping !~ /none/i) {
+	print R "
+	scale_fill_manual(values = c($color_mapping)) +";
+}
+print R "
+	guides(fill=FALSE,colour=FALSE) +
+	xlab(\"Annot\") +
+	ylab(\"Lambda\") 
+ggsave(plot=Violin,filename=\"$opt{'O'}.violin.png\",width=7,height=3,dpi=900)
+ggsave(plot=Violin,filename=\"$opt{'O'}.violin.pdf\",width=7,height=3)";
+}
 
 close R;
 
