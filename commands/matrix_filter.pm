@@ -69,63 +69,54 @@ if (defined $opt{'r'}) {
 	} close IN;
 }
 
-read_matrix($ARGV[0]);
-
-foreach $cellID (keys %CELLID_FEATURE_value) {
-	$includeCell = 1;
-	if (defined $opt{'c'} && !defined $CELLID_list_include{$cellID}) {$includeCell = 0};
-	if (defined $opt{'a'} && !defined $ANNOT_include{$CELLID_annot{$cellID}}) {$includeCell = 0};
-	if ($includeCell>0) {
-		foreach $rowID (keys %{$CELLID_FEATURE_value{$cellID}}) {
-			$includeRow = 1;
-			if (defined $opt{'r'} && !defined $ROWID_list_include{$rowID}) {$includeRow = 0};
-			if ($includeRow>0 && abs($CELLID_FEATURE_value{$cellID}{$rowID})>0) {
-				$CELLID_count{$cellID}++;
-			}
-		}
-		if ($CELLID_count{$cellID}>=$colMin) {
-			$CELLID_include{$cellID} = 1;
-			$included_cells++;
-		}
-	}
-}
-
-foreach $rowID (keys %MATRIX_feature_nonZero) {
+open MATRIX, "$ARGV[0]";
+$h = <MATRIX>; chomp $h; @MATRIX_COLNAMES = split(/\t/, $h);
+$matrix_colNum = length(@MATRIX_COLNAMES);
+$matrix_rowNum = 0;
+while ($l = <MATRIX>) {
+	$matrix_rowNum++;
+	chomp $l;
+	@P = split(/\t/, $l);
+	$rowID = shift(@P);
 	if (!defined $opt{'r'} || defined $ROWID_list_include{$rowID}) {
-		$ROWID_count{$rowID} = 0;
-		foreach $cellID (keys %CELLID_include) {
-			if (abs($CELLID_FEATURE_value{$cellID}{$rowID})>0) {
-				$ROWID_count{$rowID}++;
+		for ($cellNum = 0; $cellNum < @P; $cellNum++) {
+			if ((!defined $opt{'c'} || defined $CELLID_list_include{$cellID}) &&
+				(!defined $opt{'a'} || defined $ANNOT_include{$CELLID_annot{$cellID}})) {
+				if (abs($P[$cellNum]) > 0) {
+					$COLNAME_nonzero{$MATRIX_COLNAMES{$cellNum}}++;
+					$ROWNAME_nonzero{$rowID}++;
+				}
 			}
 		}
 	}
-	if ($ROWID_count{$rowID}>=$rowMin) {
-		$ROWID_include{$rowID} = 1;
-		$included_rows++;
-	}
-}
+} close MATRIX;
 
 open OUT, ">$opt{'O'}.matrix";
 
-$out_header = "";
+$out_header = ""; $included_cells = 0; $included_rows = 0;
 for ($cellNum = 0; $cellNum < @MATRIX_COLNAMES; $cellNum++) {
-	if (defined $CELLID_include{$MATRIX_COLNAMES[$cellNum]}) {
+	if ($COLNAME_nonzero{$MATRIX_COLNAMES{$cellNum}}>=$opt{'C'}) {
 		$out_header .= "$MATRIX_COLNAMES[$cellNum]\t";
+		$included_cells++;
 	}
 } $out_header =~ s/\t$//;
 print OUT "$out_header\n";
 
-for ($rowNum = 0; $rowNum < @MATRIX_ROWNAMES; $rowNum++) {
-	$rowID = $MATRIX_ROWNAMES[$rowNum];
-	if (defined $ROWID_include{$rowID}) {
-		print OUT "$rowID";
-		for ($cellNum = 0; $cellNum < @MATRIX_COLNAMES; $cellNum++) {
-			if (defined $CELLID_include{$MATRIX_COLNAMES[$cellNum]}) {
-				print OUT "\t$CELLID_FEATURE_value{$MATRIX_COLNAMES[$cellNum]}{$rowID}";
+open MATRIX, "$ARGV[0]"; $null = <MATRIX>;
+while ($l = <MATRIX>) {
+	chomp $l;
+	@P = split(/\t/, $l);
+	$rowID = shift(@P); print OUT "$rowID";
+	if ($ROWNAME_nonzero{$rowID}>=$opt{'R'}) {
+		$included_rows++;
+		for ($cellNum = 0; $cellNum < @P; $cellNum++) {
+			if ($COLNAME_nonzero{$MATRIX_COLNAMES{$cellNum}}>=$opt{'C'}) {
+				print OUT "\t$P[$cellNum]";
 			}
-		} print OUT "\n";
+		}
 	}
-} close OUT;
+	print OUT "\n";
+} close MATRIX; close OUT;
 
 open LOG, ">$opt{'O'}.log";
 $ts = localtime(time);
