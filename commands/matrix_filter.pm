@@ -69,7 +69,7 @@ if (defined $opt{'r'}) {
 
 open MATRIX, "$ARGV[0]";
 $h = <MATRIX>; chomp $h; @MATRIX_COLNAMES = split(/\t/, $h);
-$matrix_colNum = length(@MATRIX_COLNAMES);
+$matrix_colNum = @MATRIX_COLNAMES;
 $matrix_rowNum = 0;
 while ($l = <MATRIX>) {
 	$matrix_rowNum++;
@@ -93,7 +93,7 @@ open OUT, ">$opt{'O'}.matrix";
 
 $out_header = ""; $included_cells = 0; $included_rows = 0;
 for ($cellNum = 0; $cellNum < @MATRIX_COLNAMES; $cellNum++) {
-	if ($COLNAME_nonzero{$MATRIX_COLNAMES{$cellNum}}>=$opt{'C'}) {
+	if ($COLNAME_nonzero{$MATRIX_COLNAMES{$cellNum}}>=$colMin) {
 		$out_header .= "$MATRIX_COLNAMES[$cellNum]\t";
 		$included_cells++;
 	}
@@ -105,10 +105,10 @@ while ($l = <MATRIX>) {
 	chomp $l;
 	@P = split(/\t/, $l);
 	$rowID = shift(@P); print OUT "$rowID";
-	if ($ROWNAME_nonzero{$rowID}>=$opt{'R'}) {
+	if ($ROWNAME_nonzero{$rowID}>=$rowMin) {
 		$included_rows++;
 		for ($cellNum = 0; $cellNum < @P; $cellNum++) {
-			if ($COLNAME_nonzero{$MATRIX_COLNAMES{$cellNum}}>=$opt{'C'}) {
+			if ($COLNAME_nonzero{$MATRIX_COLNAMES{$cellNum}}>=$colMin) {
 				print OUT "\t$P[$cellNum]";
 			}
 		}
