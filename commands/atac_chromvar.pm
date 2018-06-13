@@ -104,7 +104,7 @@ library(ggplot2)
 
 # load motifs and genome
 library($genome)
-motifs <- data(\"$opt{'M'}\")
+data($opt{'M'})
 
 # read in peaks and filter them
 peaks <- getPeaks(\"$ARGV[1]\",sort=TRUE)
@@ -117,8 +117,7 @@ counts <- filterSamples(counts, min_depth = $count_cutoff, min_in_peaks = $frac_
 counts <- filterPeaks(counts, non_overlapping = TRUE)
 
 # make motif index
-motifs <- getJasparMotifs()
-motif_ix <- matchMotifs(motifs, counts, genome = $genome)
+motif_ix <- matchMotifs($opt{'M'}, counts, genome = $genome)
 
 # calculate & print deviations
 dev <- computeDeviations(object = counts, annotations = motif_ix)
