@@ -19,8 +19,6 @@ $die2 = "
 scitools matrix-filter [options] [counts matrix]
    or    filter-matrix
    
-Note: The current version is not memory-efficient and is set to be updated.
-
 Options:
    -O   [STR]   Output prefix (default is [input].filt_[colMin]_[rowMin].matrix)
    -C   [INT]   Number of nonZero sites per column to retain (def = $colMin)
