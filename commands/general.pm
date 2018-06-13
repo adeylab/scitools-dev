@@ -13,9 +13,10 @@ use Exporter "import";
 	"read_complexity",
 		qw(%CELLID_uniq_reads),qw(%CELLID_raw_reads),qw(%CELLID_complexity),qw(%CELLID_complexity_rank),
 	"read_matrix",
-		qw(%CELLID_FEATURE_value),qw(@MATRIX_COLNAMES),qw(@MATRIX_ROWNAMES),qw(%MATRIX_CellID_nonZero),
-		qw(%MATRIX_feature_nonZero),qw(%MATRIX_CellID_signal),qw(%MATRIX_feature_signal),qw($matrix_colNum),
-		qw($matrix_rowNum),
+		qw(%CELLID_FEATURE_value),
+	"read_matrix_stats",
+		qw(@MATRIX_COLNAMES),qw(@MATRIX_ROWNAMES),qw(%MATRIX_CellID_nonZero),qw(%MATRIX_feature_nonZero),
+		qw(%MATRIX_CellID_signal),qw(%MATRIX_feature_signal),qw($matrix_colNum),qw($matrix_rowNum),
 	"read_color_string","read_color_file",
 		qw(%ANNOT_color),
 	"read_dims",
@@ -136,6 +137,31 @@ sub read_matrix {
 		push @MATRIX_ROWNAMES, $featureName;
 		for ($colNum = 0; $colNum < @MATRIX_ROW; $colNum++) {
 			$CELLID_FEATURE_value{$MATRIX_COLNAMES[$colNum]}{$featureName} = $MATRIX_ROW[$colNum];
+			if ($MATRIX_ROW[$colNum]>0) {
+				$MATRIX_CellID_nonZero{$MATRIX_COLNAMES[$colNum]}++;
+				$MATRIX_feature_nonZero{$featureName}++;
+				$MATRIX_CellID_signal{$MATRIX_COLNAMES[$colNum]}+=$MATRIX_ROW[$colNum];
+				$MATRIX_feature_signal{$featureName}+=$MATRIX_ROW[$colNum];
+			}
+		}
+		$matrix_rowNum++;
+	} close MAT;
+}
+
+sub read_matrix_stats {
+	@MATRIX_COLNAMES = (); @MATRIX_ROWNAMES = ();
+	%MATRIX_CellID_nonZero = (); %MATRIX_feature_nonZero = ();
+	%MATRIX_CellID_signal = (); %MATRIX_feature_signal = ();
+	$matrix_colNum = 0; $matrix_rowNum = 0;
+	open MAT, "$_[0]";
+	$column_line = <MAT>; chomp $column_line; @MATRIX_COLNAMES = split(/\t/, $column_line);
+	foreach $column (@MATRIX_COLNAMES) {$matrix_colNum++};
+	while ($matrix_line = <MAT>) {
+		chomp $matrix_line;
+		@MATRIX_ROW = split(/\t/, $matrix_line);
+		$featureName = shift(@MATRIX_ROW);
+		push @MATRIX_ROWNAMES, $featureName;
+		for ($colNum = 0; $colNum < @MATRIX_ROW; $colNum++) {
 			if ($MATRIX_ROW[$colNum]>0) {
 				$MATRIX_CellID_nonZero{$MATRIX_COLNAMES[$colNum]}++;
 				$MATRIX_feature_nonZero{$featureName}++;

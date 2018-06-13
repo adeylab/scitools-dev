@@ -26,7 +26,7 @@ Options:
 if (!defined $ARGV[0]) {die $die2};
 if (!defined $opt{'O'}) {$opt{'O'} = $ARGV[0]; $opt{'O'} =~ s/\.matrix$//};
 
-read_matrix($ARGV[0]);
+read_matrix_stats($ARGV[0]);
 if (!defined $opt{'N'}) {$opt{'N'} = $matrix_rowNum};
 
 open IN, "$ARGV[0]";
