@@ -14,7 +14,7 @@ $gradient_def = "BuRd";
 $imageType = "png";
 
 @ARGV = @_;
-getopts("", \%opt);
+getopts("O:d:t:s:A:a:C:c:r:N:n:G:R:V:v:X:", \%opt);
 
 $die2 = "
 scitools matrix-bicluster [options] [input matrix]
