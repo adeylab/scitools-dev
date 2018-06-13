@@ -71,7 +71,8 @@ open MATRIX, "$ARGV[0]";
 $h = <MATRIX>; chomp $h; @MATRIX_COLNAMES = split(/\t/, $h);
 $matrix_colNum = @MATRIX_COLNAMES;
 for ($cellNum = 0; $cellNum < @MATRIX_COLNAMES; $cellNum++) {
-	$COLNAME_nonzero{$MATRIX_COLNAMES{$cellNum}} = 0;
+	$cellID = $MATRIX_COLNAMES[$cellNum];
+	$COLNAME_nonzero{$cellID} = 0;
 }
 $matrix_rowNum = 0;
 while ($l = <MATRIX>) {
@@ -82,7 +83,7 @@ while ($l = <MATRIX>) {
 	$ROWNAME_nonzero{$rowID} = 0;
 	if (!defined $opt{'r'} || defined $ROWID_list_include{$rowID}) {
 		for ($cellNum = 0; $cellNum < @P; $cellNum++) {
-			$cellID = $MATRIX_COLNAMES{$cellNum};
+			$cellID = $MATRIX_COLNAMES[$cellNum];
 			if ((!defined $opt{'c'} || defined $CELLID_list_include{$cellID}) &&
 				(!defined $opt{'a'} || defined $ANNOT_include{$CELLID_annot{$cellID}})) {
 				if (abs($P[$cellNum]) > 0) {
@@ -98,9 +99,11 @@ open OUT, ">$opt{'O'}.matrix";
 
 $out_header = ""; $included_cells = 0; $included_rows = 0;
 for ($cellNum = 0; $cellNum < @MATRIX_COLNAMES; $cellNum++) {
-	if ($COLNAME_nonzero{$MATRIX_COLNAMES{$cellNum}}>=$colMin) {
-		$out_header .= "$MATRIX_COLNAMES[$cellNum]\t";
+	$cellID = $MATRIX_COLNAMES[$cellNum];
+	if ($COLNAME_nonzero{$cellID}>=$colMin) {
+		$out_header .= "$cellID\t";
 		$included_cells++;
+		print STDERR "DEBUG: colname = $cellID, signal = $COLNAME_nonzero{$cellID}\n";
 	}
 } $out_header =~ s/\t$//;
 print OUT "$out_header\n";
@@ -109,16 +112,18 @@ open MATRIX, "$ARGV[0]"; $null = <MATRIX>;
 while ($l = <MATRIX>) {
 	chomp $l;
 	@P = split(/\t/, $l);
-	$rowID = shift(@P); print OUT "$rowID";
+	$rowID = shift(@P);
 	if ($ROWNAME_nonzero{$rowID}>=$rowMin) {
 		$included_rows++;
+		print OUT "$rowID";
 		for ($cellNum = 0; $cellNum < @P; $cellNum++) {
-			if ($COLNAME_nonzero{$MATRIX_COLNAMES{$cellNum}}>=$colMin) {
+			$cellID = $MATRIX_COLNAMES[$cellNum];
+			if ($COLNAME_nonzero{$cellID}>=$colMin) {
 				print OUT "\t$P[$cellNum]";
 			}
 		}
+		print OUT "\n";
 	}
-	print OUT "\n";
 } close MATRIX; close OUT;
 
 open LOG, ">$opt{'O'}.log";
