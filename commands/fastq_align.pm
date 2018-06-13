@@ -18,7 +18,7 @@ getopts("t:b:s:A:L:rO:m:", \%opt);
 $die2 = "
 scitools fastq-align [options] [bwa reference] [output_prefix] [read1.fq] (read2.fq)
    or    align-fastq
-   or    algn
+   or    align
 
 Produces a sorted bam file. Read 2 is optional.
 
@@ -54,10 +54,13 @@ if (!defined $opt{'t'}) {$opt{'t'} = $threads};
 if (!defined $opt{'m'}) {$opt{'m'} = $memory};
 
 if (defined $ARGV[3]) {
-	system("$bwa mem -t $opt{'t'} $out_prefix $ARGV[2] $ARGV[3] 2>> $out_prefix.align.log | $samtools view -bSu - 2>> $out_prefix.align.log | $samtools sort -m $opt{'m'} -T $out_prefix.TMP - > $out_prefix.bam 2>> $out_prefix.align.log");
+	$align_command = "$bwa mem -t $opt{'t'} $ref_file $ARGV[2] $ARGV[3] 2>> $out_prefix.align.log | $samtools view -bSu - 2>> $out_prefix.align.log | $samtools sort -m $opt{'m'} -T $out_prefix.TMP - > $out_prefix.bam 2>> $out_prefix.align.log";
 } else { # single ended
-	system("$bwa mem -t $opt{'t'} $out_prefix $ARGV[2] 2>> $out_prefix.align.log | $samtools view -bSu - 2>> $out_prefix.align.log | $samtools sort -m $opt{'m'} -T $out_prefix.TMP - > $out_prefix.bam 2>> $out_prefix.align.log");
+	$align_command = "$bwa mem -t $opt{'t'} $ref_file $ARGV[2] 2>> $out_prefix.align.log | $samtools view -bSu - 2>> $out_prefix.align.log | $samtools sort -m $opt{'m'} -T $out_prefix.TMP - > $out_prefix.bam 2>> $out_prefix.align.log";
 }
+
+#print "Running: $align_command\n";
+system($align_command);
 
 }
 1;
