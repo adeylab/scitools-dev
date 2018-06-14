@@ -1,4 +1,4 @@
-package sci_utils::modes;
+package modes;
 
 sub new {
 
@@ -18,6 +18,9 @@ sub new {
 	$self->{read2} = "false";
 	$self->{index1} = "false";
 	$self->{index2} = "false";
+	
+	# set multimodal to false - true will be global
+	$self->{multimodal} = "false";
 	
 	open FILE, "$file";
 	while ($l = <FILE>) {
@@ -50,7 +53,9 @@ sub new {
 			} elsif ($include>0) {
 				
 				if ($l =~ /\&/) {
-				
+					# specify multimodal
+					$self->{multimodal} = "true";
+					
 					# close previous modality
 					$self->{$modalities[$modality_ID]}->{indexes} = [@indexes_present];
 					$self->{$modalities[$modality_ID]}->{outputs} = [@output_reads];
@@ -123,10 +128,28 @@ sub modalities {
 	return @{$self->{modalities}};
 }
 
+sub check_multimodal {
+	$self = shift;
+	return $self->{multimodal};
+}
+
 sub indexes {
 	$self = shift;
 	$modality = shift;
 	return @{$self->{$modality}->{indexes}};
+}
+
+sub index_length {
+	$self = shift;
+	$modality = shift;
+	$index_name = shift;
+	return $self->{$modality}->{ins}->{$index_name}->{length};
+}
+
+sub outputs {
+	$self = shift;
+	$modality = shift;
+	return @{$self->{$modality}->{outputs}};
 }
 
 sub pull_index {
@@ -134,7 +157,7 @@ sub pull_index {
 	$self = shift;
 	$modality = shift;
 	$index = shift;
-	$read_set = shift;
+	$read_set = shift; # read_set is an object specific to fastq_dump.pm
 	
 	$index_read = $self->{$modality}->{ins}->{$index}->{read};
 	$index_offset = $self->{$modality}->{ins}->{$index}->{offset};
@@ -145,6 +168,31 @@ sub pull_index {
 	$index_seq = substr($read_seq,$index_offset,$index_length);
 	
 	return $index_seq;
+	
+}
+
+sub pull_read {
+	
+	$self = shift;
+	$modality = shift;
+	$read = shift;
+	$read_set = shift;
+	
+	$out_read = $self->{$modality}->{outs}->{$read}->{read};
+	$out_offset = $self->{$modality}->{outs}->{$read}->{offset};
+	$out_length = $self->{$modality}->{outs}->{$read}->{length};
+	
+	$read_seq = $read_set->{$out_read}->{seq};
+	
+	if ($out_length =~ /all/) {
+		$out_seq = $read_seq;
+	} elsif ($out_length =~ /end/) {
+		$out_seq = substr($read_seq,$out_offset);
+	} else {
+		$out_seq = substr($read_seq,$out_offset,$out_length);
+	}
+	
+	return $out_seq;
 	
 }
 
