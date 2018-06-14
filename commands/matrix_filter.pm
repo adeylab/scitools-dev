@@ -103,7 +103,6 @@ for ($cellNum = 0; $cellNum < @MATRIX_COLNAMES; $cellNum++) {
 	if ($COLNAME_nonzero{$cellID}>=$colMin) {
 		$out_header .= "$cellID\t";
 		$included_cells++;
-		print STDERR "DEBUG: colname = $cellID, signal = $COLNAME_nonzero{$cellID}\n";
 	}
 } $out_header =~ s/\t$//;
 print OUT "$out_header\n";

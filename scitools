@@ -36,7 +36,7 @@ load_gradient_defaults();
 # LOAD COMMANDS DIRECTLY FROM MODULE FILES
 opendir CMDS, "$RealBin/commands" || die "ERROR: Cannot locate the commands directory.\nERROR: It should be present in the same directory as the scitools executable: $RealBin\n";
 while ($command_module_name = readdir(CMDS)) {
-	if ($command_module_name !~ /(^\.|general|empty_module|test)/ && $command_module_name =~ /\.pm$/) { # exceptions -> do not show as available commands
+	if ($command_module_name !~ /(^\.|general|empty_module|test|object)/ && $command_module_name =~ /\.pm$/) { # exceptions -> do not show as available commands
 		$command_module_name =~ s/\.pm$//;
 		$COMMAND_NAMES{$command_module_name} = 1;
 	}
