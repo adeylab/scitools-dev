@@ -48,3 +48,13 @@ To add a new python script, do the following:
    2) Conform to the same options and help text format as with other perl modules.
 
    3) scitools will call the command and pass it all arguments (other than the command name)
+   
+For either command type, once it is developed, do the following:
+
+   1) Within the scitools executable there are two subroutines: load_aliases and load_descriptions
+
+   2) In load_aliases, add another line with the command name and include alternative ways
+      to call it if there are any.
+
+   3) In load_descriptions, add another line with a brief statement of the command. This is the
+      description that gets listed in "scitools list"
