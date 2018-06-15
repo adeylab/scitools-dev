@@ -1,7 +1,7 @@
 
 The scitools-dev repository is for internal Adey Lab or invited collaborator usage only.
 
-The structure os scitools is the following:
+The structure of scitools is the following:
 
    FOLDER -> PATH/scitools-dev/
   
