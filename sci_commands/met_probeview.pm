@@ -98,7 +98,7 @@ rm(probe)
 probe_plot<-ggplot()+
   geom_line(aes(probe_m\$loc,probe_m\$metm/(probe_m\$metm+probe_m\$nonmetm)*100,group=probe_m\$clusterID,color=as.factor(probe_m\$clusterID)),alpha=1/10)+
   geom_smooth(aes(probe_m\$loc,probe_m\$metm/(probe_m\$metm+probe_m\$nonmetm)*100,group=probe_m\$clusterID,color=as.factor(probe_m\$clusterID)),span=0.3,na.rm=T,method=\"loess\")+
-  xlab(\"$opt{'F'} +/- $opt{'f'} bp\ in $opt{'w'} bp bins")+
+  xlab(\"$opt{'F'} +/- $opt{'f'} bp\ in $opt{'w'} bp bins\")+
   ylab(\"$opt{'c'} Methylation Percentage\")+
   theme_bw()
 
@@ -118,7 +118,7 @@ library(reshape2)
 library(plyr)
 library(gridExtra)
 signal<-read.table(\"$opt{'c'}.$opt{'F'}.bed\")
-colnames(signal)<-c(\"loc\",\"nonmet\",\"met\",\"cellID\",\"window\")
+colnames(signal)<-c(\"loc\",\"met\",\"nonmet\",\"cellID\",\"window\")
 annot<-read.table(\"$opt{'A'}\");
 colnames(annot)<-c(\"cellID\",\"x\",\"y\",\"clusterID\")
 probe<-merge(signal,annot,by=\"cellID\")
