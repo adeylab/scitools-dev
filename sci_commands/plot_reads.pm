@@ -256,7 +256,11 @@ if (defined $opt{'B'}) {
 }
 
 close OUT;
-system("rm -f $opt{'O'}$region_name.data && mv $opt{'O'}$region_name.data.full $opt{'O'}$region_name.data");
+if (!defined $opt{'X'}) {
+	system("rm -f $opt{'O'}$region_name.data && mv $opt{'O'}$region_name.data.full $opt{'O'}$region_name.data");
+} else {
+	system("mv $opt{'O'}$region_name.data $opt{'O'}$region_name.data.initial && mv $opt{'O'}$region_name.data.full $opt{'O'}$region_name.data");
+}
 
 if (defined $opt{'G'}) {
 	$scale_increment = int(($cell_ct/80)*$gene_scale_factor);
