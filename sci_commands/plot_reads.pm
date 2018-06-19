@@ -182,6 +182,7 @@ if (!defined $opt{'a'}) {
 } else {
 	for ($i = 0; $i < @ANNOT_LIST; $i++) {
 		if (defined $ANNOT_ids{$ANNOT_LIST[$i]}) {
+			$annot = $ANNOT_LIST[$i];
 			push @ANNOT_ORDER, $annot;
 		}
 	}
