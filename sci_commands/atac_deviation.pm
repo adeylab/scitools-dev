@@ -147,7 +147,7 @@ foreach $siteID (sort {$SITEID_density{$a}<=>$SITEID_density{$b}} keys %SITEID_d
 
 # shuffle peaks in the bins
 foreach $binID (keys %BINID_siteArray) {
-	@shuffled = shuffle @{$BINID_siteArray{$binID}};
+	@shuffled = shuffle(@{$BINID_siteArray{$binID}});
 	@{$BINID_siteArray{$binID}} = @shuffled;
 }
 
@@ -241,7 +241,7 @@ foreach $TF (keys %TF_passing) {
 		
 		# reshuffle the site bins
 		foreach $binID (keys %BINID_siteArray) {
-			@shuffled = shuffle @{$BINID_siteArray{$binID}};
+			@shuffled = shuffle(@{$BINID_siteArray{$binID}});
 			@{$BINID_siteArray{$binID}} = @shuffled;
 		}
 		
