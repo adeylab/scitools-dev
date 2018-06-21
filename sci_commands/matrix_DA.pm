@@ -1,7 +1,7 @@
-package commands::command_name;
+package sci_commands::matrix_DA;
 
-#change once new version
-use commands::general;
+
+use sci_utils::general;
 use Getopt::Std; %opt = ();
 use Exporter "import";
 @EXPORT = ("matrix_DA");
@@ -13,16 +13,19 @@ use Getopt::Std; %opt = ();
 getopts("O:a:", \%opt);
 
 $die2 = "
-scitools matrix-DA [options] [counts matrix] [annotation file]
+scitools matrix-DA [options] [counts matrix] [aggr annotation file]
    or    DA-matrix
 
-Note: if a non counts matrix is provided, it will still sum the values.
-Support for comma-separated annotations (i.e. cell aggregation with
-oversampling) has been added.
+This script will perform DA analysis on aggregate matrix. Aggregate annotation file that is output by the aggregate_cells
 
 Options:
    -O   [STR]   Output prefix (default is [input annot].matrix)
-   -a   [STR]   Comma separated list of annotations to include in DA
+   -A   [STR]   provided annotation file which consist of aggragate_centroid_name\tgroupthat you want to compare
+		e.g.: IND1_1	IND1
+		      IND1_2	IND1
+		      IND2_3	IND2
+		Warning: This will be used for comparisons instead of agg annot file
+   -I	[STR]   If defined script compares an individual group to all others combined as opposed to comparing group by group (default) 	
 
    
 ";
@@ -40,23 +43,15 @@ if (-e "$opt{'O'}.name_out") {
 system("mkdir $opt{'O'}.$name_out");
 	
 #read in annotation, scitools approach
-if (!defined $ARGV[1]) {die $die2}
-else {read_annot($ARGV[1])};
-
-#define on your own which annot to include in the comparison, scitools approach
-if (defined $opt{'a'}) {
-	@ANNOT_LIST = split(/,/, $opt{'a'});
-	foreach $annot (@ANNOT_LIST) {
-		$ANNOT_include{$annot} = 1;
-	}
-}
+if (!defined $opt{'A'}) {read_annot($ARGV[1])}
+else {read_annot($opt{'A'})};
 
 
-#read in matrix scitools standard
+#read in matrix for basic stats, scitools standard
 read_matrix_stats($ARGV[0]);
 
 
-#create annot
+#create contrast annot
 
 #contrast of individual groups against all other groups together
 
@@ -67,7 +62,7 @@ for my $group1 (sort keys %ANNOT_count)
                         open OUT, "> $opt{'O'}.$name_out/$opt{'O'}_$contrast.annot";   
                         for my $cellID (sort keys %CELLID_annot)
 			{
-					#could not throw out cells that have double annot, think about it tomorrow
+					#could not throw out cells that have double annot, think about it later
 					@ANNOTS = split(/,/, $CELLID_annot{$cellID});
 					$check_doubleannot=0;
 					foreach $annot (@ANNOTS){$check_doubleannot++;}
