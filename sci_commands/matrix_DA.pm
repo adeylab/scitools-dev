@@ -1,10 +1,10 @@
-package sci_commands::matrix_DA;
+package sci_commands::matrix_da;
 
 
 use sci_utils::general;
 use Getopt::Std; %opt = ();
 use Exporter "import";
-@EXPORT = ("matrix_DA");
+@EXPORT = ("matrix_da");
 
 sub matrix_DA {
 
@@ -44,25 +44,24 @@ system("mkdir $opt{'O'}.$name_out");
 system("mkdir $opt{'O'}.$name_out/plots");
 	
 #read in annotation, scitools approach
-if (!defined $opt{'A'}) 
+if (defined $opt{'A'}) 
 	{
+	read_annot($opt{'A'})
+	for my $CELLID (sort keys %CELLID_annot)
+	{
+		push(@{$ANNOT_AGGID{$CELLID_annot{$CELLID}}})=$CELLID;
+	}
+	
+	}
+elsif (!defined $opt{'A'} && defined $ARGV[1]) {
 	read_annot($ARGV[1])
 	for my $aggannot (sort keys %ANNOT_count)
 	{
 		@annotagg = split(/_/, $aggannot);
 		push(@{$ANNOT_AGGID{$annotagg[0]}})=$aggannot;
 	}
-	
-	}
-else {
-read_annot($opt{'A'})
+	} else {die $die2}
 
-	for my $CELLID (sort keys %CELLID_annot)
-	{
-		push(@{$ANNOT_AGGID{$CELLID_annot{$CELLID}}})=$CELLID;
-	}
-
-};
 
 
 #read in matrix for basic stats, scitools standard
