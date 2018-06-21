@@ -43,8 +43,25 @@ if (-e "$opt{'O'}.name_out") {
 system("mkdir $opt{'O'}.$name_out");
 	
 #read in annotation, scitools approach
-if (!defined $opt{'A'}) {read_annot($ARGV[1])}
-else {read_annot($opt{'A'})};
+if (!defined $opt{'A'}) 
+	{
+	read_annot($ARGV[1])
+	for my $aggannot (sort keys %ANNOT_count)
+	{
+		@annotagg = split(/_/, $aggannot);
+		push(@{$ANNOT_AGGID{$annotagg[0]}})=$aggannot;
+	}
+	
+	}
+else {
+read_annot($opt{'A'})
+
+	for my $CELLID (sort keys %CELLID_annot)
+	{
+		push(@{$ANNOT_AGGID{$CELLID_annot{$CELLID}}})=$CELLID;
+	}
+
+};
 
 
 #read in matrix for basic stats, scitools standard
@@ -55,76 +72,61 @@ read_matrix_stats($ARGV[0]);
 
 #contrast of individual groups against all other groups together
 
-
-for my $group1 (sort keys %ANNOT_count)
+if (defined $opt{'I'})
+{
+for my $group1 (sort keys %ANNOT_AGGID)
 	{
                	$contrast="$group1\_vs_all_as_ref";
-                        open OUT, "> $opt{'O'}.$name_out/$opt{'O'}_$contrast.annot";   
-                        for my $cellID (sort keys %CELLID_annot)
+               	$contrast_hash{$contrast}++;
+                open OUT, "> $opt{'O'}.$name_out/$opt{'O'}_$contrast.annot"; 
+                for my $group2 (sort keys %ANNOT_AGGID))
+		{
+			if ($group1 ne $group2)
 			{
-					#could not throw out cells that have double annot, think about it later
-					@ANNOTS = split(/,/, $CELLID_annot{$cellID});
-					$check_doubleannot=0;
-					foreach $annot (@ANNOTS){$check_doubleannot++;}
-						if($check_doubleannot<2)
-						{
-						foreach $annot (@ANNOTS){
-									if ($annot eq $group1)
-									{
-									print OUT $cellID. "\t" .$group1. "\n";
-									}
-									else
-									{
-									print OUT $cellID. "\t" .$contrast. "\n";
-									}
-									}
-						}
-				
-				
-                        }
-                      
+				for my $AGGID (@{ANNOT_AGGID{$group1}})
+				{
+               			print OUT $AGGID. "\t" .$group1. "\n";
+				}
+                        
+				for my $AGGID (@{ANNOT_AGGID{$group2}})
+				{
+               			print OUT $AGGID. "\t" .$contrast."\n";
+				}
+			}	  
+		}
+	 close(OUT);
          }
-         close(OUT);
-         
+        
+ } else {
 #contrast of individual groups against other individual groups
-for my $group1 (sort keys %ANNOT_count)
+
+
+for my $group1 (sort keys %ANNOT_AGGID)
 	{
-		for my $group2 (sort keys %ANNOT_count)
-               {
-               	$contrast="$group1\_vs_$group2\_as_ref";
+		for my $group2 (sort keys %ANNOT_AGGID))
+		{
                	if (($group1 ne $group2) && (!defined $contrast_hash{$contrast}))
                	{
+               	 $contrast="$group1\_vs_$group2\_as_ref";
                  $contrast_hash{$contrast}++;
                         open OUT, "> $opt{'O'}.$name_out/$opt{'O'}_$contrast.annot";   
-                        for my $cellID (sort keys %CELLID_annot)
-			{
-				#could not throw out cells that have double annot, think about it tomorrow
-					@ANNOTS = split(/,/, $CELLID_annot{$cellID});
-					$check_doubleannot=0;
-					foreach $annot (@ANNOTS){if (($annot eq $group1) || ($annot eq $group2)){$check_doubleannot++;}}
-						if($check_doubleannot<2)
-						{
-						foreach $annot (@ANNOTS){
-									if ($annot eq $group1)
-									{
-									print OUT $cellID. "\t" .$group1. "\n";
-									}
-									if ($annot eq $group2)
-									{
-									print OUT $cellID. "\t" .$contrast. "\n";
-									}
-							
-									}
-						}
-				
-				
-                        }
-                 }     
-               	}       	
-         }     	
-         close(OUT);
+                        for my $AGGID (@{ANNOT_AGGID{$group1}})
+               		{
+               			print OUT $AGGID. "\t" .$group1. "\n";
+               		}
+                        
+               		for my $AGGID (@{ANNOT_AGGID{$group2}})
+               		{
+               			print OUT $AGGID. "\t" .$contrast."\n";
+               		}
+               	}
+               	close(OUT);
+		}
+            
 
-for $contrast (sort keys %ANNOT_count)
+	}
+}
+for $contrast (sort keys %contrast_hash)
 	{
 print "Analyzing : ". $contrast."\n";        
 open R, ">$opt{'O'}.$name_out/Diff_acc_$contrast.r";
