@@ -79,6 +79,14 @@ print LOG "$ts\tMatrix read:
 
 # if this file is not defined, make it
 if (!defined $opt{'I'}) {
+	
+	open IN, "$ARGV[1]";
+	while ($l = <IN>) {
+		chomp $l;
+		($chr,$start,$end,$TF) = split(/\t/, $l);
+		$TF_count{$TF}++;
+	} close IN;
+	
 	open IN, "$bedtools intersect -a $opt{'O'}.dev/peaks.bed -b $ARGV[1] -wa -wb |";
 	while ($l = <IN>) {
 		chomp $l;
