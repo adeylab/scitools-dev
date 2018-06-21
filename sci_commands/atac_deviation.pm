@@ -295,14 +295,16 @@ close SRT;
 
 }
 
-sub shuffle (@) {
-  my @a=\(@_);
-  my $n;
-  my $i=@_;
-  map {
-    $n = rand($i--);
-    (${$a[$n]}, $a[$n] = $a[$i])[0];
-  } @_;
+sub shuffle {
+	
+	@initial = @_;
+	$i = $#initial+1;
+	while ( --$i ) {
+		my $j = int rand( $i+1 );
+		@initial[$i,$j] = @initial[$j,$i];
+	}
+	return @initial;
+	
 }
 
 1;
