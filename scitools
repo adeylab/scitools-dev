@@ -169,7 +169,8 @@ sub load_aliases {
 	foreach $alias ("matrix_swne", "swne", "piglet") {$COMMAND_ALIAS{$alias} = "matrix_swne"};
 	foreach $alias ("umap", "owl", "matrix_umap") {$COMMAND_ALIAS{$alias} = "matrix_umap"};
 	foreach $alias ("plot_factors") {$COMMAND_ALIAS{$alias} = "plot_factors"};
-
+	foreach $alias ("atac_deviation", "deviation", "deviation_atac") {$COMMAND_ALIAS{$alias} = "atac_deviation"};
+	
 }
 
 sub load_descriptions {
@@ -232,6 +233,7 @@ sub load_descriptions {
 	$COMMAND_DESCRIPTOR{"matrix_swne"} = "SWNE on matrix ";
 	$COMMAND_DESCRIPTOR{"matrix_umap"} = "UMAP on matrix";
 	$COMMAND_DESCRIPTOR{"plot_factors"} = "Generates factor vs reconstruction error plot";
+	$COMMAND_DESCRIPTOR{"atac_deviation"} = "Deviation and variability for a feature set";
 	
 	$COMMAND_DESCRIPTOR{"matrix_bicluster"} = "Bicluster and plot a heatmap";
 	
