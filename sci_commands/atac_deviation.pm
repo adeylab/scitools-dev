@@ -4,7 +4,6 @@ use sci_utils::general;
 use Getopt::Std; %opt = ();
 use Exporter "import";
 @EXPORT = ("atac_deviation");
-use List::Util qw(first max maxstr min minstr reduce shuffle sum);
 
 sub atac_deviation {
 
@@ -295,4 +294,15 @@ foreach $TF (sort {$TF_variability{$b}<=>$TF_variability{$a}} keys %TF_variabili
 close SRT;
 
 }
+
+sub shuffle (@) {
+  my @a=\(@_);
+  my $n;
+  my $i=@_;
+  map {
+    $n = rand($i--);
+    (${$a[$n]}, $a[$n] = $a[$i])[0];
+  } @_;
+}
+
 1;
