@@ -41,6 +41,7 @@ if (-e "$opt{'O'}.name_out") {
 }
 
 system("mkdir $opt{'O'}.$name_out");
+system("mkdir $opt{'O'}.$name_out/plots");
 	
 #read in annotation, scitools approach
 if (!defined $opt{'A'}) 
@@ -150,54 +151,23 @@ dds <- DESeqDataSetFromMatrix(countData = counts_mat,
 dds\$condition <- relevel(dds\$condition, ref = \"$contrast\")
 dds <- DESeq(dds,parallel = TRUE)
 res <- results(dds)
-#write.table(as.matrix(res),file = \"$opt{'O'}.$name_out/Differential_acc_$contrast.txt\", col.names = TRUE, row.names = TRUE, sep = \"\t\", quote = FALSE)
-
-
-df<-as.data.frame(res)
-
-output<-data.frame(\"annotation\"=as.matrix(res),\"pval\"=df\$pvalue,\"pval_adjust\"=df\$padj,\"log2fold\"= df\$log2FoldChange)
-
-##Highlight genes that have an absolute fold change > 2 and a p-value < Bonferroni cut-off
-output\$threshold = as.factor(abs(output\$log2fold) > 2 & output\$pval_adjust < 0.05)
-
+write.table(as.matrix(res),file = \"$opt{'O'}.$name_out/Differential_acc_$contrast.txt\", col.names = TRUE, row.names = TRUE, sep = \"\t\", quote = FALSE)
 
 res <- lfcShrink(dds, coef=2)
 write.table(as.matrix(res),file = \"$opt{'O'}.$name_out/Differential_acc_$contrast\_shrunk.txt\", col.names = TRUE, row.names = TRUE, sep = \"\t\", quote = FALSE)
 
 
 # read in shrunk
-a<-read.delim(\"./Differential_deviation_$contrast\_CCAN_shrunk.txt\")
+a<-read.delim(\"$opt{'O'}.$name_out/Differential_acc_$contrast\_shrunk.txt\")
 #read in normal
-b<-read.delim(\"./Differential_deviation_$contrast\_CCAN.txt\")
+b<-read.delim(\"$opt{'O'}.$name_out/Differential_acc_$contrast.txt\")
 shrunk_corr<-data.frame(log2FoldChange=a\$V1,pvalue=b\$pvalue,padj=b\$padj)
 row.names(shrunk_corr)<-row.names(b)
-
 qval<-qvalue(shrunk_corr\$pvalue,fdr.level=0.01)
 shrunk_corr\$qval<-qval\$qvalues
-write.table(as.matrix(shrunk_corr),file = \"Diff_acc_shrunk_$contrast\_combined.txt\", col.names = TRUE, row.names = TRUE, sep = \"\t\", quote = FALSE)
+#write.table(as.matrix(shrunk_corr),file = \"Diff_acc_shrunk_$contrast\_combined.txt\", col.names = TRUE, row.names = TRUE, sep = \"\t\", quote = FALSE)
+df<-shrunk_corr
 
-
-
-res<-shrunk_corr
-
-
-
-
-
-# Make a basic volcano plot
-png(filename=\"./plots/Differential_access_$contrast\_aggr_shrunk1.png\")
-with(res, plot(log2FoldChange, -log10(pvalue), pch=20, main=\"Volcano plot\"))
-#xlim=c(-2.5,2)
-# Add colored points: red if padj<0.05, orange of log2FC>1, green if both)
-with(subset(res, padj<.05 ), points(log2FoldChange, -log10(pvalue), pch=20, col=\"red\"))
-with(subset(res, abs(log2FoldChange)>1), points(log2FoldChange, -log10(pvalue), pch=20, col=\"orange\"))
-with(subset(res, padj<.05 & abs(log2FoldChange)>1), points(log2FoldChange, -log10(pvalue), pch=20, col=\"green\"))
-dev.off()
-
-
-
-
-df<-res
 
 output<-data.frame(\"annotation\"=row.names(b),\"pval\"=df\$pvalue,\"pval_adjust\"=df\$padj,\"log2fold\"= df\$log2FoldChange,\"qval\"= df\$qval)
 
@@ -205,21 +175,14 @@ output<-data.frame(\"annotation\"=row.names(b),\"pval\"=df\$pvalue,\"pval_adjust
 output\$threshold = as.factor(output\$log2fold > 1 & output\$qval < 0.05)
 
 
-write.table(as.matrix(output),file = \"Diff_acc_shrunk_$contrast\_qval01.txt\", col.names = TRUE, row.names = FALSE, sep = \"\t\", quote = FALSE)
+write.table(as.matrix(output),file = \"$opt{'O'}.$name_out/Differential_acc_$contrast\_shrunk_q001.txt\", col.names = TRUE, row.names = FALSE, sep = \"\t\", quote = FALSE)
 
 ##Construct the plot object
 g <- ggplot(data=output, aes(x=log2fold, y=-log10(pval), colour=threshold)) +
   geom_point(alpha=0.4, size=1.75) +
   xlab(\"log2 fold change\") + ylab(\"-log10 p-value\")+theme_bw()
-ggsave(plot = g,filename = \"./plots/Differential_access_$contrast\_shrunk_qval_001_threshold_plot_pval.png\")
-ggsave(plot = g,filename = \"./plots/Differential_access_$contrast\_shrunk_qval_001_threshold_plot_pval.pdf\")
-
-##Construct the plot object
-g <- ggplot(data=output, aes(x=log2fold, y=-log10(qval), colour=threshold)) +
-  geom_point(alpha=0.4, size=1.75) +
-  xlab(\"log2 fold change\") + ylab(\"-log10 q-value\")+theme_bw()
-ggsave(plot = g,filename = \"./plots/Differential_access_$contrast\_shrunk2_qval_001_threshold_plotqval.png\")
-ggsave(plot = g,filename = \"./plots/Differential_access_$contrast\_shrunk2_qval_001_threshold_plotqval.pdf\")
+ggsave(plot = g,filename = \"$opt{'O'}.$name_out/plots/Differential_acc_$contrast\_shrunk_qval_001_threshold_plotpval.png\")
+ggsave(plot = g,filename = \"$opt{'O'}.$name_out/plots/Differential_acc_$contrast\_shrunk_qval_001_threshold_plotpval.pdf\")
 
 
 qval<-qvalue(shrunk_corr\$pvalue,fdr.level=0.2)
@@ -229,25 +192,28 @@ df<-as.data.frame(res)
 output<-data.frame(\"annotation\"=row.names(b),\"pval\"=df\$pvalue,\"pval_adjust\"=df\$padj,\"log2fold\"= df\$log2FoldChange,\"qval\"= df\$qval)
 
 output\$threshold = as.factor(output\$log2fold > 1 & output\$qval < 0.05)
-write.table(as.matrix(output),file = \"Diff_acc_shrunk_$contrast\_qval20.txt\", col.names = TRUE, row.names = FALSE, sep = \"\t\", quote = FALSE)
+write.table(as.matrix(output),file = \"$opt{'O'}.$name_out/Differential_acc_$contrast\_shrunk_q02.txt\", col.names = TRUE, row.names = FALSE, sep = \"\t\", quote = FALSE)
 
          
 ";
+
 close(R);
-system("Rscript Diff_acc_$contrast.r > ./Diff_acc_$contrast.stdout 2> ./Diff_acc_$contrast.stderr");	
-system("rm -f Diff_acc_$contrast.r ./Diff_acc_$contrast.stdout ./Diff_acc_$contrast.stderr");	
+system("Rscript $opt{'O'}.$name_out/Diff_acc_$contrast.r > $opt{'O'}.$name_out/Diff_acc_$contrast.stdout 2> $opt{'O'}.$name_out/Diff_acc_$contrast.stderr");	
+system("rm -f $opt{'O'}.$name_out/Diff_acc_$contrast.r $opt{'O'}.$name_out/Diff_acc_$contrast.stdout $opt{'O'}.$name_out/Diff_acc_$contrast.stderr $opt{'O'}.$name_out/Differential_acc_$contrast.txt $opt{'O'}.$name_out/Differential_acc_$contrast\_shrunk.txt");	
 }
 
 #from here we are looking at peaks that are specifially differentially accessible only in that contrast
 
-#compare 0.01 FDR contrast peaks to 0.2 FDR of other groups
-
+#compare 0.01 FDR contrast peaks to 0.2 FDR of other groups 
+# it is only worth it to do this in the one vs all comparisons
+if (!defined $opt{'I'})
+{
 for my $contrast1 (sort keys %contrast_hash)
 	{
 	my ($group1a,$group1b) = split(/_vs_/, $contrast1);
 	
         my %signf_peaks=();
-        open IN, "Diff_acc_shrunk_$contrast1\_qval01.txt"; 
+        open IN, "$opt{'O'}.$name_out/Differential_acc_$contrast\_shrunk_q001.txt"; 
         my $firstline = <IN>;
                         while (my $l = <IN>) 
                         {
@@ -261,20 +227,13 @@ for my $contrast1 (sort keys %contrast_hash)
 
                          }
                           close(IN);
-	
-	
-	
-	
-	
+
 	for my $contrast2 (sort keys %contrast_hash)
                {
-                my ($group2a,$group2b) = split(/_vs_/, $contrast2);
-                 
-
-                 
+                my ($group2a,$group2b) = split(/_vs_/, $contrast2);           
                   if (($group1a eq $group2a) && ($group1b ne $group2b))
                         {
-                  open IN2, "Diff_acc_shrunk_$contrast2\_qval20.txt"; 
+                  open IN2, "$opt{'O'}.$name_out/Differential_acc_$contrast\_shrunk_q02.txt"; 
                   $firstline = <IN2>;
                   while (my $l = <IN2>) 
                   {
@@ -295,10 +254,10 @@ for my $contrast1 (sort keys %contrast_hash)
                 }
         
         
-        open (OUT,">","./Diff_acc_shrunk_$contrast1\_filtered_final.txt");
-        open (OUT2,">","./Diff_acc_shrunk_$contrast1\_filtered_final_just_good_peaks.txt");
-        open (OUT3,">","./Diff_acc_shrunk_$contrast1\_not_filtered_final_just_good_peaks.txt");
-	open IN3, "Diff_acc_shrunk_$contrast1\_qval01.txt"; 
+        open (OUT,">","$opt{'O'}.$name_out/Diff_acc_shrunk_$contrast1\_filtered_final.txt");
+        open (OUT2,">","$opt{'O'}.$name_out/Diff_acc_shrunk_$contrast1\_filtered_final_just_good_peaks.txt");
+        open (OUT3,">","$opt{'O'}.$name_out/Diff_acc_shrunk_$contrast1\_not_filtered_final_just_good_peaks.txt");
+	open IN3, "$opt{'O'}.$name_out/Differential_acc_$contrast\_shrunk_q001.txt"; 
 	$firstline= <IN3>;
 	chomp $firstline;
 	$firstline =~ s/annotation\.//g;
@@ -323,15 +282,13 @@ for my $contrast1 (sort keys %contrast_hash)
             {
               print OUT3 $l. "\n";
             }
-          
-
 	}
 	close(IN3);
 	close(OUT);
 	close(OUT2);
         close(OUT3);
 
-                open R, ">Diff_acc_$contrast1.r";
+        open R, ">$opt{'O'}.$name_out/Diff_acc_$contrast1.r";
         print R "
         library(\"ggplot2\")
         a<-read.delim(\"./Diff_acc_shrunk_$contrast1\_filtered_final.txt\")
@@ -340,24 +297,14 @@ for my $contrast1 (sort keys %contrast_hash)
         g <- ggplot(data=a, aes(x=log2fold, y=-log10(pval), colour=Final_filter_pass)) +
         geom_point(alpha=0.4, size=1.75) +
         xlab(\"log2 fold change\") + ylab(\"-log10 p-value\")+theme_bw()
-        ggsave(plot = g,filename = \"./plots/Differential_access_$contrast1\_final_filter.png\")
-        ggsave(plot = g,filename = \"./plots/Differential_access_$contrast1\_final_filter.pdf\")
+        ggsave(plot = g,filename = \"$opt{'O'}.$name_out/plots/Differential_access_$contrast1\_q001_q02_removed.png\")
+        ggsave(plot = g,filename = \"$opt{'O'}.$name_out/plots/Differential_access_$contrast1\_q001_q02_removed.pdf\")
         ";
         close(R);
-  #      system("Rscript Diff_acc_$contrast1.r > ./Diff_acc_$contrast1.stdout 2> ./Diff_acc_$contrast1.stderr");	
-    #    system("rm -f Diff_acc_$contrast1.r ./Diff_acc_$contrast1.stdout ./Diff_acc_$contrast1.stderr");	
-        
-        
-        
-        
-
+        system("Rscript $opt{'O'}.$name_out/Diff_acc_$contrast1.r > $opt{'O'}.$name_out/Diff_acc_$contrast1.stdout 2> $opt{'O'}.$name_out/Diff_acc_$contrast1.stderr");	
+        system("rm -f $opt{'O'}.$name_out/Diff_acc_$contrast1.r $opt{'O'}.$name_out/Diff_acc_$contrast1.stdout $opt{'O'}.$name_out/Diff_acc_$contrast1.stderr");	
         }
-
-
-
-
-
-
+}
 
 }
 1;
