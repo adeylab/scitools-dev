@@ -74,6 +74,7 @@ read_matrix_stats($ARGV[0]);
 
 if (defined $opt{'I'})
 {
+print "Doing ind vs ind comparison\n";
 for my $group1 (sort keys %ANNOT_AGGID)
 	{
                	$contrast="$group1\_vs_all_as_ref";
@@ -98,6 +99,7 @@ for my $group1 (sort keys %ANNOT_AGGID)
          }
         
  } else {
+print "Doing all vs ind comparison\n";
 #contrast of individual groups against other individual groups
 for my $group1 (sort keys %ANNOT_AGGID)
 	{
@@ -196,7 +198,7 @@ write.table(as.matrix(output),file = \"$opt{'O'}.$name_out/Differential_acc_$con
 
 close(R);
 system("Rscript $opt{'O'}.$name_out/Diff_acc_$contrast.r > $opt{'O'}.$name_out/Diff_acc_$contrast.stdout 2> $opt{'O'}.$name_out/Diff_acc_$contrast.stderr");	
-system("rm -f $opt{'O'}.$name_out/Diff_acc_$contrast.r $opt{'O'}.$name_out/Diff_acc_$contrast.stdout $opt{'O'}.$name_out/Diff_acc_$contrast.stderr $opt{'O'}.$name_out/Differential_acc_$contrast.txt $opt{'O'}.$name_out/Differential_acc_$contrast\_shrunk.txt");	
+#system("rm -f $opt{'O'}.$name_out/Diff_acc_$contrast.r $opt{'O'}.$name_out/Diff_acc_$contrast.stdout $opt{'O'}.$name_out/Diff_acc_$contrast.stderr $opt{'O'}.$name_out/Differential_acc_$contrast.txt $opt{'O'}.$name_out/Differential_acc_$contrast\_shrunk.txt");	
 }
 
 #from here we are looking at peaks that are specifially differentially accessible only in that contrast
@@ -205,6 +207,7 @@ system("rm -f $opt{'O'}.$name_out/Diff_acc_$contrast.r $opt{'O'}.$name_out/Diff_
 # it is only worth it to do this in the one vs all comparisons
 if (!defined $opt{'I'})
 {
+print "Doing all vs ind comparison FDR 0.2 peaks removal\n";
 for my $contrast1 (sort keys %contrast_hash)
 	{
 	my ($group1a,$group1b) = split(/_vs_/, $contrast1);
