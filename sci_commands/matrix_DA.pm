@@ -46,7 +46,7 @@ system("mkdir $opt{'O'}.$name_out/plots");
 #read in annotation, scitools approach
 if (defined $opt{'A'}) 
 	{
-	read_annot($opt{'A'})
+	read_annot($opt{'A'});
 	for my $CELLID (sort keys %CELLID_annot)
 	{
 		push(@{$ANNOT_AGGID{$CELLID_annot{$CELLID}}})=$CELLID;
