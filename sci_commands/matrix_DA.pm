@@ -105,9 +105,10 @@ for my $group1 (sort keys %ANNOT_AGGID)
 	{
 		for my $group2 (sort keys %ANNOT_AGGID)
 		{
+		$contrast="$group1\_vs_$group2\_as_ref";
                	if (($group1 ne $group2) && (!defined $contrast_hash{$contrast}))
-               	{
-               	 $contrast="$group1\_vs_$group2\_as_ref";
+               	{     	
+               	 
                  $contrast_hash{$contrast}++;
                         open OUT, "> $opt{'O'}.$name_out/Diff_acc_$contrast.annot";   
                         for my $AGGID (@{$ANNOT_AGGID{$group1}})
@@ -131,11 +132,11 @@ for $contrast (sort keys %contrast_hash)
 print "Analyzing : ". $contrast."\n";        
 open R, ">$opt{'O'}.$name_out/Diff_acc_$contrast.r";
 print R "
-library(\"reshape2\")
+#library(\"reshape2\")
 library(\"ggplot2\")
 library(\"DESeq2\")
 library(\"BiocParallel\")
-library(calibrate)
+#library(calibrate)
 library(qvalue)
 register(MulticoreParam(30)) 
 counts_mat<-as.matrix(read.delim(\"$ARGV[0]\"))
@@ -183,6 +184,14 @@ g <- ggplot(data=output, aes(x=log2fold, y=-log10(pval), colour=threshold)) +
 ggsave(plot = g,filename = \"$opt{'O'}.$name_out/plots/Differential_acc_$contrast\_shrunk_qval_001_threshold_plotpval.png\")
 ggsave(plot = g,filename = \"$opt{'O'}.$name_out/plots/Differential_acc_$contrast\_shrunk_qval_001_threshold_plotpval.pdf\")
 
+##Construct the plot object
+g <- ggplot(data=output, aes(x=log2fold, y=-log10(qval), colour=threshold)) +
+  geom_point(alpha=0.4, size=1.75) +
+  xlab(\"log2 fold change\") + ylab(\"-log10 p-value\")+theme_bw()
+ggsave(plot = g,filename = \"$opt{'O'}.$name_out/plots/Differential_acc_$contrast\_shrunk_qval_001_threshold_plotqval.png\")
+ggsave(plot = g,filename = \"$opt{'O'}.$name_out/plots/Differential_acc_$contrast\_shrunk_qval_001_threshold_plotqval.pdf\")
+
+
 
 qval<-qvalue(shrunk_corr\$pvalue,fdr.level=0.2)
 shrunk_corr\$qval<-qval\$qvalues
@@ -198,7 +207,7 @@ write.table(as.matrix(output),file = \"$opt{'O'}.$name_out/Differential_acc_$con
 
 close(R);
 system("Rscript $opt{'O'}.$name_out/Diff_acc_$contrast.r > $opt{'O'}.$name_out/Diff_acc_$contrast.stdout 2> $opt{'O'}.$name_out/Diff_acc_$contrast.stderr");	
-#system("rm -f $opt{'O'}.$name_out/Diff_acc_$contrast.r $opt{'O'}.$name_out/Diff_acc_$contrast.stdout $opt{'O'}.$name_out/Diff_acc_$contrast.stderr $opt{'O'}.$name_out/Differential_acc_$contrast.txt $opt{'O'}.$name_out/Differential_acc_$contrast\_shrunk.txt");	
+system("rm -f $opt{'O'}.$name_out/Diff_acc_$contrast.r $opt{'O'}.$name_out/Diff_acc_$contrast.stdout $opt{'O'}.$name_out/Diff_acc_$contrast.stderr $opt{'O'}.$name_out/Differential_acc_$contrast.txt $opt{'O'}.$name_out/Differential_acc_$contrast\_shrunk.txt");	
 }
 
 #from here we are looking at peaks that are specifially differentially accessible only in that contrast
