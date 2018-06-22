@@ -11,7 +11,7 @@ sub matrix_lsi {
 # Defaults
 $range_default = "1-15";
 
-getopts("O:D:d:XR:", \%opt);
+getopts("O:D:d:XR:B", \%opt);
 
 $die2 = "
 scitools matrix-lsi [options] [tfidf matrix]
@@ -20,11 +20,13 @@ scitools matrix-lsi [options] [tfidf matrix]
 Options:
    -O   [STR]   Output prefix (def = [input].tfidf.LSI.matrix)
    -D   [RNG]   Range of dimensions to include (range format)
-                (e.g. 1-5,6,8; def = $range_default)
+                 (e.g. 1-5,6,8; def = $range_default)
+   -B           Big matrix - (requires 'MASS' R package)
+                 (recommended for matrixes > ~8,000 cells)
    -X           Retain intermediate files (def = delete)
    -R   [STR]   Rscript call (def = $Rscript)
 
-Note: Requires svd R package
+Note: Requires 'svd' R package
 
 ";
 
@@ -82,9 +84,17 @@ print R "
 D<-as.matrix(read.table(\"$opt{'O'}.LSI.SVD.d.norm\"))
 U<-as.matrix(read.table(\"$opt{'O'}.LSI.SVD.u\"))
 V<-as.matrix(read.table(\"$opt{'O'}.LSI.SVD.v\"))
-LSI<-t(scale(V %*% D %*% t(U)))
+options(digits=6)
+LSI<-t(scale(V %*% D %*% t(U)))";
+if (defined $opt{'B'}) {
+	print R"
+library(MASS)
+write.matrix(LSI,file=\"$opt{'O'}.LSI.SVD.reconstructed\",sep=\"\\t\")
+";
+} else { print R "
 write.table(LSI,file=\"$opt{'O'}.LSI.SVD.reconstructed\",sep=\"\\t\",row.names=FALSE,col.names=FALSE)
 ";
+}
 close R;
 
 system("$Rscript $opt{'O'}.LSI.SVD.reconstruct.r");
