@@ -6,11 +6,11 @@ use Getopt::Std; %opt = ();
 use Exporter "import";
 @EXPORT = ("matrix_da");
 
-sub matrix_DA {
+sub matrix_da {
 
 @ARGV = @_;
 use Getopt::Std; %opt = ();
-getopts("O:a:I:", \%opt);
+getopts("O:A:I:", \%opt);
 
 $die2 = "
 scitools matrix-da [options] [counts matrix] [aggr annotation file]
@@ -99,11 +99,9 @@ for my $group1 (sort keys %ANNOT_AGGID)
         
  } else {
 #contrast of individual groups against other individual groups
-
-
 for my $group1 (sort keys %ANNOT_AGGID)
 	{
-		for my $group2 (sort keys %ANNOT_AGGID))
+		for my $group2 (sort keys %ANNOT_AGGID)
 		{
                	if (($group1 ne $group2) && (!defined $contrast_hash{$contrast}))
                	{
