@@ -18,6 +18,7 @@ $version = "0.1.2";
 use Getopt::Std; %opt = ();
 use sci_utils::general;
 use Exporter "import";
+@EXPORT = (qw($RealBin));
 
 # LOAD DEFAULTS
 $SCITOOLS_DEFAULTS = "$RealBin/scitools.cfg";

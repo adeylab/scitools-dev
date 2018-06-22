@@ -1,3 +1,5 @@
+#index_class=i5o_tn5
+#index_format=96
 I5O_A_i5_A01	i5o_tn5_i5	GGCCGTCAAC
 I5O_A_i5_A02	i5o_tn5_i5	CCTAGACGAG
 I5O_A_i5_A03	i5o_tn5_i5	TCGTTAGAGC
