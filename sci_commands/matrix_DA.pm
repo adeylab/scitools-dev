@@ -74,12 +74,12 @@ read_matrix_stats($ARGV[0]);
 
 if (defined $opt{'I'})
 {
-print "Doing ind vs ind comparison\n";
+print "Doing all vs ind comparison\n";
 for my $group1 (sort keys %ANNOT_AGGID)
 	{
                	$contrast="$group1\_vs_all_as_ref";
                	$contrast_hash{$contrast}++;
-                open OUT, "> $opt{'O'}.$name_out/$opt{'O'}_$contrast.annot"; 
+                open OUT, "> $opt{'O'}.$name_out/Diff_acc_$contrast.annot"; 
                 for my $group2 (sort keys %ANNOT_AGGID)
 		{
 			if ($group1 ne $group2)
@@ -99,7 +99,7 @@ for my $group1 (sort keys %ANNOT_AGGID)
          }
         
  } else {
-print "Doing all vs ind comparison\n";
+print "Doing ind vs ind comparison\n";
 #contrast of individual groups against other individual groups
 for my $group1 (sort keys %ANNOT_AGGID)
 	{
@@ -109,7 +109,7 @@ for my $group1 (sort keys %ANNOT_AGGID)
                	{
                	 $contrast="$group1\_vs_$group2\_as_ref";
                  $contrast_hash{$contrast}++;
-                        open OUT, "> $opt{'O'}.$name_out/$opt{'O'}_$contrast.annot";   
+                        open OUT, "> $opt{'O'}.$name_out/Diff_acc_$contrast.annot";   
                         for my $AGGID (@{$ANNOT_AGGID{$group1}})
                		{
                			print OUT $AGGID. "\t" .$group1. "\n";
