@@ -83,12 +83,12 @@ for my $group1 (sort keys %ANNOT_AGGID)
 		{
 			if ($group1 ne $group2)
 			{
-				for my $AGGID (@{ANNOT_AGGID{$group1}})
+				for my $AGGID (@{$ANNOT_AGGID{$group1}})
 				{
                			print OUT $AGGID. "\t" .$group1. "\n";
 				}
                         
-				for my $AGGID (@{ANNOT_AGGID{$group2}})
+				for my $AGGID (@{$ANNOT_AGGID{$group2}})
 				{
                			print OUT $AGGID. "\t" .$contrast."\n";
 				}
@@ -108,12 +108,12 @@ for my $group1 (sort keys %ANNOT_AGGID)
                	 $contrast="$group1\_vs_$group2\_as_ref";
                  $contrast_hash{$contrast}++;
                         open OUT, "> $opt{'O'}.$name_out/$opt{'O'}_$contrast.annot";   
-                        for my $AGGID (@{ANNOT_AGGID{$group1}})
+                        for my $AGGID (@{$ANNOT_AGGID{$group1}})
                		{
                			print OUT $AGGID. "\t" .$group1. "\n";
                		}
                         
-               		for my $AGGID (@{ANNOT_AGGID{$group2}})
+               		for my $AGGID (@{$ANNOT_AGGID{$group2}})
                		{
                			print OUT $AGGID. "\t" .$contrast."\n";
                		}
