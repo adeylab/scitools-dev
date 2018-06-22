@@ -3,7 +3,7 @@ package sci_commands::met_probeview;
 use sci_utils::general;
 use Getopt::Std; %opt = ();
 use Exporter "import";
-@EXPORT = ("met_metprobeview");
+@EXPORT = ("met_probeview");
 
 sub met_probeview {
 
@@ -92,15 +92,20 @@ colnames(signal)<-c(\"loc\",\"met\",\"nonmet\",\"cellID\")
 annot<-read.table(\"$opt{'A'}\");
 colnames(annot)<-c(\"cellID\",\"x\",\"y\",\"clusterID\")
 probe<-merge(signal,annot,by=\"cellID\")
-probe_m<-ddply(probe,.(loc,clusterID),summarize,metm=sum(met),nonmetm=sum(nonmet))
+probe_m<-ddply(probe,.(loc,clusterID),summarize,metm=sum(met),nonmetm=sum(nonmet),stdev=sd(met/(met+nonmet)),mean=mean(met/(met+nonmet)))
 rm(probe)
 
-probe_plot<-ggplot()+
-  geom_line(aes(probe_m\$loc,probe_m\$metm/(probe_m\$metm+probe_m\$nonmetm)*100,group=probe_m\$clusterID,color=as.factor(probe_m\$clusterID)),alpha=1/10)+
-  geom_smooth(aes(probe_m\$loc,probe_m\$metm/(probe_m\$metm+probe_m\$nonmetm)*100,group=probe_m\$clusterID,color=as.factor(probe_m\$clusterID)),span=0.3,na.rm=T,method=\"loess\")+
+probe_m\$xaxisticks<-as.integer(probe_m\$loc-(max(probe_m\$loc)/2))*$opt{'w'}
+
+probe_plot<-ggplot(data=probe_m,aes(loc,mean*100,group=clusterID))+
+  geom_line(aes(color=as.factor(clusterID)))+
+  #geom_ribbon(aes(ymax=(probe_m\$mean+probe_m\$stdev)*100,ymin=(probe_m\$mean-probe_m\$stdev)*100,fill=as.factor(clusterID)),alpha=0.1,color=NA)+
+  theme_bw()+
   xlab(\"$opt{'F'} +/- $opt{'f'} bp\ in $opt{'w'} bp bins\")+
   ylab(\"$opt{'c'} Methylation Percentage\")+
-  theme_bw()
+  scale_x_continuous(breaks=probe_m\$loc,labels=probe_m\$xaxisticks)+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))+
+  theme(plot.background=element_blank(),legend.title=element_blank())
 
 ggsave(plot=probe_plot,filename=\"$opt{'c'}.$opt{'F'}.probeview.png\")
 ";
@@ -177,3 +182,6 @@ system("$Rscript $opt{'c'}.$opt{'F'}.probeview.r");
 
 }
 1;
+
+
+
