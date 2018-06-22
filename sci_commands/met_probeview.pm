@@ -12,13 +12,17 @@ sub met_probeview {
 $hg19_ref_bedtools = "/home/groups/oroaklab/refs/hg19/hg19.fa.genome"; #DEFAULT=hg19_ref_bismark
 $hg38_ref_bedtools = "/home/groups/oroaklab/refs/hg38/hg38.bedtools.genome"; #DEFAULT=hg38_ref_bismark
 $mm10_ref_bedtools = "/home/groups/oroaklab/refs/mm10/mm10_bedtools_genome"; #DEFAULT=mm10_ref_bismark
+$bedtools = "bedtools"; #DEFAULT=bedtools
+$Rscript = "Rscript"; #DEFAULT=Rscript
+$zcat = "zcat"; #DEFAULT=zcat
+$gzip = "gzip"; #DEFAULT=gzip
 
 use Getopt::Std; %opt = ();
-getopts("R:B:A:F:f:c:p:", \%opt);
+getopts("R:B:A:F:f:c:p:w:", \%opt);
 $die2 = "
 scitools probe-view [options] [Feature_Probe_Set] [bedtools Genome File] [NOMe.sorted.bed.gz File]
 
-sciMET tool for looking at methylation percentage over feature probe space.Multiple strategies for clutering of cellIDs by WindowMatrix set. Will output Feature Summary statistics as well as clustering attempts.
+sciMET tool for looking at methylation percentage over feature probe space.
 
 [Feature_Probe_Set]             =               Bed file of feature set for methylation probe window generation.
 [bedtools Genome File]          =               bedtools prepared genome file.
@@ -56,12 +60,12 @@ bedtools reference shortcuts:
 if (!defined $ARGV[0]) {die $die2};
 if (!defined $ARGV[1]) {die $die2};
 if (!defined $ARGV[2]) {die $die2};
-
 if (!defined $opt{'A'}) {die $die2};
 
 if (defined $opt{'R'}) {$Rscript = $opt{'R'}};
 if (defined $opt{'B'}) {$bedtools = $opt{'B'}};
 if (!defined $opt{'f'}) {$opt{'f'} = 1000};
+if (!defined $opt{'w'}) {$opt{'w'} = 50};
 if (!defined $GENOMES{$ARGV[1]}) {die "\n\nERROR: Genome $ARGV[1] is not a proper genome reference! Exiting!\n"} else {$genome = $GENOMES{$ARGV[1]}};
 if (!defined $opt{'F'}) {$opt{'F'}=$ARGV[0]; my @F = split(/\//,$opt{'F'}); $opt{'F'}=$F[-1]; @F = split(/\./,$opt{'F'}); $opt{'F'}=$F[0]};
 if (!defined $opt{'c'}) {$opt{'c'}=$ARGV[2]; my @C = split(/\//,$opt{'c'}); $opt{'c'}=$C[-1]; @C = split(/\./,$opt{'c'}); $opt{'c'}=$C[1]};
@@ -71,12 +75,12 @@ $probe="$bedtools slop -b $opt{'f'} -g $genome -i $ARGV[0] | $bedtools makewindo
 } else {
 $probe="
 $bedtools makewindows -b $ARGV[0] -n $opt{'p'} -i winnum -s 1 | sort -k1,1 -k2,2n -T . - | $bedtools intersect -sorted -wa -wb -a stdin -b $ARGV[2] | awk 'OFS=\"\\t\" {print \$4, \$8, \$9, \$10, \"probe\"}' - > $opt{'c'}.$opt{'F'}.bed; 
+
 $bedtools flank -i $ARGV[0] -g $genome -l $opt{'f'} -r 0 | $bedtools makewindows -w 50 -b stdin -i winnum |sort -k1,1 -k2,2n -T . - | $bedtools intersect -sorted -wa -wb -a stdin -b $ARGV[2] | awk 'OFS=\"\\t\" {print \$4, \$8, \$9, \$10, \"upstream\"}' - >> $opt{'c'}.$opt{'F'}.bed;
+
 $bedtools flank -i $ARGV[0] -g $genome -r $opt{'f'} -l 0 | $bedtools makewindows -w 50 -b stdin -i winnum |sort -k1,1 -k2,2n -T . - | $bedtools intersect -sorted -wa -wb -a stdin -b $ARGV[2] | awk 'OFS=\"\\t\" {print \$4, \$8, \$9, \$10, \"downstream\"}' - >> $opt{'c'}.$opt{'F'}.bed";
 }
 
-system($upstream);
-system($downstream);
 system($probe);
 if (!defined $opt{'p'}){
 $probe_plot="
@@ -177,11 +181,6 @@ open R, ">$opt{'c'}.$opt{'F'}.probeview.r";
 print R $probe_plot;
 close R;
 system("$Rscript $opt{'c'}.$opt{'F'}.probeview.r");
-
-
-#perl probeviewWIP.pl -A HCG.GENE.tab.bedHCH.100KB.hippoonly.UMAP.db.dims -f 500 /home/groups/oroaklab/adey_lab/projects/sciNOMe/refs/mm10_annotations/Homer_Individual_TF/mm10_EnsemblRegBuild_CTCF_Motif.bed.sorted.bed mm10 180428_allCells.HCG.NOMe.sorted.bed
-#perl probeviewWIP.pl -A HCG.GENE.tab.bedHCH.100KB.hippoonly.UMAP.db.dims -f 5000 -p 100 /home/groups/oroaklab/adey_lab/projects/sciNOMe/refs/mm10_annotations/mm10.RefGene.names.bed.sorted.bed mm10 180428_allCells.HCG.NOMe.sorted.bed
-
 }
 1;
 
