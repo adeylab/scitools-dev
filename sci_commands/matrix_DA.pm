@@ -36,7 +36,7 @@ if (!defined $opt{'O'}) {$opt{'O'} = $ARGV[0]; $opt{'O'} =~ s/\.matrix$//};
 
 $name_out = "DA_plots";
 	
-if (-e "$opt{'O'}.name_out") {
+if (-e "$opt{'O'}.$name_out") {
 	die "\nFATAL: $opt{'O'}.$name_out directory already exists! Exiting!\n$die2";
 }
 
@@ -205,7 +205,7 @@ system("Rscript $opt{'O'}.$name_out/Diff_acc_$contrast.r > $opt{'O'}.$name_out/D
 
 #compare 0.01 FDR contrast peaks to 0.2 FDR of other groups 
 # it is only worth it to do this in the one vs all comparisons
-if (!defined $opt{'I'})
+if (defined $opt{'I'})
 {
 print "Doing all vs ind comparison FDR 0.2 peaks removal\n";
 for my $contrast1 (sort keys %contrast_hash)
