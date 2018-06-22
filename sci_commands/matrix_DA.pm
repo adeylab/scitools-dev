@@ -10,11 +10,11 @@ sub matrix_DA {
 
 @ARGV = @_;
 use Getopt::Std; %opt = ();
-getopts("O:a:", \%opt);
+getopts("O:a:I:", \%opt);
 
 $die2 = "
-scitools matrix-DA [options] [counts matrix] [aggr annotation file]
-   or    DA-matrix
+scitools matrix-da [options] [counts matrix] [aggr annotation file]
+   or    da-matrix
 
 This script will perform DA analysis on aggregate matrix. Aggregate annotation file that is output by the aggregate_cells
 
