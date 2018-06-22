@@ -171,7 +171,32 @@ sub pull_index {
 	
 }
 
-sub pull_read {
+sub pull_qual {
+	
+	$self = shift;
+	$modality = shift;
+	$read = shift;
+	$read_set = shift;
+	
+	$out_read = $self->{$modality}->{outs}->{$read}->{read};
+	$out_offset = $self->{$modality}->{outs}->{$read}->{offset};
+	$out_length = $self->{$modality}->{outs}->{$read}->{length};
+	
+	$read_qual = $read_set->{$out_read}->{qual};
+	
+	if ($out_length =~ /all/) {
+		$out_qual = $read_qual;
+	} elsif ($out_length =~ /end/) {
+		$out_qual = substr($read_qual,$out_offset);
+	} else {
+		$out_qual = substr($read_qual,$out_offset,$out_length);
+	}
+	
+	return $out_qual;
+	
+}
+
+sub pull_seq {
 	
 	$self = shift;
 	$modality = shift;

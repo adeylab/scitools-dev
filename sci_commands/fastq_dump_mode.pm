@@ -103,7 +103,7 @@ open_input_fastqs();
 system("mkdir $opt{'O'}/$opt{'o'}");
 
 # open output fastqs for each modality
-$out_handles = open_outs();
+%OUT_HANDLES = open_outs();
 open_fail_fastqs();
 
 # start parsing fastq files
@@ -112,15 +112,15 @@ while ($tag = <R1>) {
 	# pull reads and build read_set object
 	$read_set = pull_reads();
 	
-	$passing = 1;
+	$any_passing = 0;
 	$out_barc = ""; $out_name = "";
 	$umi = "null";
 	
 	for ($modalityID = 0; $modalityID < @MODALITIES; $modalityID++) {
-		$modality = $MODALITIES[$modalityID];
+		$modality = $MODALITIES[$modalityID]; $modality_pass = 1;
 		for ($index_pos = 0; $index_pos < @{$MODALITY_INDEXES{$modality}}; $index_pos++) {
 			$index_name = $MODALITY_INDEXES{$modality}[$index_pos];
-			if ($idnex_name =~ /umi/) {
+			if ($index_name =~ /umi/) {
 				# special case for umi's
 				$umi = $mode->pull_index($modality,"umi",$read_set);
 			} else {
@@ -130,40 +130,44 @@ while ($tag = <R1>) {
 					$out_barc .= "$INDEX_TYPE_SEQ_seq{$index_name}{$index_seq}";
 					$out_name .= "$INDEX_TYPE_SEQ_id{$index_name}{$index_seq}-";
 				} else {
-					$passing = 0;
+					$modality_pass = 0;
 					$out_barc .= $index_seq;
 					$out_name .= "$index_name=$index_seq-";
 				}
 			}
 		}
+		
+		if (defined $opt{'A'}) {
+			if (defined $CELLID_annot{$out_barc}) {
+				$annot = $CELLID_annot{$out_barc}
+			} else {
+				$annot = "unmatched";
+			}
+			if (defined $opt{'x'} && $annot eq "unmatched") {
+				$modality_pass = 0;
+			}
+		}
+		
+		if ($modality_pass > 0) {
+			$any_passing++;
+			if ($umi ne "null") {
+				$out_barc .= ":UMI=$umi";
+				$out_name .= ":UMI=$umi";
+			}
+			# print passing reads to this modality
+			print_outs();
+		}
 	}
 	
-	if (defined $opt{'A'}) {
-		if (defined $CELLID_annot{$out_barc}) {
-			$annot = $CELLID_annot{$out_barc}
-		} else {
-			$annot = "unmatched";
-		}
-		if (defined $opt{'x'} && $annot eq "unmatched") {
-			$passing = 0;
-		}
-	}
-	
-	if ($passing > 0) {
-		if ($umi ne "null") {
-			$out_barc .= ":UMI=$umi";
-			$out_name .= ":UMI=$umi";
-		}
-		# print passing
-		
-	} else {
-		# print failing
-		
+	if ($any_passing < 1) { # failed in all modalities - print to fail files
+		print_failing();
+	} elsif ($any_passing >= 2) {
+		print STDERR "WARNING: Read $tag passed in more than one modality.\n";
 	}
 	
 }
 
-
+close_outs();
 
 }
 
@@ -333,6 +337,34 @@ sub open_outs {
 	return \%OUT_DIRECTORY;
 }
 
+sub print_outs {
+	foreach $out_type (@{$MODALITY_OUTPUTS{$modality}}) {
+		if (defined $opt{'A'}) {
+			$handle = "$annot.$modality.$out_type";
+		} else {
+			$handle = "$modality.$out_type";
+		}
+		if (defined $OUT_HANDLES{$handle}) {
+			if ($opt{'f'} =~ /barc/) {$tag = $out_barc} else {$tag = $out_name};
+			$seq = $mode->pull_seq($modality,$out_type,$read_set);
+			$qual = $mode->pull_qual($modality,$out_type,$read_set);
+			print $handle "$tag\n$seq\n\+\n$qual\n";
+		} else {
+			print STDERR "WARNING: $handle does not exist for read $tag\n";
+		}
+	}
+}
+
+sub close_outs {
+	foreach $handle (keys %OUT_HANDLES) {
+		close $handle;
+	}
+	if ($mode->read_check(read1) eq "true") {close R1F};
+	if ($mode->read_check(read2) eq "true") {close R2F};
+	if ($mode->read_check(index1) eq "true") {close I1F};
+	if ($mode->read_check(index2) eq "true") {close I2F};
+}
+
 sub open_fail_fastqs {
 	if ($mode->read_check(read1) eq "true") {open R1F, "| gzip > $opt{'O'}/$opt{'o'}.fail.read1.fq.gz"};
 	if ($mode->read_check(read2) eq "true") {open R2F, "| gzip > $opt{'O'}/$opt{'o'}.fail.read2.fq.gz"};
@@ -356,6 +388,13 @@ sub pull_reads {
 		$read_pull->{index2}->{tag} = $tag; $read_pull->{index2}->{seq} = $seq; $read_pull->{index2}->{qual} = $qual;
 	}
 	return $read_pull;
+}
+
+sub print_failing {
+	if ($mode->read_check(read1) eq "true") {print R1F $read_set->{read1}->{tag}."\n".$read_set->{read1}->{seq}."\n\+\n".$read_seq->{read1}->{qual}."\n"};
+	if ($mode->read_check(read2) eq "true") {print R2F $read_set->{read2}->{tag}."\n".$read_set->{read2}->{seq}."\n\+\n".$read_seq->{read2}->{qual}."\n"};
+	if ($mode->read_check(index1) eq "true") {print I1F $read_set->{index1}->{tag}."\n".$read_set->{index1}->{seq}."\n\+\n".$read_seq->{index1}->{qual}."\n"};
+	if ($mode->read_check(index2) eq "true") {print I2F $read_set->{index2}->{tag}."\n".$read_set->{index2}->{seq}."\n\+\n".$read_seq->{index2}->{qual}."\n"};
 }
 
 1;
