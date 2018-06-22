@@ -7,6 +7,8 @@ use Exporter "import";
 
 sub met_probeview {
 
+@ARGV = @_;
+
 $hg19_ref_bedtools = "/home/groups/oroaklab/refs/hg19/hg19.fa.genome"; #DEFAULT=hg19_ref_bismark
 $hg38_ref_bedtools = "/home/groups/oroaklab/refs/hg38/hg38.bedtools.genome"; #DEFAULT=hg38_ref_bismark
 $mm10_ref_bedtools = "/home/groups/oroaklab/refs/mm10/mm10_bedtools_genome"; #DEFAULT=mm10_ref_bismark
