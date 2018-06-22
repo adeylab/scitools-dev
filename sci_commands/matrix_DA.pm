@@ -54,7 +54,7 @@ if (defined $opt{'A'})
 	
 	}
 elsif (!defined $opt{'A'} && defined $ARGV[1]) {
-	read_annot($ARGV[1])
+	read_annot($ARGV[1]);
 	for my $aggannot (sort keys %ANNOT_count)
 	{
 		@annotagg = split(/_/, $aggannot);
