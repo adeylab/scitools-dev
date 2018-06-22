@@ -49,7 +49,7 @@ if (defined $opt{'A'})
 	read_annot($opt{'A'});
 	for my $CELLID (sort keys %CELLID_annot)
 	{
-		push(@{$ANNOT_AGGID{$CELLID_annot{$CELLID}}})=$CELLID;
+		push(@{$ANNOT_AGGID{$CELLID_annot{$CELLID}}},$CELLID);
 	}
 	
 	}
@@ -58,7 +58,7 @@ elsif (!defined $opt{'A'} && defined $ARGV[1]) {
 	for my $aggannot (sort keys %ANNOT_count)
 	{
 		@annotagg = split(/_/, $aggannot);
-		push(@{$ANNOT_AGGID{$annotagg[0]}})=$aggannot;
+		push(@{$ANNOT_AGGID{$annotagg[0]}},$aggannot);
 	}
 	} else {die $die2}
 
@@ -79,7 +79,7 @@ for my $group1 (sort keys %ANNOT_AGGID)
                	$contrast="$group1\_vs_all_as_ref";
                	$contrast_hash{$contrast}++;
                 open OUT, "> $opt{'O'}.$name_out/$opt{'O'}_$contrast.annot"; 
-                for my $group2 (sort keys %ANNOT_AGGID))
+                for my $group2 (sort keys %ANNOT_AGGID)
 		{
 			if ($group1 ne $group2)
 			{
