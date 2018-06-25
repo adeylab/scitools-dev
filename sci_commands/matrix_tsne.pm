@@ -12,7 +12,7 @@ sub matrix_tsne {
 $dims = 2;
 $perp = 30;
 
-getopts("O:XD:R:P:H", \%opt);
+getopts("O:XD:R:P:", \%opt);
 
 $die2 = "
 scitools matrix-tsne [options] [input matrix]
@@ -24,8 +24,6 @@ Options:
    -O   [STR]   Output prefix (default is [input].tSNE)
    -D   [INT]   Dimensions to embed tSNE in (def = $dims)
    -P   [INT]   Perplexity (def = $perp)
-   -H           Matrix is in an h5 format (will auto detect)
-                 (requires rhdf5 R package)
    -X           Retain intermediate files (def = delete)
    -R   [STR]   Rscript call (def = $Rscript)
 
@@ -41,7 +39,6 @@ if (defined $opt{'P'}) {$perp = $opt{'P'}};
 if (defined $opt{'R'}) {$Rscript = $opt{'R'}};
 
 open R, ">$opt{'O'}.p$perp.tSNE.r";
-if (!defined $opt{'H'}) {
 
 print R "
 library(Rtsne)
@@ -51,21 +48,6 @@ DIMS<-TSNE\$Y
 rownames(DIMS)<-rownames(tIN)
 write.table(DIMS,file=\"$opt{'O'}.p$perp.tSNE.dims\",sep=\"\\t\",col.names=FALSE,row.names=TRUE,quote=FALSE)
 "; close R;
-
-
-} else { # h5 format
-
-print R "
-library(rhdf5)
-library(Rtsne)
-tIN<-as.matrix(t(h5read(\"$ARGV[0]\",\"matrix\")))
-TSNE<-Rtsne(tIN,dims=$dims,perplexity=$perp,check_duplicates=FALSE)
-DIMS<-TSNE\$Y
-rownames(DIMS)<-h5read(\"$ARGV[0]\",\"colnames\")
-write.table(DIMS,file=\"$opt{'O'}.p$perp.tSNE.dims\",sep=\"\\t\",col.names=FALSE,row.names=TRUE,quote=FALSE)
-"; close R;
-
-}
 
 system("$Rscript $opt{'O'}.p$perp.tSNE.r 2>/dev/null");
 
