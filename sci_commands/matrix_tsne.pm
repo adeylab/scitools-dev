@@ -42,39 +42,35 @@ if (defined $opt{'R'}) {$Rscript = $opt{'R'}};
 
 open R, ">$opt{'O'}.p$perp.tSNE.r";
 if (!defined $opt{'H'}) {
+
 print R "
 library(Rtsne)
 tIN<-t(read.table(\"$ARGV[0]\"))
 TSNE<-Rtsne(tIN,dims=$dims,perplexity=$perp,check_duplicates=FALSE)
-write.table(TSNE\$Y,file=\"$opt{'O'}.p$perp.tSNE.raw\",sep=\"\\t\",col.names=FALSE,row.names=FALSE)
+DIMS<-TSNE\$Y
+rownames(DIMS)<-rownames(tIN)
+write.table(DIMS,file=\"$opt{'O'}.p$perp.tSNE.dims\",sep=\"\\t\",col.names=FALSE,row.names=TRUE,quote=FALSE)
 "; close R;
+
+
 } else { # h5 format
+
 print R "
 library(rhdf5)
 library(Rtsne)
 tIN<-as.matrix(t(h5read(\"$ARGV[0]\",\"matrix\")))
 TSNE<-Rtsne(tIN,dims=$dims,perplexity=$perp,check_duplicates=FALSE)
-write.table(TSNE\$Y,file=\"$opt{'O'}.p$perp.tSNE.raw\",sep=\"\\t\",col.names=FALSE,row.names=FALSE)
+DIMS<-TSNE\$Y
+rownames(DIMS)<-h5read(\"$ARGV[0]\",\"colnames\")
+write.table(DIMS,file=\"$opt{'O'}.p$perp.tSNE.dims\",sep=\"\\t\",col.names=FALSE,row.names=TRUE,quote=FALSE)
 "; close R;
+
 }
 
 system("$Rscript $opt{'O'}.p$perp.tSNE.r 2>/dev/null");
 
-open IN, "$ARGV[0]";
-$h = <IN>; close IN;
-chomp $h; $h =~ s/\r//;
-@CELLID_list = split(/\t/, $h);
-
-open IN, "$opt{'O'}.p$perp.tSNE.raw";
-open OUT, ">$opt{'O'}.p$perp.tSNE.dims";
-while ($l = <IN>) {
-	chomp $l;
-	$cellID = shift(@CELLID_list);
-	print OUT "$cellID\t$l\n";
-} close IN; close OUT;
-
 if (!defined $opt{'X'}) {
-	system("rm -f $opt{'O'}.p$perp.tSNE.r $opt{'O'}.p$perp.tSNE.raw");
+	system("rm -f $opt{'O'}.p$perp.tSNE.r");
 }
 
 }
