@@ -29,6 +29,7 @@ Options:
 ";
 
 if (!defined $ARGV[2]) {die $die2};
+if (!defined $opt{'O'}) {$opt{'O'} = $ARGV[1]; $opt{'O'} =~ s/\.bed$//; $opt{'O'} .= ".".$ARGV[2]; $opt{'O'} =~ s/\.bed$//};
 
 # count peaks
 open IN, "$ARGV[0]";
