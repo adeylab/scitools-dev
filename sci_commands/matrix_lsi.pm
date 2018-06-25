@@ -91,9 +91,9 @@ if (defined $opt{'H'}) {
 library(rhdf5)
 h5createFile(\"$opt{'O'}.LSI.matrix.h5\")
 M<-read.table(\"$ARGV[0]\")
-h5write(colnames(M),\"$opt{'O'}.LSI.matrix.h5\",\"LSI_colnames\")
-h5write(rownames(M),\"$opt{'O'}.LSI.matrix.h5\",\"LSI_rownames\")
-h5write(LSI,\"$opt{'O'}.LSI.matrix.h5\",\"LSI\")
+h5write(colnames(M),\"$opt{'O'}.LSI.matrix.h5\",\"colnames\")
+h5write(rownames(M),\"$opt{'O'}.LSI.matrix.h5\",\"rownames\")
+h5write(LSI,\"$opt{'O'}.LSI.matrix.h5\",\"matrix\")
 ";
 } else { print R "
 write.table(LSI,file=\"$opt{'O'}.LSI.SVD.reconstructed\",sep=\"\\t\",row.names=FALSE,col.names=FALSE)
