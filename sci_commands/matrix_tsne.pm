@@ -46,17 +46,15 @@ print R "
 library(Rtsne)
 tIN<-t(read.table(\"$ARGV[0]\"))
 TSNE<-Rtsne(tIN,dims=$dims,perplexity=$perp,check_duplicates=FALSE)
-write.table(TSNE\$Y,file=\"$opt{'O'}.p$perp.tSNE.raw\",col.names=FALSE,row.names=FALSE)
+write.table(TSNE\$Y,file=\"$opt{'O'}.p$perp.tSNE.raw\",sep=\"\\t\",col.names=FALSE,row.names=FALSE)
 "; close R;
 } else { # h5 format
 print R "
 library(rhdf5)
 library(Rtsne)
 tIN<-as.matrix(t(h5read(\"$ARGV[0]\",\"matrix\")))
-rownames(tIN)<-h5read(\"$ARGV[0]\",\"colnames\")
-colnames(tIN)<-h5read(\"$ARGV[0]\",\"rownames\")
 TSNE<-Rtsne(tIN,dims=$dims,perplexity=$perp,check_duplicates=FALSE)
-write.table(TSNE\$Y,file=\"$opt{'O'}.p$perp.tSNE.raw\",col.names=FALSE,row.names=FALSE)
+write.table(TSNE\$Y,file=\"$opt{'O'}.p$perp.tSNE.raw\",sep=\"\\t\",col.names=FALSE,row.names=FALSE)
 "; close R;
 }
 
