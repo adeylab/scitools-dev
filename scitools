@@ -154,6 +154,7 @@ sub load_aliases {
 	foreach $alias ("matrix_pca", "pca") {$COMMAND_ALIAS{$alias} = "matrix_pca"};
 	foreach $alias ("matrix_aggregate", "aggregate_matrix") {$COMMAND_ALIAS{$alias} = "matrix_aggregate"};
 	foreach $alias ("matrix_merge", "merge_matrix") {$COMMAND_ALIAS{$alias} = "matrix_merge"};
+	foreach $alias ("matrix_pull", "pull_matrix") {$COMMAND_ALIAS{$alias} = "matrix_pull"};
 	foreach $alias ("dims_kmeans", "kmeans") {$COMMAND_ALIAS{$alias} = "dims_kmeans"};
 	foreach $alias ("dims_dbscan", "dbscan") {$COMMAND_ALIAS{$alias} = "dims_dbscan"};
 	foreach $alias ("dims_pcurve", "pcurve") {$COMMAND_ALIAS{$alias} = "dims_pcurve"};
@@ -216,6 +217,7 @@ sub load_descriptions {
 	$COMMAND_DESCRIPTOR{"matrix_pca"} = "PCA on matrix";
 	$COMMAND_DESCRIPTOR{"matrix_aggregate"} = "Aggregate cells in counts matrix by annotation";
 	$COMMAND_DESCRIPTOR{"matrix_merge"} = "Merge matrices, no overlap in cell names assumed";
+	$COMMAND_DESCRIPTOR{"matrix_pull"} = "Pull entries from a matrix and print them";
 	$COMMAND_DESCRIPTOR{"dims_kmeans"} = "Kmeans clustering on dims file";
 	$COMMAND_DESCRIPTOR{"dims_dbscan"} = "Density-base (dbscan) clustering on dims file";
 	$COMMAND_DESCRIPTOR{"dims_pcurve"} = "Project a principle curve through dims file";
