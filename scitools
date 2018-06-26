@@ -35,6 +35,7 @@ load_defaults($SCITOOLS_DEFAULTS);
 if (!defined $VAR{'SCI_index_file'}) {$VAR{'SCI_index_file'} = "$RealBin/SCI_Indexes.txt"};
 if (!defined $VAR{'index_directory'}) {$VAR{'index_directory'} = "$RealBin/index_files"};
 if (!defined $VAR{'sci_modes'}) {$VAR{'sci_modes'} = "$RealBin/sci_modes.cfg"};
+push @EXPORT, qw(%VAR);
 
 load_gradient_defaults();
 
