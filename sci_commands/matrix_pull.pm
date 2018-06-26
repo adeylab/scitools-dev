@@ -29,19 +29,20 @@ Options:
 
 if (!defined $ARGV[1]) {die $die2};
 
-$all_rows = 0;
 if (defined $opt{'F'} || $ARGV[1] !~ /,/) {
 	open IN, "$ARGV[1]";
 	while ($l = <IN>) {
 		chomp $l;
 		($col,$row) = split(/\t/, $l);
 		if ($col =~ /all/i) {$col = "all"};
+		if ($row =~ /all/i) {$row = "all"};
 		$ROW_COL{$row}{$col} = 1;
 	} close IN;
 } else {
 	for ($i = 1; $i < @ARGV; $i++) {
 		($col,$row) = split(/,/, $ARGV[$i]);
 		if ($col =~ /all/i) {$col = "all"};
+		if ($row =~ /all/i) {$row = "all"};
 		$ROW_COL{$row}{$col} = 1;
 	}
 }
@@ -52,7 +53,7 @@ while ($l = <IN>) {
 	chomp $l;
 	@P = split(/\t/, $l);
 	$row = shift(@P);
-	if (defined $ROW_COL{$row} || $all_rows = 1) {
+	if (defined $ROW_COL{$row} || defined $ROW_COL{'all'}) {
 		for ($i = 0; $i < @H; $i++) {
 			if (defined $ROW_COL{$row}{$H[$i]} || defined $ROW_COL{$row}{'all'}) {
 				print "$H[$i]\t$row\t$P[$i]\n";
