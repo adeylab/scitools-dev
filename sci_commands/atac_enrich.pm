@@ -31,10 +31,17 @@ Options:
 if (!defined $ARGV[2]) {die $die2};
 if (!defined $opt{'O'}) {$opt{'O'} = $ARGV[1]; $opt{'O'} =~ s/\.bed$//; $opt{'O'} .= ".".$ARGV[2]; $opt{'O'} =~ s/\.bed$//};
 
+open LOG, ">$opt{'O'}.atac_enrich.log";
+$ts = localtime(time);
+print LOG "$ts\tProgram called: $ARGV[0] $ARGV[1] $ARGV[2]\n";
+
 # count peaks
 open IN, "$ARGV[0]";
 while ($l = <IN>) {$peakCT++};
 close IN;
+
+$ts = localtime(time);
+print LOG "$ts\tTotal peaks in $ARGV[0] = $peakCT\n";
 
 # annotate all peaks for features
 open IN, "$bedtools intersect -a $ARGV[0] -b $ARGV[2] -wa -wb |";
@@ -43,8 +50,18 @@ while ($l = <IN>) {
 	($peak_chr,$peak_start,$peak_end,$peakID,$feature_chr,$feature_start,$feature_end,$featureID) = split(/\t/, $l);
 	$peakID = $peak_chr."_".$peak_start."_".$peak_end; # ensure that peakID format is this
 	push @{$PEAKID_features{$peakID}}, $featureID;
-	$FEATUREID_peak_count{$featureID}++;
+	if (!defined $FEATUREID_peak_count{$featureID}) {
+		$FEATUREID_peak_count{$featureID}=1;
+		$featureCT++;
+	} else {
+		$FEATUREID_peak_count{$featureID}++;
+	}
+	$peak_feature_intersect_count++;
 } close IN;
+
+$ts = localtime(time);
+print LOG "$ts\tFeature count = $featureCT\n";
+print LOG "$ts\tPeak - Feature intersect count = $peak_feature_intersect_count\n";
 
 # load in peak sets
 open IN, "$ARGV[1]";
@@ -54,10 +71,18 @@ while ($l = <IN>) {
 	$peakID = $peak_chr."_".$peak_start."_".$peak_end;
 	$SETID_peakCT{$setID}++;
 	push @{$SETID_peakList{$setID}}, $peakID;
+	$peakSetCT++;
 } close IN;
 
+$ts = localtime(time);
+print LOG "$tsPeak set count = $peakSetCT\n";
+
 # precompute logfact
+$ts = localtime(time);
+print LOG "$ts\tBuilding logfact hash (max=$peakCT) ...";
 build_logfact($peakCT);
+$ts = localtime(time);
+print LOG "done. ($ts)\n";
 
 # perform all by all
 open OUT, ">$opt{'O'}.pvals.matrix";
@@ -67,8 +92,12 @@ foreach $featureID (sort keys %FEATUREID_peak_count) {
 } $header =~ s/\t$//;
 print OUT "$header\n";
 
+$ts = localtime(time);
+print LOG "$ts\tCalculating p-values for each factor for each set ...\n";
+
 foreach $setID (%SETID_peakCT) {
 	print OUT "$setID";
+	print LOG "\t\t$setID ...";
 	foreach $featureID (sort keys %FEATUREID_peak_count) {
 		$peaks_with_feature = $FEATUREID_peak_count{$featureID};
 		$peaks_without_feature = $peakCT - $FEATUREID_peak_count{$featureID};
@@ -88,9 +117,10 @@ foreach $setID (%SETID_peakCT) {
 		push @ALL_PVALS, $hypergeom_cumulative_pval;
 	}
 	print OUT "\n";
+	print LOG " done.\n";
 }
 
-close OUT;
+close OUT; close LOG;
 
 }
 
