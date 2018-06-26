@@ -104,8 +104,9 @@ foreach $setID (sort keys %SETID_peakCT) {
 		$peaks_without_feature = $peakCT - $FEATUREID_peak_count{$featureID};
 		$set_peaks_with_feature = 0;
 		foreach $peakID (@{$SETID_peakList{$setID}}) {
+			$added_peak = 0;
 			foreach $check_feature (@{$PEAKID_features{$peakID}}) {
-				if ($check_feature eq $featureID) {$set_peaks_with_feature++};
+				if ($check_feature eq $featureID && $added_peak < 1) {$set_peaks_with_feature++; $added_peak=1};
 			}
 		}
 		$set_peaks_total = $SETID_peakCT{$setID};
