@@ -86,17 +86,19 @@ print LOG "done. ($ts)\n";
 
 # perform all by all
 open OUT, ">$opt{'O'}.pvals.matrix";
+open COUNTS, ">$opt{'O'}.set_counts.matrix";
 $header = "";
 foreach $featureID (sort keys %FEATUREID_peak_count) {
 	$header .= "$featureID\t";
 } $header =~ s/\t$//;
 print OUT "$header\n";
+print COUNTS "$header\n";
 
 $ts = localtime(time);
 print LOG "$ts\tCalculating p-values for each factor for each set ...";
 
 foreach $setID (sort keys %SETID_peakCT) {
-	print OUT "$setID";
+	print OUT "$setID"; print COUNTS "$setID";
 	foreach $featureID (sort keys %FEATUREID_peak_count) {
 		$peaks_with_feature = $FEATUREID_peak_count{$featureID};
 		$peaks_without_feature = $peakCT - $FEATUREID_peak_count{$featureID};
@@ -112,14 +114,15 @@ foreach $setID (sort keys %SETID_peakCT) {
 		} else {
 			$hypergeom_cumulative_pval = 1;
 		}
+		print COUNTS "\t$peaks_with_feature,$peaks_without_feature,$set_peaks_total,$set_peaks_with_feature";
 		print OUT "\t$hypergeom_cumulative_pval";
 		push @ALL_PVALS, $hypergeom_cumulative_pval;
 	}
-	print OUT "\n";
+	print OUT "\n"; print COUNTS "\n";
 }
 
 print LOG " done.\n";
-close OUT; close LOG;
+close OUT; close COUNTS; close LOG;
 
 }
 
