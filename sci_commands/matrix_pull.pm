@@ -9,7 +9,7 @@ sub matrix_pull {
 
 @ARGV = @_;
 
-getopts("F", \%opt);
+getopts("Fr", \%opt);
 
 $die2 = "
 scitools matrix-pull [options] [matrix] [column,row] [column,row] etc... OR [file]
@@ -24,11 +24,13 @@ If a file is specified, it should be tab-delimited: column (tab) row
 
 Options:
    -F   File is the input (will try to auto detect)
+   -r   Reverse output order (will be row (tab) col (tab) value)
 
 ";
 
 if (!defined $ARGV[1]) {die $die2};
 
+%ROW_COL = ();
 if (defined $opt{'F'} || $ARGV[1] !~ /,/) {
 	open IN, "$ARGV[1]";
 	while ($l = <IN>) {
@@ -55,8 +57,15 @@ while ($l = <IN>) {
 	$row = shift(@P);
 	if (defined $ROW_COL{$row} || defined $ROW_COL{'all'}) {
 		for ($i = 0; $i < @H; $i++) {
-			if (defined $ROW_COL{$row}{$H[$i]} || defined $ROW_COL{$row}{'all'}) {
-				print "$H[$i]\t$row\t$P[$i]\n";
+			if (defined $ROW_COL{$row}{$H[$i]} ||
+				defined $ROW_COL{$row}{'all'} ||
+				defined $ROW_COL{'all'}{'all'} ||
+				defined $ROW_COL{'all'}{$H[$i]}) {
+				if (!defined $opt{'r'}) {
+					print "$H[$i]\t$row\t$P[$i]\n";
+				} else {
+					print "$row\t$H[$i]\t$P[$i]\n";
+				}
 			}
 		}
 	}
