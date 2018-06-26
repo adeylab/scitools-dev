@@ -75,7 +75,7 @@ while ($l = <IN>) {
 } close IN;
 
 $ts = localtime(time);
-print LOG "$tsPeak set count = $peakSetCT\n";
+print LOG "$ts\tPeak set count = $peakSetCT\n";
 
 # precompute logfact
 $ts = localtime(time);
@@ -93,11 +93,10 @@ foreach $featureID (sort keys %FEATUREID_peak_count) {
 print OUT "$header\n";
 
 $ts = localtime(time);
-print LOG "$ts\tCalculating p-values for each factor for each set ...\n";
+print LOG "$ts\tCalculating p-values for each factor for each set ...";
 
 foreach $setID (%SETID_peakCT) {
 	print OUT "$setID";
-	print LOG "\t\t$setID ...";
 	foreach $featureID (sort keys %FEATUREID_peak_count) {
 		$peaks_with_feature = $FEATUREID_peak_count{$featureID};
 		$peaks_without_feature = $peakCT - $FEATUREID_peak_count{$featureID};
@@ -117,9 +116,9 @@ foreach $setID (%SETID_peakCT) {
 		push @ALL_PVALS, $hypergeom_cumulative_pval;
 	}
 	print OUT "\n";
-	print LOG " done.\n";
 }
 
+print LOG " done.\n";
 close OUT; close LOG;
 
 }
