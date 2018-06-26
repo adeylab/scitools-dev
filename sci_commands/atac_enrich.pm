@@ -49,12 +49,15 @@ while ($l = <IN>) {
 	chomp $l;
 	($peak_chr,$peak_start,$peak_end,$peakID,$feature_chr,$feature_start,$feature_end,$featureID) = split(/\t/, $l);
 	$peakID = $peak_chr."_".$peak_start."_".$peak_end; # ensure that peakID format is this
-	push @{$PEAKID_features{$peakID}}, $featureID;
-	if (!defined $FEATUREID_peak_count{$featureID}) {
-		$FEATUREID_peak_count{$featureID}=1;
-		$featureCT++;
-	} else {
-		$FEATUREID_peak_count{$featureID}++;
+	if (!defined $FEATURE_PEAK_hit{$featureID}{$peakID}) {
+		push @{$PEAKID_features{$peakID}}, $featureID;
+		if (!defined $FEATUREID_peak_count{$featureID}) {
+			$FEATUREID_peak_count{$featureID}=1;
+			$featureCT++;
+		} else {
+			$FEATUREID_peak_count{$featureID}++;
+		}
+		$FEATURE_PEAK_hit{$featureID}{$peakID} = 1;
 	}
 	$peak_feature_intersect_count++;
 } close IN;
