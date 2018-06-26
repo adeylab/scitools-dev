@@ -95,7 +95,7 @@ print OUT "$header\n";
 $ts = localtime(time);
 print LOG "$ts\tCalculating p-values for each factor for each set ...";
 
-foreach $setID (%SETID_peakCT) {
+foreach $setID (sort keys %SETID_peakCT) {
 	print OUT "$setID";
 	foreach $featureID (sort keys %FEATUREID_peak_count) {
 		$peaks_with_feature = $FEATUREID_peak_count{$featureID};
