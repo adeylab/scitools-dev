@@ -185,9 +185,9 @@ ggsave(plot = g,filename = \"$opt{'O'}.$name_out/plots/Differential_acc_$contras
 ggsave(plot = g,filename = \"$opt{'O'}.$name_out/plots/Differential_acc_$contrast\_shrunk_qval_001_threshold_plotpval.pdf\")
 
 ##Construct the plot object
-g <- ggplot(data=output, aes(x=log2fold, y=-log10(qval), colour=threshold)) +
+g <- ggplot(data=output, aes(x=log2fold, y=qval, colour=threshold)) +
   geom_point(alpha=0.4, size=1.75) +
-  xlab(\"log2 fold change\") + ylab(\"-log10 p-value\")+theme_bw()
+  xlab(\"log2 fold change\") + ylab(\"q-value\")+theme_bw()
 ggsave(plot = g,filename = \"$opt{'O'}.$name_out/plots/Differential_acc_$contrast\_shrunk_qval_001_threshold_plotqval.png\")
 ggsave(plot = g,filename = \"$opt{'O'}.$name_out/plots/Differential_acc_$contrast\_shrunk_qval_001_threshold_plotqval.pdf\")
 
