@@ -31,6 +31,11 @@ if (-e "$ENV{'HOME'}/.scitools.cfg") {
 	print STDERR "INFO: Special config file detected as first argument. ($ARGV[0])\n";
 }
 load_defaults($SCITOOLS_DEFAULTS);
+# Set defaults if they were not specified
+if (!defined $VAR{'SCI_index_file'}) {$VAR{'SCI_index_file'} = "$RealBin/SCI_Indexes.txt"};
+if (!defined $VAR{'index_directory'}) {$VAR{'index_directory'} = "$RealBin/index_files"};
+if (!defined $VAR{'sci_modes'}) {$VAR{'sci_modes'} = "$RealBin/sci_modes.cfg"};
+
 load_gradient_defaults();
 
 # LOAD COMMANDS DIRECTLY FROM MODULE FILES
