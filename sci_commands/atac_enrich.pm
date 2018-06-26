@@ -113,7 +113,7 @@ foreach $setID (%SETID_peakCT) {
 		} else {
 			$hypergeom_cumulative_pval = 1;
 		}
-		print "\t$hypergeom_cumulative_pval";
+		print OUT "\t$hypergeom_cumulative_pval";
 		push @ALL_PVALS, $hypergeom_cumulative_pval;
 	}
 	print OUT "\n";
