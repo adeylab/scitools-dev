@@ -18,6 +18,8 @@ scitools matrix-pull [options] [matrix] [column,row] [column,row] etc... OR [fil
 Pull a value or list of values from a matrix. Outputs to STDOUT, tab delimited:
 column (tab) row (tab) value
 
+Can specify 'all' for all rows / columns
+
 If a file is specified, it should be tab-delimited: column (tab) row
 
 Options:
@@ -27,16 +29,19 @@ Options:
 
 if (!defined $ARGV[1]) {die $die2};
 
+$all_rows = 0;
 if (defined $opt{'F'} || $ARGV[1] !~ /,/) {
 	open IN, "$ARGV[1]";
 	while ($l = <IN>) {
 		chomp $l;
 		($col,$row) = split(/\t/, $l);
+		if ($col =~ /all/i) {$col = "all"};
 		$ROW_COL{$row}{$col} = 1;
 	} close IN;
 } else {
 	for ($i = 1; $i < @ARGV; $i++) {
 		($col,$row) = split(/,/, $ARGV[$i]);
+		if ($col =~ /all/i) {$col = "all"};
 		$ROW_COL{$row}{$col} = 1;
 	}
 }
@@ -47,9 +52,9 @@ while ($l = <IN>) {
 	chomp $l;
 	@P = split(/\t/, $l);
 	$row = shift(@P);
-	if (defined $ROW_COL{$row}) {
+	if (defined $ROW_COL{$row} || $all_rows = 1) {
 		for ($i = 0; $i < @H; $i++) {
-			if (defined $ROW_COL{$row}{$H[$i]}) {
+			if (defined $ROW_COL{$row}{$H[$i]} || defined $ROW_COL{$row}{'all'}) {
 				print "$H[$i]\t$row\t$P[$i]\n";
 			}
 		}
