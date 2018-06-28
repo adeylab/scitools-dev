@@ -32,6 +32,17 @@ for ($num = 1; $num <= 96; $num++) {
 	$PLATE_FORMAT{$num} = $num;
 	if ($num<=9) {$PLATE_FORMAT{$num} = "0".$num};
 }
+%WELLID_letter = (); %WELLID_number = ();
+$let = 1; $num = 1;
+for ($wellID = 1; $wellID <= 96; $wellID++) {
+	$WELLID_letter{$wellID} = $LETTERS[$let];
+	$WELLID_number{$wellID} = $num;
+	$num++;
+	if ($num == 13) {
+		$let++;
+		$num = 1;
+	}
+}
 
 $mode_name = "sci";
 $def_read_name_format = "barc";
@@ -152,9 +163,11 @@ foreach $modality (@MODALITIES) {
 						} else {
 							($i5_set,$i7_set) = split(//, $combo);
 							if ($index_type =~ /i5/) {
+								$well_name = $WELLID_letter{$wellID};
 								push @{$POS_INDEXES[$index_pos]}, $CLASS_I5_COMBO_LETTER_seq{$class}{$combo}{$well_name};
 								push @{$POS_IDS[$index_pos]}, $CLASS_I5_COMBO_LETTER_id{$class}{$combo}{$well_name};
 							} elsif ($index_type =~ /i7/) {
+								$well_name = $WELLID_number{$wellID};
 								push @{$POS_INDEXES[$index_pos]}, $CLASS_I7_COMBO_NUMBER_seq{$class}{$combo}{$well_name};
 								push @{$POS_IDS[$index_pos]}, $CLASS_I7_COMBO_NUMBER_id{$class}{$combo}{$well_name};
 							}
@@ -274,19 +287,18 @@ sub load_plate_descriptions { # eg: #NEX,MySampleID1,AA,Partial
 	while ($l = <CSV>) {
 		chomp $l;
 		if ($l =~ /^#/) {
-		
 			($class,$annot,$combo,$subset) = split(/,/, $l);
 			$class =~ s/^#//;
 			if ($class =~ /NEX/i) {$class = "sci_tn5"}; # for reverse compatability
 			if ($class =~ /PCR/i) {$class = "sci_pcr"}; # for reverse compatability
 			$annot =~ s/ /_/g;
+			if (defined $opt{'v'}) {print "INFO:\tLoading $class, $annot, $combo, $subset\n"};
 			@CLASS_PARTS = split(/_/, $class);
 			$class = $CLASS_PARTS[0]."_".$CLASS_PARTS[1];
 			
 			if (!defined $INDEX_CLASS_format{$class}) {
 				die "ERROR: There is no index format specified for index class $class.\n\tThe plate descriptor files must match the index files for the class of the indexes.\n\t(for at least the first two '_' separated fields)\n";
 			}
-			
 			
 			if ($subset =~ /all/i) {
 				for ($wellID = 1; $wellID <= 96; $wellID++) {
