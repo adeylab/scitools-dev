@@ -132,20 +132,82 @@ foreach $modality (@MODALITIES) {
 		open OUT, ">$ARGV[1].annot";
 	}
 	foreach $annot (keys %ANNOT_SETS) {
-		@POS_INDEXES = ();
+		@POS_INDEXES = (); @POS_IDS =();
 		for ($index_pos = 0; $index_pos < @{$MODALITY_INDEXES{$modality}}; $index_pos++) {
 			$index_type = $MODALITY_INDEXES{$modality}[$index_pos];
 			$class = $INDEX_TYPE_class{$index_type};
+			@{$POS_INDEXES[$index_pos]} = ();
+			@{$POS_IDS[$index_pos]} = ();
 			if (defined $ANNOT_SETS{$annot}{$class}) {
 				foreach $combo (keys %{$ANNOT_SETS{$annot}{$class}}) {
-					
+					foreach $wellID (keys %{$ANNOT_SETS{$annot}{$class}{$combo}}) {
+						if ($INDEX_CLASS_format{$class} =~ /96|all|plate/) {
+							push @{$POS_INDEXES[$index_pos]}, $CLASS_COMBO_WELLID_seq{$class}{$combo}{$wellID};
+							push @{$POS_IDS[$index_pos]}, $CLASS_COMBO_WELLID_id{$class}{$combo}{$wellID};
+						} else {
+							($i5_set,$i7_set) = split(//, $combo);
+							if ($index_type =~ /i5/) {
+								push @{$POS_INDEXES[$index_pos]}, $CLASS_I5_COMBO_LETTER_seq{$class}{$combo}{$well_name};
+								push @{$POS_IDS[$index_pos]}, $CLASS_I5_COMBO_LETTER_id{$class}{$combo}{$well_name};
+							} elsif ($index_type =~ /i7/) {
+								push @{$POS_INDEXES[$index_pos]}, $CLASS_I7_COMBO_NUMBER_seq{$class}{$combo}{$well_name};
+								push @{$POS_IDS[$index_pos]}, $CLASS_I7_COMBO_NUMBER_id{$class}{$combo}{$well_name};
+							}
+						}
+					}
+				}
+			}
+		}
+		if ($opt{'f'} =~ /barc/) {
+			print_barcs($annot);
+		} else {
+			print_names($annot);
+		}
+	}
+	close OUT;
+}
+
+#### SUBROUTINES ####
+
+sub print_barcs {
+	$annot_name = $_[0];
+	%NEW = ();
+	foreach $seq (@{$POS_INDEXES[0]}) {$NEW{$seq} = 1};
+	if (defined $MODALITY_INDEXES{$modality}[1]) {
+		for ($pos = 0; $pos < @{$MODALITY_INDEXES{$modality}}; $pos++) {
+			%RUNNING = %NEW; %NEW = ();
+			foreach $in_progress (keys %RUNNING) {
+				foreach $seq (@{$POS_INDEXES[$pos]}) {
+					$new = $in_progress.$seq;
+					$NEW{$new} = 1;
 				}
 			}
 		}
 	}
+	foreach $barc (keys %NEW) {
+		print OUT "$barc\t$annot_name\n";
+	}
 }
 
-#### SUBROUTINES ####
+sub print_names {
+	$annot_name = $_[0];
+	%NEW = ();
+	foreach $seq (@{$POS_IDS[0]}) {$NEW{$seq} = 1};
+	if (defined $MODALITY_INDEXES{$modality}[1]) {
+		for ($pos = 0; $pos < @{$MODALITY_INDEXES{$modality}}; $pos++) {
+			%RUNNING = %NEW; %NEW = ();
+			foreach $in_progress (keys %RUNNING) {
+				foreach $seq (@{$POS_IDS[$pos]}) {
+					$new = $in_progress."-".$seq;
+					$NEW{$new} = 1;
+				}
+			}
+		}
+	}
+	foreach $barc (keys %NEW) {
+		print OUT "$barc\t$annot_name\n";
+	}
+}
 
 sub check_indexes {
 	$absent_index = 0;
@@ -166,16 +228,31 @@ sub check_indexes {
 			
 			# build index matrix
 			foreach $index_seq (keys %{$INDEX_TYPE_SEQ_id{$check_index}}) {
+				$class = $INDEX_TYPE_class{$check_index};
 				$index_id = $INDEX_TYPE_SEQ_id{$check_index}{$index_seq};
-				###########################################################
+				($id,$set,$side,$well_name) = split(/_/, $index_id);
+				if ($INDEX_TYPE_format{$check_index} =~ /96|all|plate/) { # 96 well plate index set
+					$wellID = $PLATE_FORMAT{$well_name};
+					$combo = $set;
+					$CLASS_COMBO_WELLID_seq{$class}{$combo}{$wellID} = $index_seq;
+					$CLASS_COMBO_WELLID_id{$class}{$combo}{$wellID} = $index_id;
+				} else { # rows by columns index set
+					if ($side =~ /i5/) {
+						$combo = $set;
+						$CLASS_I5_COMBO_LETTER_seq{$class}{$combo}{$well_name} = $index_seq;
+						$CLASS_I5_COMBO_LETTER_id{$class}{$combo}{$well_name} = $index_id;
+					} elsif ($side =~ /i7/) {
+						$combo = $set;
+						$CLASS_I7_COMBO_NUMBER_seq{$class}{$combo}{$well_name} = $index_seq;
+						$CLASS_I7_COMBO_NUMBER_id{$class}{$combo}{$well_name} = $index_id;
+					} else { # undefined side
+						die "ERROR: Cannot interpret the index position (i5 or i7) for the index $index_id.\nMake sure the format is properly specified in the index file and the index names are properly formatted:\n\t[ID]_[set]_[i5/i7]_[well]\n";
+					}
+				}
 			}
 		}
 	}
 	if ($absent_index>0) {die "ERROR: Index types specified in mode: $mode_name could not be found in the specified index file(s)/directory(s)!\n"};
-}
-
-sub plate2seq {
-	
 }
 
 sub load_plate_descriptions { # eg: #NEX,MySampleID1,AA,Partial

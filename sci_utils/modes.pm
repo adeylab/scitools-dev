@@ -22,7 +22,7 @@ sub new {
 	# set multimodal to false - true will be global
 	$self->{multimodal} = "false";
 	
-	open FILE, "$file";
+	open FILE, "$file" || die "ERROR: Cannot open mode configuration file: $file!\n";
 	while ($l = <FILE>) {
 		if ($l !~ /^#/) {
 			chomp $l;

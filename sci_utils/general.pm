@@ -305,7 +305,7 @@ sub read_indexdir {
 				$index_seq = uc($index_seq_raw);
 				($id_tier,$id_set,$id_side,$id_well) = split(/_/, $index_id);
 				$INDEX_TYPE_SEQ_seq{$index_type}{$index_seq} = $index_seq;
-				$INDEX_TYPE_length{$index_type} = length($index_seq);
+				$INDEX_TYPE_length{$index_type} = length($index_seq)-1;
 				$INDEX_TYPE_SEQ_id{$index_type}{$index_seq} = $index_id;
 				$INDEX_TYPE_class{$index_type} = $index_class;
 				$INDEX_TYPE_format{$index_type} = $index_format;
