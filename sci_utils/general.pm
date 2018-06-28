@@ -85,9 +85,9 @@ sub load_defaults {
 		$Rscript = "Rscript"; #DEFAULT=Rscript
 		$Pscript = "python"; #DEFAULT=Pscript
 	}
-	if (!defined $VAR{'index_directory'}) {$VAR{'index_directory'} = "$RealBin/index_files"};
-	if (!defined $VAR{'SCI_index_file'}) {$VAR{'SCI_index_file'} = "$RealBin/SCI_Indexes.txt"};
-	if (!defined $VAR{'sci_modes'}) {$VAR{'sci_modes'} = "$RealBin/sci_modes.cfg"};
+	if (!defined $VAR{'index_directory'}) {$VAR{'index_directory'} = "$_[1]/index_files"};
+	if (!defined $VAR{'SCI_index_file'}) {$VAR{'SCI_index_file'} = "$_[1]/SCI_Indexes.txt"};
+	if (!defined $VAR{'sci_modes'}) {$VAR{'sci_modes'} = "$_[1]/sci_modes.cfg"};
 }
 
 sub read_annot {
@@ -314,60 +314,6 @@ sub read_indexdir {
 			}
 		} close INDEX;
 	}
-}
-
-sub read_mode { # FOR MODE IMPLEMENTATION
-	$sci_modes_file = $_[0];
-	%MODE_GROUP_CLASS_PARTS = ();
-	%ALIAS_mode = ();
-	open MODES, "$sci_modes_file" || die "ERROR: Cannot open sci_modes file: $sci_modes_file.\n";
-	while ($mode_l = <MODES>) {
-		if ($mode_l !~ /^#/) {
-			chomp $mode_l;
-			if ($mode_l =~ /^>/) {
-				$mode_l =~ s/^>//;
-				@MODE_ALIASES = split(/,/, $mode_l);
-				$mode_name = $MODE_ALIASES[0];
-				for ($aliasID = 0; $aliasID < @MODE_ALIASES; $aliasID++) {
-					$ALIAS_mode{$MODE_ALIASES[$aliasID]} = $mode_name;
-					#print STDERR "Adding alias $MODE_ALIASES[$aliasID] to $mode_name\n";
-				}
-				$mode_group = 0;
-			} elsif ($mode_l =~ /\&/) {
-				$mode_group++;
-				#print STDERR " >>> Jumping to a second mode group <<<\n";
-			} else {
-				($item,$spec) = split(/=/, $mode_l);
-				#print STDERR " item = $item, spec = $spec\n";
-				if ($item =~ /name/) {
-					$MODE_GROUP_CLASS_PARTS{$mode_name}[$mode_group]{'name'} = $spec;
-					#print STDERR "   $item is a name, adding to names.\n";
-				} else {
-					@READ_PARTS = split(/,/, $spec);
-					$current_offset = 0;
-					#print STDERR "   Parsing read parts:\n";
-					for ($read_partID = 0; $read_partID < @READ_PARTS; $read_partID++) {
-						($read_item,$item_length) = split(/:/, $READ_PARTS[$read_partID]);
-						#print STDERR "      Part = $read_item, length = $item_length, current offset = $current_offset\n";
-						if ($read_item =~ /null/) {
-							$current_offset += $item_length; # do not load anything for null bases, just add offset
-						} else {
-							if ($read_item =~ /^read_/) {
-								$read_name = $read_item;
-								$read_name =~ s/^read_//;
-								push @{$MODE_GROUP_CLASS_PARTS{$mode_name}[$mode_group]{'read_outputs'}}, $read_name;
-								#print STDERR "         Part is a read - adding to read outputs - named: $read_name\n";
-							}
-							push @{$MODE_GROUP_CLASS_PARTS{$mode_name}[$mode_group]{$item}{'name'}}, $read_item;
-							push @{$MODE_GROUP_CLASS_PARTS{$mode_name}[$mode_group]{$item}{'length'}}, $item_length;
-							push @{$MODE_GROUP_CLASS_PARTS{$mode_name}[$mode_group]{$item}{'offset'}}, $current_offset;
-							if ($item_length =~ /^\d+$/) {$current_offset += $item_length};
-						}
-					}
-				}
-			}
-		}
-	} close MODES;
 }
 
 sub read_indexes {

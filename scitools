@@ -18,7 +18,6 @@ $version = "0.1.2";
 use Getopt::Std; %opt = ();
 use sci_utils::general;
 use Exporter "import";
-@EXPORT = (qw($RealBin));
 
 # LOAD DEFAULTS
 $SCITOOLS_DEFAULTS = "$RealBin/scitools.cfg";
@@ -31,13 +30,7 @@ if (-e "$ENV{'HOME'}/.scitools.cfg") {
 	$SCITOOLS_DEFAULTS = shift(@ARGV);
 	print STDERR "INFO: Special config file detected as first argument. ($ARGV[0])\n";
 }
-load_defaults($SCITOOLS_DEFAULTS);
-# Set defaults if they were not specified
-if (!defined $VAR{'SCI_index_file'}) {$VAR{'SCI_index_file'} = "$RealBin/SCI_Indexes.txt"};
-if (!defined $VAR{'index_directory'}) {$VAR{'index_directory'} = "$RealBin/index_files"};
-if (!defined $VAR{'sci_modes'}) {$VAR{'sci_modes'} = "$RealBin/sci_modes.cfg"};
-push @EXPORT, qw(%VAR);
-
+load_defaults($SCITOOLS_DEFAULTS,$RealBin);
 load_gradient_defaults();
 
 # LOAD COMMANDS DIRECTLY FROM MODULE FILES
