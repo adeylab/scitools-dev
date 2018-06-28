@@ -9,7 +9,7 @@ use Exporter "import";
 sub annot_make_mode {
 
 @ARGV = @_;
-getopts("I:pM:m:", \%opt);
+getopts("I:pM:m:v", \%opt);
 
 # DEFAULTS
 @LETTERS = ("0", "A", "B", "C", "D", "E", "F", "G", "H");
@@ -50,6 +50,7 @@ Options:
    -m   [STR]   Run format specification file
          (def = $VAR{'sci_modes'})
    -f   [STR]   Read name format: barc OR name (def = $def_read_name_format)
+   -v           Verbose (for debugging)
 
    -p           Print out sample plate file for modificaiton and exit
                 (ExamplePlateDescriptor.csv)
@@ -108,6 +109,7 @@ if (!defined $opt{'f'}) {$opt{'f'} = $def_read_name_format};
 if (defined $opt{'m'}) {$VAR{'sci_modes'} = $opt{'m'}};
 
 # load in sci mode
+if (defined $opt{'v'}) {print "INFO: Loading in mode $mode_name from config file $VAR{'sci_modes'}\n"};
 $mode = modes->new($mode_name,$VAR{'sci_modes'});
 # get set of modalities
 @MODALITIES = $mode->modalities();
@@ -118,10 +120,13 @@ for ($modalityID = 0; $modalityID < @MODALITIES; $modalityID++) {
 }
 
 # Read in indexes
+if (defined $opt{'v'}) {print "INFO: Reading in Index Directory: $opt{'I'}\n"};
 read_indexdir($opt{'I'});
+if (defined $opt{'v'}) {print "INFO: Checking Indexes that were Loaded\n"};
 check_indexes();
 
 # Read in plate descriptor file
+if (defined $opt{'v'}) {print "INFO: Loading in plate file $ARGV[0]\n"};
 load_plate_descriptions($ARGV[0]);
 
 # Go through modalities then annots
@@ -212,7 +217,9 @@ sub print_names {
 sub check_indexes {
 	$absent_index = 0;
 	foreach $check_modality (@MODALITIES) {
+		if (defined $opt{'v'}) {print "INFO:\tChecking indexes for modality: $check_modality\n"};
 		foreach $check_index (@{$MODALITY_INDEXES{$check_modality}}) {
+			if (defined $opt{'v'}) {print "INFO:\t\tVerifying properties of index $check_index with mode $mode_name\n"};
 			if (!defined $INDEX_TYPE_SEQ_seq{$check_index} && $check_index !~ /^umi$/i) {
 				$absent_index++;
 			}
@@ -227,7 +234,9 @@ sub check_indexes {
 			}
 			
 			# build index matrix
+			if (defined $opt{'v'}) {print "INFO:\t\tBuilding the index matrix for this index type's sequences:\n"};
 			foreach $index_seq (keys %{$INDEX_TYPE_SEQ_id{$check_index}}) {
+				if (defined $opt{'v'}) {print "INFO:\t\t\t$index_seq ... "};
 				$class = $INDEX_TYPE_class{$check_index};
 				$index_id = $INDEX_TYPE_SEQ_id{$check_index}{$index_seq};
 				($id,$set,$side,$well_name) = split(/_/, $index_id);
@@ -236,15 +245,18 @@ sub check_indexes {
 					$combo = $set;
 					$CLASS_COMBO_WELLID_seq{$class}{$combo}{$wellID} = $index_seq;
 					$CLASS_COMBO_WELLID_id{$class}{$combo}{$wellID} = $index_id;
+					if (defined $opt{'v'}) {print "96-well format, ID=$index_id, combo=$combo, wellID=$wellID\n"};
 				} else { # rows by columns index set
 					if ($side =~ /i5/) {
 						$combo = $set;
 						$CLASS_I5_COMBO_LETTER_seq{$class}{$combo}{$well_name} = $index_seq;
 						$CLASS_I5_COMBO_LETTER_id{$class}{$combo}{$well_name} = $index_id;
+						if (defined $opt{'v'}) {print "split format - i5 side, ID=$index_id, combo=$combo, well_name=$well_name\n"};
 					} elsif ($side =~ /i7/) {
 						$combo = $set;
 						$CLASS_I7_COMBO_NUMBER_seq{$class}{$combo}{$well_name} = $index_seq;
 						$CLASS_I7_COMBO_NUMBER_id{$class}{$combo}{$well_name} = $index_id;
+						if (defined $opt{'v'}) {print "split format - i7 side, ID=$index_id, combo=$combo, well_name=$well_name\n"};
 					} else { # undefined side
 						die "ERROR: Cannot interpret the index position (i5 or i7) for the index $index_id.\nMake sure the format is properly specified in the index file and the index names are properly formatted:\n\t[ID]_[set]_[i5/i7]_[well]\n";
 					}
