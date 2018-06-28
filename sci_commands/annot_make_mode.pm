@@ -120,7 +120,7 @@ if (!defined $opt{'f'}) {$opt{'f'} = $def_read_name_format};
 if (defined $opt{'m'}) {$VAR{'sci_modes'} = $opt{'m'}};
 
 # load in sci mode
-if (defined $opt{'v'}) {print "INFO: Loading in mode $mode_name from config file $VAR{'sci_modes'}\n"};
+if (defined $opt{'v'}) {print STDERR "INFO: Loading in mode $mode_name from config file $VAR{'sci_modes'}\n"};
 $mode = modes->new($mode_name,$VAR{'sci_modes'});
 # get set of modalities
 @MODALITIES = $mode->modalities();
@@ -131,37 +131,37 @@ for ($modalityID = 0; $modalityID < @MODALITIES; $modalityID++) {
 }
 
 # Read in indexes
-if (defined $opt{'v'}) {print "INFO: Reading in Index Directory: $opt{'I'}\n"};
+if (defined $opt{'v'}) {print STDERR "INFO: Reading in Index Directory: $opt{'I'}\n"};
 read_indexdir($opt{'I'});
-if (defined $opt{'v'}) {print "INFO: Checking Indexes that were Loaded\n"};
+if (defined $opt{'v'}) {print STDERR "INFO: Checking Indexes that were Loaded\n"};
 check_indexes();
 
 # Read in plate descriptor file
-if (defined $opt{'v'}) {print "INFO: Loading in plate file $ARGV[0]\n"};
+if (defined $opt{'v'}) {print STDERR "INFO: Loading in plate file $ARGV[0]\n"};
 load_plate_descriptions($ARGV[0]);
 
 # Go through modalities then annots
 foreach $modality (@MODALITIES) {
-	if (defined $opt{'v'}) {print "INFO: Building matrix and printing annotations for modality: $modality\n"};
+	if (defined $opt{'v'}) {print STDERR "INFO: Building matrix and printing annotations for modality: $modality\n"};
 	if ($mode->check_multimodal() =~ /true/) {
 		open OUT, ">$ARGV[1].$modality.annot";
 	} else {
 		open OUT, ">$ARGV[1].annot";
 	}
 	foreach $annot (keys %ANNOT_SETS) {
-		if (defined $opt{'v'}) {print "INFO:\tBuilding for annot $annot\n"};
+		if (defined $opt{'v'}) {print STDERR "INFO:\tBuilding for annot $annot\n"};
 		@POS_INDEXES = (); @POS_IDS =();
 		for ($index_pos = 0; $index_pos < @{$MODALITY_INDEXES{$modality}}; $index_pos++) {
 			$index_type = $MODALITY_INDEXES{$modality}[$index_pos];
 			$class = $INDEX_TYPE_class{$index_type};
 			@{$POS_INDEXES[$index_pos]} = ();
 			@{$POS_IDS[$index_pos]} = ();
-			if (defined $opt{'v'}) {print "INFO:\t\tIndex position $index_pos, type=$index_type, class=$class\n"};
+			if (defined $opt{'v'}) {print STDERR "INFO:\t\tIndex position $index_pos, type=$index_type, class=$class\n"};
 			if (defined $ANNOT_SETS{$annot}{$class}) {
 				foreach $combo (keys %{$ANNOT_SETS{$annot}{$class}}) {
-					if (defined $opt{'v'}) {print "INFO:\t\t\tCombo = $combo\n"};
+					if (defined $opt{'v'}) {print STDERR "INFO:\t\t\tCombo = $combo\n"};
 					foreach $wellID (keys %{$ANNOT_SETS{$annot}{$class}{$combo}}) {
-						if (defined $opt{'v'}) {print "INFO:\t\t\t\tWellID = $wellID\n"};
+						if (defined $opt{'v'}) {print STDERR "INFO:\t\t\t\tWellID = $wellID ..."};
 						if ($INDEX_CLASS_format{$class} =~ /96|all|plate/) {
 							push @{$POS_INDEXES[$index_pos]}, $CLASS_COMBO_WELLID_seq{$class}{$combo}{$wellID};
 							push @{$POS_IDS[$index_pos]}, $CLASS_COMBO_WELLID_id{$class}{$combo}{$wellID};
@@ -171,16 +171,19 @@ foreach $modality (@MODALITIES) {
 								$well_name = $WELLID_letter{$wellID};
 								push @{$POS_INDEXES[$index_pos]}, $CLASS_I5_COMBO_LETTER_seq{$class}{$combo}{$well_name};
 								push @{$POS_IDS[$index_pos]}, $CLASS_I5_COMBO_LETTER_id{$class}{$combo}{$well_name};
+								if (defined $opt{'v'}) {print STDERR "seq = $CLASS_I5_COMBO_LETTER_seq{$class}{$combo}{$well_name}, name = $CLASS_I5_COMBO_LETTER_id{$class}{$combo}{$well_name}\n"};
 							} elsif ($index_type =~ /i7/) {
 								$well_name = $WELLID_number{$wellID};
 								push @{$POS_INDEXES[$index_pos]}, $CLASS_I7_COMBO_NUMBER_seq{$class}{$combo}{$well_name};
 								push @{$POS_IDS[$index_pos]}, $CLASS_I7_COMBO_NUMBER_id{$class}{$combo}{$well_name};
+								if (defined $opt{'v'}) {print STDERR "seq = $CLASS_I7_COMBO_NUMBER_seq{$class}{$combo}{$well_name}, name = $CLASS_I7_COMBO_NUMBER_id{$class}{$combo}{$well_name}\n"};
 							}
 						}
 					}
 				}
 			}
 		}
+		if (defined $opt{'v'}) {print STDERR "INFO:\tPrinting for annot $annot\n"};
 		if ($opt{'f'} =~ /barc/) {
 			print_barcs($annot);
 		} else {
@@ -203,6 +206,7 @@ sub print_barcs {
 				foreach $seq (@{$POS_INDEXES[$pos]}) {
 					$new = $in_progress.$seq;
 					$NEW{$new} = 1;
+					if (defined $opt{'v'}) {print STDERR "INFO:\t\tSEQ: starting with $in_progress, adding $seq, to become $new\n"};
 				}
 			}
 		}
@@ -223,6 +227,7 @@ sub print_names {
 				foreach $seq (@{$POS_IDS[$pos]}) {
 					$new = $in_progress."-".$seq;
 					$NEW{$new} = 1;
+					if (defined $opt{'v'}) {print STDERR "INFO:\t\tSEQ: starting with $in_progress, adding $seq, to become $new\n"};
 				}
 			}
 		}
@@ -235,9 +240,9 @@ sub print_names {
 sub check_indexes {
 	$absent_index = 0;
 	foreach $check_modality (@MODALITIES) {
-		if (defined $opt{'v'}) {print "INFO:\tChecking indexes for modality: $check_modality\n"};
+		if (defined $opt{'v'}) {print STDERR "INFO:\tChecking indexes for modality: $check_modality\n"};
 		foreach $check_index (@{$MODALITY_INDEXES{$check_modality}}) {
-			if (defined $opt{'v'}) {print "INFO:\t\tVerifying properties of index $check_index with mode $mode_name\n"};
+			if (defined $opt{'v'}) {print STDERR "INFO:\t\tVerifying properties of index $check_index with mode $mode_name\n"};
 			if (!defined $INDEX_TYPE_SEQ_seq{$check_index} && $check_index !~ /^umi$/i) {
 				$absent_index++;
 			}
@@ -252,9 +257,9 @@ sub check_indexes {
 			}
 			
 			# build index matrix
-			if (defined $opt{'v'}) {print "INFO:\t\tBuilding the index matrix for this index type's sequences:\n"};
+			if (defined $opt{'v'}) {print STDERR "INFO:\t\tBuilding the index matrix for this index type's sequences:\n"};
 			foreach $index_seq (keys %{$INDEX_TYPE_SEQ_id{$check_index}}) {
-				if (defined $opt{'v'}) {print "INFO:\t\t\t$index_seq ... "};
+				if (defined $opt{'v'}) {print STDERR "INFO:\t\t\t$index_seq ... "};
 				$class = $INDEX_TYPE_class{$check_index};
 				$index_id = $INDEX_TYPE_SEQ_id{$check_index}{$index_seq};
 				($id,$set,$side,$well_name) = split(/_/, $index_id);
@@ -297,7 +302,7 @@ sub load_plate_descriptions { # eg: #NEX,MySampleID1,AA,Partial
 			if ($class =~ /NEX/i) {$class = "sci_tn5"}; # for reverse compatability
 			if ($class =~ /PCR/i) {$class = "sci_pcr"}; # for reverse compatability
 			$annot =~ s/ /_/g;
-			if (defined $opt{'v'}) {print "INFO:\tLoading $class, $annot, $combo, $subset\n"};
+			if (defined $opt{'v'}) {print STDERR "INFO:\tLoading $class, $annot, $combo, $subset\n"};
 			@CLASS_PARTS = split(/_/, $class);
 			$class = $CLASS_PARTS[0]."_".$CLASS_PARTS[1];
 			
@@ -308,7 +313,7 @@ sub load_plate_descriptions { # eg: #NEX,MySampleID1,AA,Partial
 			if ($subset =~ /all/i) {
 				for ($wellID = 1; $wellID <= 96; $wellID++) {
 					$ANNOT_SETS{$annot}{$class}{$combo}{$wellID} = 1;
-					if (defined $opt{'v'}) {print "INFO:\t\tAdding wellID $wellID (annot=$annot,class=$class,combo=$combo)\n"};
+					if (defined $opt{'v'}) {print STDERR "INFO:\t\tAdding wellID $wellID (annot=$annot,class=$class,combo=$combo)\n"};
 				}
 			} else {
 				for ($rowNum = 1; $rowNum <= 8; $rowNum++) {
@@ -319,7 +324,7 @@ sub load_plate_descriptions { # eg: #NEX,MySampleID1,AA,Partial
 							$well_name = $LETTERS[$rowNum].$colNum;
 							$wellID = $PLATE_FORMAT{$well_name};
 							$ANNOT_SETS{$annot}{$class}{$combo}{$wellID} = 1;
-							if (defined $opt{'v'}) {print "INFO:\t\tAdding wellID $wellID (annot=$annot,class=$class,combo=$combo)\n"};
+							if (defined $opt{'v'}) {print STDERR "INFO:\t\tAdding wellID $wellID (annot=$annot,class=$class,combo=$combo)\n"};
 						}
 					}
 				}
