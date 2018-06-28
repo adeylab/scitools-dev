@@ -142,21 +142,26 @@ load_plate_descriptions($ARGV[0]);
 
 # Go through modalities then annots
 foreach $modality (@MODALITIES) {
+	if (defined $opt{'v'}) {print "INFO: Building matrix and printing annotations for modality: $modality\n"};
 	if ($mode->check_multimodal() =~ /true/) {
 		open OUT, ">$ARGV[1].$modality.annot";
 	} else {
 		open OUT, ">$ARGV[1].annot";
 	}
 	foreach $annot (keys %ANNOT_SETS) {
+		if (defined $opt{'v'}) {print "INFO:\tBuilding for annot $annot\n"};
 		@POS_INDEXES = (); @POS_IDS =();
 		for ($index_pos = 0; $index_pos < @{$MODALITY_INDEXES{$modality}}; $index_pos++) {
 			$index_type = $MODALITY_INDEXES{$modality}[$index_pos];
 			$class = $INDEX_TYPE_class{$index_type};
 			@{$POS_INDEXES[$index_pos]} = ();
 			@{$POS_IDS[$index_pos]} = ();
+			if (defined $opt{'v'}) {print "INFO:\t\tIndex position $index_pos, type=$index_type, class=$class\n"};
 			if (defined $ANNOT_SETS{$annot}{$class}) {
 				foreach $combo (keys %{$ANNOT_SETS{$annot}{$class}}) {
+					if (defined $opt{'v'}) {print "INFO:\t\t\tCombo = $combo\n"};
 					foreach $wellID (keys %{$ANNOT_SETS{$annot}{$class}{$combo}}) {
+						if (defined $opt{'v'}) {print "INFO:\t\t\t\tWellID = $wellID\n"};
 						if ($INDEX_CLASS_format{$class} =~ /96|all|plate/) {
 							push @{$POS_INDEXES[$index_pos]}, $CLASS_COMBO_WELLID_seq{$class}{$combo}{$wellID};
 							push @{$POS_IDS[$index_pos]}, $CLASS_COMBO_WELLID_id{$class}{$combo}{$wellID};
@@ -303,6 +308,7 @@ sub load_plate_descriptions { # eg: #NEX,MySampleID1,AA,Partial
 			if ($subset =~ /all/i) {
 				for ($wellID = 1; $wellID <= 96; $wellID++) {
 					$ANNOT_SETS{$annot}{$class}{$combo}{$wellID} = 1;
+					if (defined $opt{'v'}) {print "INFO:\t\tAdding wellID $wellID (annot=$annot,class=$class,combo=$combo)\n"};
 				}
 			} else {
 				for ($rowNum = 1; $rowNum <= 8; $rowNum++) {
@@ -313,6 +319,7 @@ sub load_plate_descriptions { # eg: #NEX,MySampleID1,AA,Partial
 							$well_name = $LETTERS[$rowNum].$colNum;
 							$wellID = $PLATE_FORMAT{$well_name};
 							$ANNOT_SETS{$annot}{$class}{$combo}{$wellID} = 1;
+							if (defined $opt{'v'}) {print "INFO:\t\tAdding wellID $wellID (annot=$annot,class=$class,combo=$combo)\n"};
 						}
 					}
 				}
