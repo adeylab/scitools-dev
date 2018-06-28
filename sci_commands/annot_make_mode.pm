@@ -169,14 +169,14 @@ foreach $modality (@MODALITIES) {
 							($i5_set,$i7_set) = split(//, $combo);
 							if ($index_type =~ /i5/) {
 								$well_name = $WELLID_letter{$wellID};
-								push @{$POS_INDEXES[$index_pos]}, $CLASS_I5_COMBO_LETTER_seq{$class}{$combo}{$well_name};
-								push @{$POS_IDS[$index_pos]}, $CLASS_I5_COMBO_LETTER_id{$class}{$combo}{$well_name};
-								if (defined $opt{'v'}) {print STDERR " (class=$class, combo=$combo, well_name=$well_name) seq = $CLASS_I5_COMBO_LETTER_seq{$class}{$combo}{$well_name}, name = $CLASS_I5_COMBO_LETTER_id{$class}{$combo}{$well_name}\n"};
+								push @{$POS_INDEXES[$index_pos]}, $CLASS_I5_COMBO_LETTER_seq{$class}{$i5_set}{$well_name};
+								push @{$POS_IDS[$index_pos]}, $CLASS_I5_COMBO_LETTER_id{$class}{$i5_set}{$well_name};
+								if (defined $opt{'v'}) {print STDERR " (class=$class, combo=$i5_set, well_name=$well_name) seq = $CLASS_I5_COMBO_LETTER_seq{$class}{$i5_set}{$well_name}, name = $CLASS_I5_COMBO_LETTER_id{$class}{$i5_set}{$well_name}\n"};
 							} elsif ($index_type =~ /i7/) {
 								$well_name = $WELLID_number{$wellID};
-								push @{$POS_INDEXES[$index_pos]}, $CLASS_I7_COMBO_NUMBER_seq{$class}{$combo}{$well_name};
-								push @{$POS_IDS[$index_pos]}, $CLASS_I7_COMBO_NUMBER_id{$class}{$combo}{$well_name};
-								if (defined $opt{'v'}) {print STDERR " (class=$class, combo=$combo, well_name=$well_name) seq = $CLASS_I7_COMBO_NUMBER_seq{$class}{$combo}{$well_name}, name = $CLASS_I7_COMBO_NUMBER_id{$class}{$combo}{$well_name}\n"};
+								push @{$POS_INDEXES[$index_pos]}, $CLASS_I7_COMBO_NUMBER_seq{$class}{$i7_set}{$well_name};
+								push @{$POS_IDS[$index_pos]}, $CLASS_I7_COMBO_NUMBER_id{$class}{$i7_set}{$well_name};
+								if (defined $opt{'v'}) {print STDERR " (class=$class, combo=$i7_set, well_name=$well_name) seq = $CLASS_I7_COMBO_NUMBER_seq{$class}{$i7_set}{$well_name}, name = $CLASS_I7_COMBO_NUMBER_id{$class}{$i7_set}{$well_name}\n"};
 							}
 						}
 					}
