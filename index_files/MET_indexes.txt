@@ -1,3 +1,5 @@
+#index_class=met_tn5
+#index_format=96
 MET_A_i5_A1	met_tn5_i5	CTCATACCTC
 MET_A_i5_A2	met_tn5_i5	ATTATATTAG
 MET_A_i5_A3	met_tn5_i5	CATACTCACA

@@ -1,3 +1,5 @@
+#index_class=sci_pcr
+#index_format=split
 PCR_A_i7_1	sci_pcr_i7	AAGCGGCATT
 PCR_A_i7_2	sci_pcr_i7	TGCGTCTATA
 PCR_A_i7_3	sci_pcr_i7	ATGCGATTGA

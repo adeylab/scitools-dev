@@ -1,3 +1,5 @@
+#index_class=sci_tn5
+#index_format=split
 Tn5_A_i5_A	sci_tn5_i5	AGGCTATA
 Tn5_A_i5_B	sci_tn5_i5	GCCTCTAT
 Tn5_A_i5_C	sci_tn5_i5	AGGATAGG

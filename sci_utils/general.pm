@@ -33,6 +33,7 @@ use Exporter "import";
 		qw(%INDEX_POS_SEQ_id),qw(%INDEX_POS_SEQ_well),
 	"read_indexdir",
 		qw(%INDEX_TYPE_SEQ_seq),qw(%INDEX_TYPE_SEQ_id),qw(%INDEX_TYPE_length),qw($indexes_loaded),
+		qw(%INDEX_TYPE_class),qw(%INDEX_TYPE_format),qw(%INDEX_CLASS_format),
 	"read_refgene",
 		qw(%GENENAME_coords),qw(%GENEID_coords),qw(%GENECOORDS_refGene),
 	"get_gradient",
@@ -84,6 +85,9 @@ sub load_defaults {
 		$Rscript = "Rscript"; #DEFAULT=Rscript
 		$Pscript = "python"; #DEFAULT=Pscript
 	}
+	if (!defined $VAR{'index_directory'}) {$VAR{'index_directory'} = "$RealBin/index_files"};
+	if (!defined $VAR{'SCI_index_file'}) {$VAR{'SCI_index_file'} = "$RealBin/SCI_Indexes.txt"};
+	if (!defined $VAR{'sci_modes'}) {$VAR{'sci_modes'} = "$RealBin/sci_modes.cfg"};
 }
 
 sub read_annot {
@@ -274,6 +278,8 @@ sub read_indexdir {
 	%INDEX_TYPE_SEQ_seq = ();
 	%INDEX_TYPE_SEQ_id = ();
 	%INDEX_TYPE_length = ();
+	%INDEX_TYPE_class = ();
+	%INDEX_TYPE_format = ();
 	$indexes_loaded = 0;
 	@INDEX_FILES = split(/,/, $_[0]);
 	foreach $index_specification (@INDEX_FILES) {
@@ -284,16 +290,28 @@ sub read_indexdir {
 		} else {
 			open INDEX, "$target";
 		}
+		$index_class = "null"; $index_format = "null";
 		while ($index_line = <INDEX>) {
 			chomp $index_line;
-			($index_id,$index_type_raw,$index_seq_raw) = split(/\t/, $index_line);
-			$index_type = lc($index_type_raw);
-			$index_seq = uc($index_seq_raw);
-			($id_tier,$id_set,$id_side,$id_well) = split(/_/, $index_id);
-			$INDEX_TYPE_SEQ_seq{$index_type}{$index_seq} = $index_seq;
-			$INDEX_TYPE_length{$index_type} = length($index_seq);
-			$INDEX_TYPE_SEQ_id{$index_type}{$index_seq} = $index_id;
-			$indexes_loaded++;
+			if ($index_line =~ /^#/) {
+				$index_line =~ s/^#//;
+				($var,$val) = split(/=/, $index_line);
+				if ($var =~ /index_class/) {$index_class = $val};
+				if ($var =~ /index_format/) {$index_format = $val};
+			} else {
+				if ($index_class eq "null") {print STDERR "WARNING: Index file does not have a header specification. This will affect any annot-make call.\n\tMake sure all index files have a header with #index_class and #index_format fields.\n"};
+				($index_id,$index_type_raw,$index_seq_raw) = split(/\t/, $index_line);
+				$index_type = lc($index_type_raw);
+				$index_seq = uc($index_seq_raw);
+				($id_tier,$id_set,$id_side,$id_well) = split(/_/, $index_id);
+				$INDEX_TYPE_SEQ_seq{$index_type}{$index_seq} = $index_seq;
+				$INDEX_TYPE_length{$index_type} = length($index_seq);
+				$INDEX_TYPE_SEQ_id{$index_type}{$index_seq} = $index_id;
+				$INDEX_TYPE_class{$index_type} = $index_class;
+				$INDEX_TYPE_format{$index_type} = $index_format;
+				$INDEX_CLASS_format{$index_class} = $index_format;
+				$indexes_loaded++;
+			}
 		} close INDEX;
 	}
 }
