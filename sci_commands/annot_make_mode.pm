@@ -171,12 +171,12 @@ foreach $modality (@MODALITIES) {
 								$well_name = $WELLID_letter{$wellID};
 								push @{$POS_INDEXES[$index_pos]}, $CLASS_I5_COMBO_LETTER_seq{$class}{$combo}{$well_name};
 								push @{$POS_IDS[$index_pos]}, $CLASS_I5_COMBO_LETTER_id{$class}{$combo}{$well_name};
-								if (defined $opt{'v'}) {print STDERR "seq = $CLASS_I5_COMBO_LETTER_seq{$class}{$combo}{$well_name}, name = $CLASS_I5_COMBO_LETTER_id{$class}{$combo}{$well_name}\n"};
+								if (defined $opt{'v'}) {print STDERR " (class=$class, combo=$combo, well_name=$well_name) seq = $CLASS_I5_COMBO_LETTER_seq{$class}{$combo}{$well_name}, name = $CLASS_I5_COMBO_LETTER_id{$class}{$combo}{$well_name}\n"};
 							} elsif ($index_type =~ /i7/) {
 								$well_name = $WELLID_number{$wellID};
 								push @{$POS_INDEXES[$index_pos]}, $CLASS_I7_COMBO_NUMBER_seq{$class}{$combo}{$well_name};
 								push @{$POS_IDS[$index_pos]}, $CLASS_I7_COMBO_NUMBER_id{$class}{$combo}{$well_name};
-								if (defined $opt{'v'}) {print STDERR "seq = $CLASS_I7_COMBO_NUMBER_seq{$class}{$combo}{$well_name}, name = $CLASS_I7_COMBO_NUMBER_id{$class}{$combo}{$well_name}\n"};
+								if (defined $opt{'v'}) {print STDERR " (class=$class, combo=$combo, well_name=$well_name) seq = $CLASS_I7_COMBO_NUMBER_seq{$class}{$combo}{$well_name}, name = $CLASS_I7_COMBO_NUMBER_id{$class}{$combo}{$well_name}\n"};
 							}
 						}
 					}
@@ -268,18 +268,18 @@ sub check_indexes {
 					$combo = $set;
 					$CLASS_COMBO_WELLID_seq{$class}{$combo}{$wellID} = $index_seq;
 					$CLASS_COMBO_WELLID_id{$class}{$combo}{$wellID} = $index_id;
-					if (defined $opt{'v'}) {print "96-well format, ID=$index_id, combo=$combo, wellID=$wellID\n"};
+					if (defined $opt{'v'}) {print STDERR "96-well format, ID=$index_id, combo=$combo, wellID=$wellID\n"};
 				} else { # rows by columns index set
 					if ($side =~ /i5/) {
 						$combo = $set;
 						$CLASS_I5_COMBO_LETTER_seq{$class}{$combo}{$well_name} = $index_seq;
 						$CLASS_I5_COMBO_LETTER_id{$class}{$combo}{$well_name} = $index_id;
-						if (defined $opt{'v'}) {print "split format - i5 side, ID=$index_id, combo=$combo, well_name=$well_name\n"};
+						if (defined $opt{'v'}) {print STDERR "split format - i5 side, ID=$index_id, combo=$combo, well_name=$well_name\n"};
 					} elsif ($side =~ /i7/) {
 						$combo = $set;
 						$CLASS_I7_COMBO_NUMBER_seq{$class}{$combo}{$well_name} = $index_seq;
 						$CLASS_I7_COMBO_NUMBER_id{$class}{$combo}{$well_name} = $index_id;
-						if (defined $opt{'v'}) {print "split format - i7 side, ID=$index_id, combo=$combo, well_name=$well_name\n"};
+						if (defined $opt{'v'}) {print STDERR "split format - i7 side, ID=$index_id, combo=$combo, well_name=$well_name\n"};
 					} else { # undefined side
 						die "ERROR: Cannot interpret the index position (i5 or i7) for the index $index_id.\nMake sure the format is properly specified in the index file and the index names are properly formatted:\n\t[ID]_[set]_[i5/i7]_[well]\n";
 					}
