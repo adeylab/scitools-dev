@@ -242,7 +242,7 @@ if ($color_mapping !~ /none/i) {
 print R "
 	guides(fill=FALSE,colour=FALSE) +
 	xlab(\"Annot\") +
-	ylab(\"Lambda\") 
+	ylab(\"Feature value\") 
 ggsave(plot=Violin,filename=\"$opt{'O'}.violin.png\",width=7,height=3,dpi=900)
 ggsave(plot=Violin,filename=\"$opt{'O'}.violin.pdf\",width=7,height=3)";
 }
