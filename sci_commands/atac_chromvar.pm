@@ -92,18 +92,18 @@ print R "# chromVAR script generated: $ts
 # count_cutoff,frac_cutoff = $count_cutoff,$frac_in_peaks
 
 # load libraries
-library(chromVAR)
-library(chromVARmotifs)
-library(motifmatchr)
-library(SummarizedExperiment)
-library(Matrix)
-library(BiocParallel)
-register(MulticoreParam(8))
-library(JASPAR2016)
-library(ggplot2)
+library(chromVAR,lib.loc=\"/home/users/torkencz/R/x86_64-redhat-linux-gnu-library/3.4\")
+library(chromVARmotifs,lib.loc=\"/home/users/torkencz/R/x86_64-redhat-linux-gnu-library/3.4\")
+library(motifmatchr,lib.loc=\"/home/users/torkencz/R/x86_64-redhat-linux-gnu-library/3.4\")
+library(SummarizedExperiment,lib.loc=\"/home/users/torkencz/R/x86_64-redhat-linux-gnu-library/3.4\")
+library(Matrix,lib.loc=\"/home/users/torkencz/R/x86_64-redhat-linux-gnu-library/3.4\")
+library(BiocParallel,lib.loc=\"/home/users/torkencz/R/x86_64-redhat-linux-gnu-library/3.4\")
+register(MulticoreParam(8),lib.loc=\"/home/users/torkencz/R/x86_64-redhat-linux-gnu-library/3.4\")
+library(JASPAR2016,lib.loc=\"/home/users/torkencz/R/x86_64-redhat-linux-gnu-library/3.4\")
+library(ggplot2,lib.loc=\"/home/users/torkencz/R/x86_64-redhat-linux-gnu-library/3.4\")
 
 # load motifs and genome
-library($genome)
+library($genome,lib.loc=\"/home/users/torkencz/R/x86_64-redhat-linux-gnu-library/3.4\")
 data($opt{'M'})
 
 # read in peaks and filter them
