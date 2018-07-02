@@ -146,6 +146,7 @@ sub load_aliases {
 	foreach $alias ("matrix_zscore", "zscore_matrix") {$COMMAND_ALIAS{$alias} = "matrix_zscore"};
 	foreach $alias ("matrix_tsne", "tsne", "dims_tsne", "tsne_dims", "tsne_matrix") {$COMMAND_ALIAS{$alias} = "matrix_tsne"};
 	foreach $alias ("matrix_pca", "pca") {$COMMAND_ALIAS{$alias} = "matrix_pca"};
+	foreach $alias ("matrix_irlba", "irlba", "irlba_matrix") {$COMMAND_ALIAS{$alias} = "matrix_irlba"};
 	foreach $alias ("matrix_aggregate", "aggregate_matrix") {$COMMAND_ALIAS{$alias} = "matrix_aggregate"};
 	foreach $alias ("matrix_merge", "merge_matrix") {$COMMAND_ALIAS{$alias} = "matrix_merge"};
 	foreach $alias ("matrix_pull", "pull_matrix") {$COMMAND_ALIAS{$alias} = "matrix_pull"};
