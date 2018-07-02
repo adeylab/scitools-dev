@@ -103,7 +103,7 @@ open_input_fastqs();
 system("mkdir $opt{'O'}/$opt{'o'}");
 
 # open output fastqs for each modality
-%OUT_HANDLES = open_outs();
+open_outs();
 open_fail_fastqs();
 
 # start parsing fastq files
@@ -294,7 +294,7 @@ sub open_input_fastqs {
 }
 
 sub open_outs {
-	%OUT_DIRECTORY = ();
+	%OUT_HANDLES = ();
 	for ($modalityID = 0; $modalityID < @MODALITIES; $modalityID++) {
 		$modality = $MODALITIES[$modalityID];
 		@{$MODALITY_OUTPUTS{$modality}} = $mode->outputs($modality);
@@ -303,7 +303,7 @@ sub open_outs {
 			foreach $annot (keys %ANNOT_count) {
 				foreach $out_type (@{$MODALITY_OUTPUTS{$modality}}) {
 					$handle = "$annot.$modality.$out_type";
-					$OUT_DIRECTORY{$handle} = 1;
+					$OUT_HANDLES{$handle} = 1;
 					if ($mode->check_multimodal() =~ /true/) {
 						open $handle, "| gzip > $opt{'O'}/$opt{'o'}.$handle.fq.gz";
 					} else {
@@ -314,7 +314,7 @@ sub open_outs {
 			if (!defined $opt{'x'}) {
 				foreach $out_type (@{$MODALITY_OUTPUTS{$modality}}) {
 					$handle = "unmatched.$modality.$out_type";
-					$OUT_DIRECTORY{$handle} = 1;
+					$OUT_HANDLES{$handle} = 1;
 					if ($mode->check_multimodal() =~ /true/) {
 						open $handle, "| gzip > $opt{'O'}/$opt{'o'}.$handle.fq.gz";
 					} else {
@@ -325,7 +325,7 @@ sub open_outs {
 		} else {
 			foreach $out_type (@{$MODALITY_OUTPUTS{$modality}}) {
 				$handle = "$modality.$out_type";
-				$OUT_DIRECTORY{$handle} = 1;
+				$OUT_HANDLES{$handle} = 1;
 				if ($mode->check_multimodal() =~ /true/) {
 					open $handle, "| gzip > $opt{'O'}/$opt{'o'}.$handle.fq.gz";
 				} else {
@@ -334,7 +334,6 @@ sub open_outs {
 			}
 		}
 	}
-	return \%OUT_DIRECTORY;
 }
 
 sub print_outs {
