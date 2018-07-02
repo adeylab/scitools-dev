@@ -305,7 +305,7 @@ sub open_outs {
 					$handle = "$annot.$modality.$out_type";
 					$OUT_HANDLES{$handle} = 1;
 					if ($mode->check_multimodal() =~ /true/) {
-						open $handle, "| gzip > $opt{'O'}/$opt{'o'}.$handle.fq.gz";
+						open $handle, "| gzip > $opt{'O'}/$opt{'o'}/$opt{'o'}.$handle.fq.gz";
 					} else {
 						open $handle, "| gzip > $opt{'O'}/$opt{'o'}.$annot.$out_type.fq.gz";
 					}
@@ -316,9 +316,9 @@ sub open_outs {
 					$handle = "unmatched.$modality.$out_type";
 					$OUT_HANDLES{$handle} = 1;
 					if ($mode->check_multimodal() =~ /true/) {
-						open $handle, "| gzip > $opt{'O'}/$opt{'o'}.$handle.fq.gz";
+						open $handle, "| gzip > $opt{'O'}/$opt{'o'}/$opt{'o'}.$handle.fq.gz";
 					} else {
-						open $handle, "| gzip > $opt{'O'}/$opt{'o'}.unmatched.$out_type.fq.gz";
+						open $handle, "| gzip > $opt{'O'}/$opt{'o'}/$opt{'o'}.unmatched.$out_type.fq.gz";
 					}
 				}
 			}
@@ -327,9 +327,9 @@ sub open_outs {
 				$handle = "$modality.$out_type";
 				$OUT_HANDLES{$handle} = 1;
 				if ($mode->check_multimodal() =~ /true/) {
-					open $handle, "| gzip > $opt{'O'}/$opt{'o'}.$handle.fq.gz";
+					open $handle, "| gzip > $opt{'O'}/$opt{'o'}/$opt{'o'}.$handle.fq.gz";
 				} else {
-					open $handle, "| gzip > $opt{'O'}/$opt{'o'}.$out_type.fq.gz";
+					open $handle, "| gzip > $opt{'O'}/$opt{'o'}/$opt{'o'}.$out_type.fq.gz";
 				}
 			}
 		}
