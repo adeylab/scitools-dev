@@ -100,7 +100,11 @@ make_hamming_hash();
 open_input_fastqs();
 
 # Make output directory
-system("mkdir $opt{'O'}/$opt{'o'}");
+if (-d "$opt{'O'}/$opt{'o'}") {
+	print STDERR "INFO: Directory: $opt{'O'}/$opt{'o'} already exists! Will add files to this directory.\n";
+} else {
+	system("mkdir $opt{'O'}/$opt{'o'}");
+}
 
 # open output fastqs for each modality
 open_outs();
