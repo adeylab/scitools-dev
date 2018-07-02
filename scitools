@@ -144,7 +144,7 @@ sub load_aliases {
 	foreach $alias ("matrix_tfidf", "tfidf") {$COMMAND_ALIAS{$alias} = "matrix_tfidf"};
 	foreach $alias ("matrix_lsi", "lsi") {$COMMAND_ALIAS{$alias} = "matrix_lsi"};
 	foreach $alias ("matrix_zscore", "zscore_matrix") {$COMMAND_ALIAS{$alias} = "matrix_zscore"};
-	foreach $alias ("matrix_tsne", "tsne") {$COMMAND_ALIAS{$alias} = "matrix_tsne"};
+	foreach $alias ("matrix_tsne", "tsne", "dims_tsne", "tsne_dims", "tsne_matrix") {$COMMAND_ALIAS{$alias} = "matrix_tsne"};
 	foreach $alias ("matrix_pca", "pca") {$COMMAND_ALIAS{$alias} = "matrix_pca"};
 	foreach $alias ("matrix_aggregate", "aggregate_matrix") {$COMMAND_ALIAS{$alias} = "matrix_aggregate"};
 	foreach $alias ("matrix_merge", "merge_matrix") {$COMMAND_ALIAS{$alias} = "matrix_merge"};
@@ -207,8 +207,9 @@ sub load_descriptions {
 	$COMMAND_DESCRIPTOR{"matrix_tf"} = "Normalize only by term frequency";
 	$COMMAND_DESCRIPTOR{"matrix_tfidf"} = "Perform tf-idf on counts matrix";
 	$COMMAND_DESCRIPTOR{"matrix_lsi"} = "Perform Latent Semantic Indexing on matrix";
-	$COMMAND_DESCRIPTOR{"matrix_tsne"} = "tSNE on matrix";
+	$COMMAND_DESCRIPTOR{"matrix_tsne"} = "tSNE on matrix or dims file";
 	$COMMAND_DESCRIPTOR{"matrix_pca"} = "PCA on matrix";
+	$COMMAND_DESCRIPTOR{"matrix_irlba"} = "IRLBA on matrix - good for big matrices";
 	$COMMAND_DESCRIPTOR{"matrix_aggregate"} = "Aggregate cells in counts matrix by annotation";
 	$COMMAND_DESCRIPTOR{"matrix_merge"} = "Merge matrices, no overlap in cell names assumed";
 	$COMMAND_DESCRIPTOR{"matrix_pull"} = "Pull entries from a matrix and print them";

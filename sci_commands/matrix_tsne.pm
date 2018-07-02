@@ -12,17 +12,21 @@ sub matrix_tsne {
 $dims = 2;
 $perp = 30;
 
-getopts("O:XD:R:P:", \%opt);
+getopts("O:XD:R:P:d", \%opt);
 
 $die2 = "
-scitools matrix-tsne [options] [input matrix]
-   or    tsne
+scitools matrix-tsne [options] [input matrix/dims]
+   or    dims-tsne
+         tsne
 
-Produces a dims file with tSNE coordinates
+Produces a dims file with tSNE coordinates, will auto
+detect if it is a matrix or dims input file.
+Default is matrix.
 
 Options:
    -O   [STR]   Output prefix (default is [input].tSNE)
    -D   [INT]   Dimensions to embed tSNE in (def = $dims)
+   -d           Input is a dims file (if file suffix is not .dims)
    -P   [INT]   Perplexity (def = $perp)
    -X           Retain intermediate files (def = delete)
    -R   [STR]   Rscript call (def = $Rscript)
@@ -33,7 +37,7 @@ Note: Requires Rtsne R package
 
 if (!defined $ARGV[0]) {die $die2};
 if ($ARGV[0] =~ /\.h5$/) {$opt{'H'} = 1};
-if (!defined $opt{'O'}) {$opt{'O'} = $ARGV[0]; $opt{'O'} =~ s/\.matrix$//};
+if (!defined $opt{'O'}) {$opt{'O'} = $ARGV[0]; $opt{'O'} =~ s/\.matrix$//; $opt{'O'} =~ s/\.dims$//};
 if (defined $opt{'D'}) {$dims = $opt{'D'}};
 if (defined $opt{'P'}) {$perp = $opt{'P'}};
 if (defined $opt{'R'}) {$Rscript = $opt{'R'}};
@@ -41,8 +45,15 @@ if (defined $opt{'R'}) {$Rscript = $opt{'R'}};
 open R, ">$opt{'O'}.p$perp.tSNE.r";
 
 print R "
-library(Rtsne)
-tIN<-t(read.table(\"$ARGV[0]\"))
+library(Rtsne)";
+if (defined $opt{'d'} || $ARGV[0] =~ /dims$/) {
+	print R "
+tIN<-read.table(\"$ARGV[0]\")";
+} else {
+	print R "
+tIN<-t(read.table(\"$ARGV[0]\"))";
+}
+print R "
 TSNE<-Rtsne(tIN,dims=$dims,perplexity=$perp,check_duplicates=FALSE)
 DIMS<-TSNE\$Y
 rownames(DIMS)<-rownames(tIN)
