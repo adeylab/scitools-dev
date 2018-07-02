@@ -48,13 +48,14 @@ print R "
 library(Rtsne)";
 if (defined $opt{'d'} || $ARGV[0] =~ /dims$/) {
 	print R "
-tIN<-read.table(\"$ARGV[0]\")";
+tIN<-read.table(\"$ARGV[0]\")
+TSNE<-Rtsne(tIN,dims=$dims,perplexity=$perp,check_duplicates=FALSE,pca=FALSE)";
 } else {
 	print R "
-tIN<-t(read.table(\"$ARGV[0]\"))";
+tIN<-t(read.table(\"$ARGV[0]\"))
+TSNE<-Rtsne(tIN,dims=$dims,perplexity=$perp,check_duplicates=FALSE)";
 }
 print R "
-TSNE<-Rtsne(tIN,dims=$dims,perplexity=$perp,check_duplicates=FALSE)
 DIMS<-TSNE\$Y
 rownames(DIMS)<-rownames(tIN)
 write.table(DIMS,file=\"$opt{'O'}.p$perp.tSNE.dims\",sep=\"\\t\",col.names=FALSE,row.names=TRUE,quote=FALSE)
