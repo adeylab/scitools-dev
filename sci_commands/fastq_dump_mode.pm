@@ -307,7 +307,7 @@ sub open_outs {
 					if ($mode->check_multimodal() =~ /true/) {
 						open $handle, "| gzip > $opt{'O'}/$opt{'o'}/$opt{'o'}.$handle.fq.gz";
 					} else {
-						open $handle, "| gzip > $opt{'O'}/$opt{'o'}.$annot.$out_type.fq.gz";
+						open $handle, "| gzip > $opt{'O'}/$opt{'o'}/$opt{'o'}.$annot.$out_type.fq.gz";
 					}
 				}
 			}
