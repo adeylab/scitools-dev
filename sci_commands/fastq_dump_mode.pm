@@ -112,6 +112,7 @@ while ($tag = <R1>) {
 	# pull reads and build read_set object
 	$read_set = pull_reads();
 	
+	$read_number++;
 	$any_passing = 0;
 	$out_barc = ""; $out_name = "";
 	$umi = "null";
@@ -150,6 +151,15 @@ while ($tag = <R1>) {
 		
 		if ($modality_pass > 0) {
 			$any_passing++;
+			# add read number
+			$out_barc .= ":$read_number";
+			$out_name .= ":$read_number";
+			# add runID if present
+			if (defined $opt{'r'}) {
+				$out_barc .= "_$opt{'r'}";
+				$out_name .= "_$opt{'r'}";
+			}
+			# add UMI if present
 			if ($umi ne "null") {
 				$out_barc .= ":UMI=$umi";
 				$out_name .= ":UMI=$umi";
@@ -344,7 +354,8 @@ sub print_outs {
 			$handle = "$modality.$out_type";
 		}
 		if (defined $OUT_HANDLES{$handle}) {
-			if ($opt{'f'} =~ /barc/) {$tag = $out_barc} else {$tag = $out_name};
+			if ($opt{'f'} =~ /barc/) {$readID = $out_barc} else {$readID = $out_name};
+			$tag = "\@".$readID;
 			$seq = $mode->pull_seq($modality,$out_type,$read_set);
 			$qual = $mode->pull_qual($modality,$out_type,$read_set);
 			print $handle "$tag\n$seq\n\+\n$qual\n";
@@ -390,10 +401,10 @@ sub pull_reads {
 }
 
 sub print_failing {
-	if ($mode->read_check(read1) eq "true") {print R1F $read_set->{read1}->{tag}."\n".$read_set->{read1}->{seq}."\n\+\n".$read_seq->{read1}->{qual}."\n"};
-	if ($mode->read_check(read2) eq "true") {print R2F $read_set->{read2}->{tag}."\n".$read_set->{read2}->{seq}."\n\+\n".$read_seq->{read2}->{qual}."\n"};
-	if ($mode->read_check(index1) eq "true") {print I1F $read_set->{index1}->{tag}."\n".$read_set->{index1}->{seq}."\n\+\n".$read_seq->{index1}->{qual}."\n"};
-	if ($mode->read_check(index2) eq "true") {print I2F $read_set->{index2}->{tag}."\n".$read_set->{index2}->{seq}."\n\+\n".$read_seq->{index2}->{qual}."\n"};
+	if ($mode->read_check(read1) eq "true") {print R1F $read_set->{read1}->{tag}."\n".$read_set->{read1}->{seq}."\n\+\n".$read_set->{read1}->{qual}."\n"};
+	if ($mode->read_check(read2) eq "true") {print R2F $read_set->{read2}->{tag}."\n".$read_set->{read2}->{seq}."\n\+\n".$read_set->{read2}->{qual}."\n"};
+	if ($mode->read_check(index1) eq "true") {print I1F $read_set->{index1}->{tag}."\n".$read_set->{index1}->{seq}."\n\+\n".$read_set->{index1}->{qual}."\n"};
+	if ($mode->read_check(index2) eq "true") {print I2F $read_set->{index2}->{tag}."\n".$read_set->{index2}->{seq}."\n\+\n".$read_set->{index2}->{qual}."\n"};
 }
 
 1;
