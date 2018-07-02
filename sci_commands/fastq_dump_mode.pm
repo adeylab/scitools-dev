@@ -128,8 +128,9 @@ while ($tag = <R1>) {
 				# regular index
 				$index_seq = $mode->pull_index($modality,$index_name,$read_set);
 				if (defined $INDEX_TYPE_SEQ_seq{$index_name}{$index_seq}) {
+					$indexID = $INDEX_TYPE_SEQ_id{$index_name}{$INDEX_TYPE_SEQ_seq{$index_name}{$index_seq}};
 					$out_barc .= "$INDEX_TYPE_SEQ_seq{$index_name}{$index_seq}";
-					$out_name .= "$INDEX_TYPE_SEQ_id{$index_name}{$index_seq}-";
+					$out_name .= "$indexID-";
 				} else {
 					$modality_pass = 0;
 					$out_barc .= $index_seq;
@@ -151,6 +152,7 @@ while ($tag = <R1>) {
 		
 		if ($modality_pass > 0) {
 			$any_passing++;
+			$out_name =~ s/-$//;
 			# add read number
 			$out_barc .= ":$read_number";
 			$out_name .= ":$read_number";
