@@ -376,10 +376,10 @@ sub close_outs {
 }
 
 sub open_fail_fastqs {
-	if ($mode->read_check(read1) eq "true") {open R1F, "| gzip > $opt{'O'}/$opt{'o'}.fail.read1.fq.gz"};
-	if ($mode->read_check(read2) eq "true") {open R2F, "| gzip > $opt{'O'}/$opt{'o'}.fail.read2.fq.gz"};
-	if ($mode->read_check(index1) eq "true") {open I1F, "| gzip > $opt{'O'}/$opt{'o'}.fail.index1.fq.gz"};
-	if ($mode->read_check(index2) eq "true") {open I2F, "| gzip > $opt{'O'}/$opt{'o'}.fail.index2.fq.gz"};
+	if ($mode->read_check(read1) eq "true") {open R1F, "| gzip > $opt{'O'}/$opt{'o'}/$opt{'o'}.fail.read1.fq.gz"};
+	if ($mode->read_check(read2) eq "true") {open R2F, "| gzip > $opt{'O'}/$opt{'o'}/$opt{'o'}.fail.read2.fq.gz"};
+	if ($mode->read_check(index1) eq "true") {open I1F, "| gzip > $opt{'O'}/$opt{'o'}/$opt{'o'}.fail.index1.fq.gz"};
+	if ($mode->read_check(index2) eq "true") {open I2F, "| gzip > $opt{'O'}/$opt{'o'}/$opt{'o'}.fail.index2.fq.gz"};
 }
 
 sub pull_reads {
