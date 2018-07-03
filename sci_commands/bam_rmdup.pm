@@ -80,6 +80,7 @@ for ($bamID = 0; $bamID < @ARGV; $bamID++) {
 			}
 		}
 	} close IN;
+	%KEEP = ();
 }
 
 close OUT;
