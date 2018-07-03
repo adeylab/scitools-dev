@@ -163,6 +163,7 @@ sub load_aliases {
 	foreach $alias ("index_performance", "index_perform") {$COMMAND_ALIAS{$alias} = "index_performance"};
 	foreach $alias ("combine_data", "data_combine") {$COMMAND_ALIAS{$alias} = "data_combine"};
 	foreach $alias ("split_data", "data_split") {$COMMAND_ALIAS{$alias} = "data_split"};
+	foreach $alias ("counts2tsne", "atac_tsne", "counts_tsne") {$COMMAND_ALIAS{$alias} = "counts2tsne"};
 	
 	# INTERNAL / DEVELOPMENT COMMANDS
 
@@ -214,6 +215,7 @@ sub load_descriptions {
 	$COMMAND_DESCRIPTOR{"matrix_aggregate"} = "Aggregate cells in counts matrix by annotation";
 	$COMMAND_DESCRIPTOR{"matrix_merge"} = "Merge matrices, no overlap in cell names assumed";
 	$COMMAND_DESCRIPTOR{"matrix_pull"} = "Pull entries from a matrix and print them";
+	$COMMAND_DESCRIPTOR{"counts2tsne"} = "Process a counts matrix to dims by: tfidf->irlba->tSNE";
 	$COMMAND_DESCRIPTOR{"dims_kmeans"} = "Kmeans clustering on dims file";
 	$COMMAND_DESCRIPTOR{"dims_dbscan"} = "Density-base (dbscan) clustering on dims file";
 	$COMMAND_DESCRIPTOR{"dims_pcurve"} = "Project a principle curve through dims file";
