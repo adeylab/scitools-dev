@@ -75,7 +75,7 @@ IRLBA<-irlba(TFIDF,$irlba_dims)
 TSNE<-Rtsne(IRLBA\$v,dims=$tsne_dims,perplexity=$perp,check_duplicates=FALSE,pca=FALSE)
 
 # output
-rownames(TSNE\$Y)<-colnames(COUNTS)
+rownames(TSNE\$Y)<-colnames(TFIDF)
 write.table(TSNE\$Y,file=\"$opt{'O'}.counts2tsne.dims\",sep=\"\\t\",col.names=FALSE,row.names=TRUE,quote=FALSE)
 
 ";
