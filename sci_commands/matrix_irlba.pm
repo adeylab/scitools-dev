@@ -38,7 +38,7 @@ library(irlba)
 IN<-as.matrix(read.table(\"$ARGV[0]\"))
 I<-irlba(IN, $dims)
 rownames(I\$v)<-colnames(IN)
-write.table(I\$v, file=\"$opt{'O'}.irlba_$dims.dims\",col.names=FALSE,row.names=TRUE,quote=FALSE,sep=\"\t\")
+write.table(I\$v, file=\"$opt{'O'}.irlba_$dims.dims\",col.names=FALSE,row.names=TRUE,quote=FALSE,sep=\"\\t\")
 ";
 close R;
 
