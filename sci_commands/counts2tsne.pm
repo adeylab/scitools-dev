@@ -54,10 +54,10 @@ COUNTS<-as.matrix(read.table(\"$ARGV[0]\"))
 TFIDF<-(COUNTS/colSums(COUNTS))*(log(1+(ncol(COUNTS)/(rowSums(COUNTS)+1))))
 
 # irlba
-IRLBA<-(TFIDF,$irlba_dims)
+IRLBA<-irlba(TFIDF,$irlba_dims)
 
 # tSNE
-TSNE(IRLBA\$v,dims=$tsne_dims,perplexity=$perp,check_duplicates=FALSE,pca=FALSE)
+TSNE<-Rtsne(IRLBA\$v,dims=$tsne_dims,perplexity=$perp,check_duplicates=FALSE,pca=FALSE)
 
 # output
 rownames(TSNE\$Y)<-colnames(COUNTS)
