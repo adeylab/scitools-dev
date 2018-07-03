@@ -36,7 +36,6 @@ Note: Requires Rtsne R package
 ";
 
 if (!defined $ARGV[0]) {die $die2};
-if ($ARGV[0] =~ /\.h5$/) {$opt{'H'} = 1};
 if (!defined $opt{'O'}) {$opt{'O'} = $ARGV[0]; $opt{'O'} =~ s/\.matrix$//; $opt{'O'} =~ s/\.dims$//};
 if (defined $opt{'D'}) {$dims = $opt{'D'}};
 if (defined $opt{'P'}) {$perp = $opt{'P'}};

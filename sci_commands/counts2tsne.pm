@@ -34,12 +34,30 @@ Note: Requires irlba and Rtsne R packages
 ";
 
 if (!defined $ARGV[0]) {die $die2};
-if ($ARGV[0] =~ /\.h5$/) {$opt{'H'} = 1};
 if (!defined $opt{'O'}) {$opt{'O'} = $ARGV[0]; $opt{'O'} =~ s/\.matrix$//};
 if (defined $opt{'D'}) {$irlba_dims = $opt{'D'}};
 if (defined $opt{'d'}) {$tsne_dims = $opt{'d'}};
 if (defined $opt{'P'}) {$perp = $opt{'P'}};
 if (defined $opt{'R'}) {$Rscript = $opt{'R'}};
+
+# IFIDF code from matrix-tfidf
+read_matrix_stats($ARGV[0]);
+open IN, "$ARGV[0]";
+open OUT, ">$opt{'O'}.tfidf";
+$h = <IN>; print OUT "$h";
+while ($l = <IN>) {
+	chomp $l;
+	@P = split (/\t/, $l);
+	$rowID = shift(@P);
+	print OUT "$rowID";
+	for ($i = 0; $i < @P; $i++) {
+		$tf = ($P[$i]/$MATRIX_CellID_signal{$MATRIX_COLNAMES[$i]});
+		$idf = (log(1+($matrix_colNum/($MATRIX_feature_signal{$rowID}+1))));
+		$score = sprintf("%.6f", $tf*$idf);
+		print OUT "\t$score";
+	}
+	print OUT "\n";
+} close IN; close OUT;
 
 open R, ">$opt{'O'}.counts2tsne.r";
 
@@ -47,11 +65,8 @@ print R "
 library(irlba)
 library(Rtsne)
 
-# load in counts matrix
-COUNTS<-as.matrix(read.table(\"$ARGV[0]\"))
-
-# tfidf
-TFIDF<-(COUNTS/colSums(COUNTS))*(log(1+(ncol(COUNTS)/(rowSums(COUNTS)+1))))
+# load in tfidf matrix
+TFIDF<-as.matrix(read.table(\"$opt{'O'}.tfidf\"))
 
 # irlba
 IRLBA<-irlba(TFIDF,$irlba_dims)
@@ -70,7 +85,7 @@ close R;
 system("$Rscript $opt{'O'}.counts2tsne.r 2>/dev/null");
 
 if (!defined $opt{'X'}) {
-	system("rm -f $opt{'O'}.counts2tsne.r");
+	system("rm -f $opt{'O'}.counts2tsne.r $opt{'O'}.tfidf");
 }
 
 }
