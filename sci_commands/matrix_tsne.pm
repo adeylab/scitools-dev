@@ -47,7 +47,7 @@ print R "
 library(Rtsne)";
 if (defined $opt{'d'} || $ARGV[0] =~ /dims$/) {
 	print R "
-tIN<-read.table(\"$ARGV[0]\")
+tIN<-read.table(\"$ARGV[0]\",row.names=1)
 TSNE<-Rtsne(tIN,dims=$dims,perplexity=$perp,check_duplicates=FALSE,pca=FALSE)";
 } else {
 	print R "
