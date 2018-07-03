@@ -162,8 +162,8 @@ while ($tag = <R1>) {
 			$out_name .= ":$read_number";
 			# add runID if present
 			if (defined $opt{'r'}) {
-				$out_barc .= "_$opt{'r'}";
-				$out_name .= "_$opt{'r'}";
+				$out_barc .= ":RUNID=$opt{'r'}";
+				$out_name .= ":RUNID=$opt{'r'}";
 			}
 			# add UMI if present
 			if ($umi ne "null") {
