@@ -5,7 +5,7 @@ use Getopt::Std; %opt = ();
 use Exporter "import";
 @EXPORT = ("met_metfilter");
 
-sub met_met_metfilter {
+sub met_metfilter {
 
 @ARGV = @_;
 
