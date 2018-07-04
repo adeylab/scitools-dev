@@ -31,6 +31,7 @@ Options:
 ";
 
 #name output and create folder 
+if (!defined $ARGV[1]) {die $die2};
 if (!defined $opt{'O'}) {$opt{'O'} = $ARGV[0]; $opt{'O'} =~ s/\.matrix$//};
 
 
