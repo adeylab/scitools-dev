@@ -1,12 +1,12 @@
-package sci_commands::matrix_da;
+package sci_commands::matrix_DA;
 
 
 use sci_utils::general;
 use Getopt::Std; %opt = ();
 use Exporter "import";
-@EXPORT = ("matrix_da");
+@EXPORT = ("matrix_DA");
 
-sub matrix_da {
+sub matrix_DA {
 
 @ARGV = @_;
 use Getopt::Std; %opt = ();
