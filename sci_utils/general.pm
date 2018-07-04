@@ -8,6 +8,7 @@ use Exporter "import";
 	"load_defaults",
 		qw($color_mapping),qw($ref_shortcuts),qw(@BASES),qw(%REF),qw(%VAR),qw($gzip),qw($zcat),
 		qw($bwa),qw($samtools),qw($scitools),qw($macs2),qw($bedtools),qw($Rscript),qw($Pscript),
+		qw($bismark),qw($bowtie2),
 	"read_annot",
 		qw(%CELLID_annot),qw(%ANNOT_count),qw($annot_count),qw(@ANNOT_FILES),
 	"read_complexity",
@@ -69,21 +70,25 @@ sub load_defaults {
 					elsif ($var eq "bedtools") {$bedtools = $val}
 					elsif ($var eq "Rscript") {$Rscript = $val}
 					elsif ($var eq "Pscript") {$Pscript = $val}
+					elsif ($var eq "bowtie2") {$bowtie2 = $val}
+					elsif ($var eq "bismark") {$bismark = $val}
 					else {$VAR{$var} = $val};
 				}
 			}
 		} close DEF;
 	} else {
 		# No config file = load default executables for convenience
-		$gzip = "gzip"; #DEFAULT=gzip
-		$zcat = "zcat"; #DEFAULT=zcat
-		$bwa = "bwa"; #DEFAULT=bwa
-		$samtools = "samtools"; #DEFAULT=samtools
-		$scitools = "scitools"; #DEFAULT=scitools
-		$macs2 = "macs2"; #DEFAULT=macs2
-		$bedtools = "bedtools"; #DEFAULT=bedtools
-		$Rscript = "Rscript"; #DEFAULT=Rscript
-		$Pscript = "python"; #DEFAULT=Pscript
+		$gzip = "gzip";
+		$zcat = "zcat";
+		$bwa = "bwa";
+		$samtools = "samtools";
+		$scitools = "scitools";
+		$macs2 = "macs2";
+		$bedtools = "bedtools";
+		$Rscript = "Rscript";
+		$Pscript = "python";
+		$bowtie2 = "bowtie2";
+		$bismark = "bismark";
 	}
 	if (!defined $VAR{'index_directory'}) {$VAR{'index_directory'} = "$_[1]/index_files"};
 	if (!defined $VAR{'SCI_index_file'}) {$VAR{'SCI_index_file'} = "$_[1]/SCI_Indexes.txt"};

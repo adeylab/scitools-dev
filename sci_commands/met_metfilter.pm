@@ -9,12 +9,6 @@ sub met_met_metfilter {
 
 @ARGV = @_;
 
-$Rscript = "Rscript"; #DEFAULT=Rscript
-$zcat = "zcat"; #DEFAULT=zcat
-$gzip = "gzip"; #DEFAULT=gzip
-
-
-use Getopt::Std; %opt = ();
 getopts("O:n:p:", \%opt);
 $die2 = "
 scitools met_metfilter [options] [readID.meth File] [any_C File]
