@@ -170,6 +170,9 @@ sub load_aliases {
 	foreach $alias ("split_data", "data_split") {$COMMAND_ALIAS{$alias} = "data_split"};
 	foreach $alias ("counts2tsne", "atac_tsne", "counts_tsne") {$COMMAND_ALIAS{$alias} = "counts2tsne"};
 	
+	foreach $alias ("met_nomeextract", "nomeextract", "met_nome_extract", "nome_extract", "extract_nome") {$COMMAND_ALIAS{$alias} = "met_NOMeextract"};
+	
+	
 	# INTERNAL / DEVELOPMENT COMMANDS
 
 	foreach $alias ("atac_chromvar", "chromvar") {$COMMAND_ALIAS{$alias} = "atac_chromvar"};
