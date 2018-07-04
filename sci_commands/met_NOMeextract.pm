@@ -5,7 +5,7 @@ use Getopt::Std; %opt = ();
 use Cwd;
 use Data::Dumper;
 use Exporter "import";
-@EXPORT = ("met_metextract");
+@EXPORT = ("met_NOMeextract");
 
 sub met_NOMeextract {
 
