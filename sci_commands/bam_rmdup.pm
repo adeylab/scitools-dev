@@ -19,12 +19,15 @@ scitools bam-rmdup [options] [sorted bam file] (additonal sorted bam file(s)) ..
 Will produce a barcode-based duplicate removed bam and associated
 complexity file. Will merge bams if multipe are specified.
 
-Uses header from the first bam provided.
+Uses header from the first bam provided. If -O is not specified, the name
+of the first bam provided will be used as the output prefix.
 
 Will exclude /(M|Y|L|K|G|Un|Random|Alt)/i chroms
 
 Options:
    -O   [STR]   Output prefix (default is bam file prefix)
+                 It is highly recommended to specify -O if
+                 multiple bams are used as the input.
    -x           If multiple bams, do not include BAMID field
    -m   [MEM]   Samtools sort mex memory K/M/G (def = $memory)
                  (only for multiple bams)
