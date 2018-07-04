@@ -88,11 +88,16 @@ if (defined $ARGV[0]) {
 		}
 		die "$die\n";
 	} else {
-		$called_command = lc(shift(@ARGV));
+		$called_command = (shift(@ARGV));
 		$called_command =~ s/-/_/g;
 		if (defined $COMMAND_ALIAS{$called_command}) {
 			$command = $COMMAND_ALIAS{$called_command};
+		} elsif (defined $COMMAND_ALIAS{lc($called_command})) {
+			$command = $COMMAND_ALIAS{lc($called_command)};
 		} else {$command = $called_command};
+		if (!defined $COMMAND_NAMES{$command} && defined $COMMAND_NAMES{lc($command)}) {
+			$command = lc($command);
+		}
 		if (defined $COMMAND_NAMES{$command}) {
 			if ($COMMAND_NAMES{$command} =~ /pm/) {
 				require "sci_commands/$command.pm";
