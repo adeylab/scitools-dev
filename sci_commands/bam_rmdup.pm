@@ -45,7 +45,7 @@ if (!defined $ARGV[1]) {$opt{'x'} = 1};
 if (!defined $ARGV[1]) {
 	open OUT, "| $samtools view -bS - > $opt{'O'}.bbrd.q10.bam 2>/dev/null";
 } else {
-	open OUT, "| $samtools view -bSu - 2>/dev/null | $samtools sort -m $opt{'m'} -T $opt{'O'}.bbrd.q10.TMP - > $opt{'O'}.bbrd.q10.bam";
+	open OUT, "| $samtools view -bSu - | $samtools sort -m $opt{'m'} -T $opt{'O'}.bbrd.q10.TMP - > $opt{'O'}.bbrd.q10.bam";
 }
 
 if (!defined $opt{'H'}) {$opt{'H'} = $ARGV[0]};
