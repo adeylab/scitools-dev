@@ -1,12 +1,12 @@
-package sci_commands::matrix_da;
+package sci_commands::matrix_DA;
 
 
 use sci_utils::general;
 use Getopt::Std; %opt = ();
 use Exporter "import";
-@EXPORT = ("matrix_da");
+@EXPORT = ("matrix_DA");
 
-sub matrix_da {
+sub matrix_DA {
 
 @ARGV = @_;
 use Getopt::Std; %opt = ();
@@ -31,6 +31,7 @@ Options:
 ";
 
 #name output and create folder 
+if (!defined $ARGV[1]) {die $die2};
 if (!defined $opt{'O'}) {$opt{'O'} = $ARGV[0]; $opt{'O'} =~ s/\.matrix$//};
 
 

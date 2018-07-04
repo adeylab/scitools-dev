@@ -88,11 +88,16 @@ if (defined $ARGV[0]) {
 		}
 		die "$die\n";
 	} else {
-		$called_command = lc(shift(@ARGV));
+		$called_command = (shift(@ARGV));
 		$called_command =~ s/-/_/g;
 		if (defined $COMMAND_ALIAS{$called_command}) {
 			$command = $COMMAND_ALIAS{$called_command};
+		} elsif (defined $COMMAND_ALIAS{lc($called_command)}) {
+			$command = $COMMAND_ALIAS{lc($called_command)};
 		} else {$command = $called_command};
+		if (!defined $COMMAND_NAMES{$command} && defined $COMMAND_NAMES{lc($command)}) {
+			$command = lc($command);
+		}
 		if (defined $COMMAND_NAMES{$command}) {
 			if ($COMMAND_NAMES{$command} =~ /pm/) {
 				require "sci_commands/$command.pm";
@@ -140,9 +145,9 @@ sub load_aliases {
 	foreach $alias ("matrix_filter", "filter_matrix") {$COMMAND_ALIAS{$alias} = "matrix_filter"};
 	foreach $alias ("matrix_naomit", "naomit_matrix") {$COMMAND_ALIAS{$alias} = "matrix_naomit"};
 	foreach $alias ("matrix_summarize", "summarize_matrix") {$COMMAND_ALIAS{$alias} = "matrix_summarize"};
-	foreach $alias ("matrix_tf", "tf") {$COMMAND_ALIAS{$alias} = "matrix_tf"};
-	foreach $alias ("matrix_tfidf", "tfidf") {$COMMAND_ALIAS{$alias} = "matrix_tfidf"};
-	foreach $alias ("matrix_lsi", "lsi") {$COMMAND_ALIAS{$alias} = "matrix_lsi"};
+	foreach $alias ("matrix_tf", "tf", "tf_matrix") {$COMMAND_ALIAS{$alias} = "matrix_tf"};
+	foreach $alias ("matrix_tfidf", "tfidf", "tfidf_matrix") {$COMMAND_ALIAS{$alias} = "matrix_tfidf"};
+	foreach $alias ("matrix_lsi", "lsi", "lsi_matix") {$COMMAND_ALIAS{$alias} = "matrix_lsi"};
 	foreach $alias ("matrix_zscore", "zscore_matrix") {$COMMAND_ALIAS{$alias} = "matrix_zscore"};
 	foreach $alias ("matrix_tsne", "tsne", "dims_tsne", "tsne_dims", "tsne_matrix") {$COMMAND_ALIAS{$alias} = "matrix_tsne"};
 	foreach $alias ("matrix_pca", "pca") {$COMMAND_ALIAS{$alias} = "matrix_pca"};
@@ -157,9 +162,9 @@ sub load_aliases {
 	foreach $alias ("prune_pcurve", "pcurve_prune") {$COMMAND_ALIAS{$alias} = "pcurve_prune"};
 	foreach $alias ("aggregate_cells", "aggregate") {$COMMAND_ALIAS{$alias} = "aggregate_cells"};
 	foreach $alias ("plot_complexity") {$COMMAND_ALIAS{$alias} = "plot_complexity"};
-	foreach $alias ("plot_dims") {$COMMAND_ALIAS{$alias} = "plot_dims"};
-	foreach $alias ("plot_pcurve") {$COMMAND_ALIAS{$alias} = "plot_pcurve"};
-	foreach $alias ("plot_reads") {$COMMAND_ALIAS{$alias} = "plot_reads"};
+	foreach $alias ("plot_dims", "dims_plot") {$COMMAND_ALIAS{$alias} = "plot_dims"};
+	foreach $alias ("plot_pcurve", "pcurve_plot") {$COMMAND_ALIAS{$alias} = "plot_pcurve"};
+	foreach $alias ("plot_reads", "reads_plot") {$COMMAND_ALIAS{$alias} = "plot_reads"};
 	foreach $alias ("index_performance", "index_perform") {$COMMAND_ALIAS{$alias} = "index_performance"};
 	foreach $alias ("combine_data", "data_combine") {$COMMAND_ALIAS{$alias} = "data_combine"};
 	foreach $alias ("split_data", "data_split") {$COMMAND_ALIAS{$alias} = "data_split"};
