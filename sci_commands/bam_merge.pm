@@ -34,7 +34,7 @@ if (defined $opt{'m'}) {$memory = $opt{'m'}};
 
 $opt{'O'} = $ARGV[0]; $opt{'O'} =~ s/\.bam$//;
 
-open OUT, "| $samtools view -bSu - 2>/dev/null | $samtools sort -m $opt{'m'} -T $opt{'O'}.TMP - > $opt{'O'}.bam";
+open OUT, "| $samtools view -bSu - 2>/dev/null | $samtools sort -m $memory -T $opt{'O'}.TMP - > $opt{'O'}.bam";
 
 if (!defined $opt{'H'}) {$opt{'H'} = $ARGV[0]};
 open H, "$samtools view -H $opt{'H'} |";
