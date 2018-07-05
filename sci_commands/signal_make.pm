@@ -243,6 +243,9 @@ if (defined $opt{'r'}) {
 	}
 }
 
+if (defined $opt{'v'}) {
+	print STDERR "INFO: Total rows that have been ordered is: ".@ROW_ORDER."\n";
+}
 
 # print raw and norm
 for ($row_pos = 0; $row_pos < @ROW_ORDER; $row_pos++) {
