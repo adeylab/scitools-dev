@@ -118,14 +118,25 @@ if (defined $ARGV[0]) {
 
 # SUBROUTINES
 sub load_aliases {
+	
+	# Alias structure:
+	# The list of aliases MUST be all lower case and only use underscores (not dashes)
+	# The command name that the alias refers to MUST be the EXACT command name,
+	# meaning the name of the package / perl module / python script / etc...
 
 	# FOR PULIC RELEASE
 	
-	foreach $alias ("dependencies", "depend") {$COMMAND_ALIAS{$alias} = "dependencies"};
+	# General Commands
+	foreach $alias ("dependencies", "depend", "check_dependencies", "dependencies_check") {$COMMAND_ALIAS{$alias} = "dependencies"};
+	foreach $alias ("defaults", "check_defaults", "defaults_check") {$COMMAND_ALIAS{$alias} = "defaults"};
+	
+	# Fastq Commands
 	foreach $alias ("fastq_dump", "dump_fastq") {$COMMAND_ALIAS{$alias} = "fastq_dump"};
 	foreach $alias ("fastq_split", "split_fastq") {$COMMAND_ALIAS{$alias} = "fastq_split"};
 	foreach $alias ("fastq_merge", "merge_fastq") {$COMMAND_ALIAS{$alias} = "fastq_merge"};
 	foreach $alias ("fastq_align", "align_fastq", "align") {$COMMAND_ALIAS{$alias} = "fastq_align"};
+	
+	# Bam Commands
 	foreach $alias ("bam_bulk2sci", "bulk2sci") {$COMMAND_ALIAS{$alias} = "bam_bulk2sci"};
 	foreach $alias ("bam_addrg", "addrg") {$COMMAND_ALIAS{$alias} = "bam_addrg"};
 	foreach $alias ("bam_rmdup", "rmdup") {$COMMAND_ALIAS{$alias} = "bam_rmdup"};
@@ -134,14 +145,24 @@ sub load_aliases {
 	foreach $alias ("bam_merge", "merge_bam") {$COMMAND_ALIAS{$alias} = "bam_merge"};
 	foreach $alias ("bam_project", "project_bam", "project") {$COMMAND_ALIAS{$alias} = "bam_project"};
 	foreach $alias ("bam_aggregate", "aggregate_bam") {$COMMAND_ALIAS{$alias} = "bam_aggregate"};
+	foreach $alias ("index_performance", "index_perform") {$COMMAND_ALIAS{$alias} = "index_performance"};
+	
+	# Signal Commands
 	foreach $alias ("signal_make", "make_signal") {$COMMAND_ALIAS{$alias} = "signal_make"};
 	foreach $alias ("plot_signal", "signal_plot") {$COMMAND_ALIAS{$alias} = "plot_signal"};
+	
+	# Annotation Commands
 	foreach $alias ("annot_make", "make_annot") {$COMMAND_ALIAS{$alias} = "annot_make"};
 	foreach $alias ("annot_merge", "merge_annot") {$COMMAND_ALIAS{$alias} = "annot_merge"};
 	foreach $alias ("rename_cells") {$COMMAND_ALIAS{$alias} = "rename_cells"};
+	
+	# sci-ATAC-seq Commands
 	foreach $alias ("atac_callpeaks", "atac_callpeak", "callpeak", "callpeaks") {$COMMAND_ALIAS{$alias} = "atac_callpeak"};
 	foreach $alias ("atac_mergepeaks", "atac_mergepeak", "mergepeak", "mergepeaks") {$COMMAND_ALIAS{$alias} = "atac_mergepeak"};
 	foreach $alias ("atac_counts", "atac_count", "count", "counts") {$COMMAND_ALIAS{$alias} = "atac_count"};
+	foreach $alias ("atac_enrich", "enrich_atac") {$COMMAND_ALIAS{$alias} = "atac_enrich"};
+	
+	# Matrix Commands
 	foreach $alias ("matrix_filter", "filter_matrix") {$COMMAND_ALIAS{$alias} = "matrix_filter"};
 	foreach $alias ("matrix_naomit", "naomit_matrix") {$COMMAND_ALIAS{$alias} = "matrix_naomit"};
 	foreach $alias ("matrix_summarize", "summarize_matrix") {$COMMAND_ALIAS{$alias} = "matrix_summarize"};
@@ -155,23 +176,33 @@ sub load_aliases {
 	foreach $alias ("matrix_aggregate", "aggregate_matrix") {$COMMAND_ALIAS{$alias} = "matrix_aggregate"};
 	foreach $alias ("matrix_merge", "merge_matrix") {$COMMAND_ALIAS{$alias} = "matrix_merge"};
 	foreach $alias ("matrix_pull", "pull_matrix") {$COMMAND_ALIAS{$alias} = "matrix_pull"};
+	foreach $alias ("counts2tsne", "atac_tsne", "counts_tsne") {$COMMAND_ALIAS{$alias} = "counts2tsne"};
+	foreach $alias ("matrix_da", "da_matrix", "atac_da", "da_atac", "diff_access") {$COMMAND_ALIAS{$alias} = "matrix_DA"};
+	
+	# Dimensions Commands
 	foreach $alias ("dims_kmeans", "kmeans") {$COMMAND_ALIAS{$alias} = "dims_kmeans"};
 	foreach $alias ("dims_dbscan", "dbscan") {$COMMAND_ALIAS{$alias} = "dims_dbscan"};
 	foreach $alias ("dims_pcurve", "pcurve") {$COMMAND_ALIAS{$alias} = "dims_pcurve"};
 	foreach $alias ("pcurve_center", "center_pcurve", "lambda_center", "center_lambda") {$COMMAND_ALIAS{$alias} = "pcurve_center"};
 	foreach $alias ("prune_pcurve", "pcurve_prune") {$COMMAND_ALIAS{$alias} = "pcurve_prune"};
 	foreach $alias ("aggregate_cells", "aggregate") {$COMMAND_ALIAS{$alias} = "aggregate_cells"};
+	
+	# Plotting Commands
 	foreach $alias ("plot_complexity") {$COMMAND_ALIAS{$alias} = "plot_complexity"};
 	foreach $alias ("plot_dims", "dims_plot") {$COMMAND_ALIAS{$alias} = "plot_dims"};
 	foreach $alias ("plot_pcurve", "pcurve_plot") {$COMMAND_ALIAS{$alias} = "plot_pcurve"};
 	foreach $alias ("plot_reads", "reads_plot") {$COMMAND_ALIAS{$alias} = "plot_reads"};
-	foreach $alias ("index_performance", "index_perform") {$COMMAND_ALIAS{$alias} = "index_performance"};
+	
+	# Data Comamnds
 	foreach $alias ("combine_data", "data_combine") {$COMMAND_ALIAS{$alias} = "data_combine"};
 	foreach $alias ("split_data", "data_split") {$COMMAND_ALIAS{$alias} = "data_split"};
-	foreach $alias ("counts2tsne", "atac_tsne", "counts_tsne") {$COMMAND_ALIAS{$alias} = "counts2tsne"};
-	
+		
+	# sci-MET / sci-NOMe
 	foreach $alias ("met_nomeextract", "nomeextract", "met_nome_extract", "nome_extract", "extract_nome") {$COMMAND_ALIAS{$alias} = "met_NOMeextract"};
-	
+	foreach $alias ("met_metextract", "metextract", "met_extract", "extract_met") {$COMMAND_ALIAS{$alias} = "met_metextract"};
+	foreach $alias ("met_metfilter", "metfilter", "met_filter", "filter_met") {$COMMAND_ALIAS{$alias} = "met_metfilter"};
+	foreach $alias ("met_probesummary", "met_probe_summary") {$COMMAND_ALIAS{$alias} = "met_probesummary"};
+	foreach $alias ("met_probeview", "met_probe_view") {$COMMAND_ALIAS{$alias} = "met_probeview"};
 	
 	# INTERNAL / DEVELOPMENT COMMANDS
 
@@ -185,10 +216,15 @@ sub load_aliases {
 }
 
 sub load_descriptions {
-
+	
+	# Command Decription Structure:
+	# The call must be the EXACT match to the command file / package / etc...
+	# Provide a brief description of its function
+	
 	# FOR PULIC RELEASE
 	
 	$COMMAND_DESCRIPTOR{"dependencies"} = "Check dependencies";
+	$COMMAND_DESCRIPTOR{"defaults"} = "Print out the defaults that are detected / specified";
 	$COMMAND_DESCRIPTOR{"gradient"} = "Print out color gradient pre-sets and details";
 	$COMMAND_DESCRIPTOR{"fastq_dump"} = "Go from illumina fastqs to SCI fastq format";
 	$COMMAND_DESCRIPTOR{"fastq_split"} = "Split SCI fastq files using annotation file";
@@ -208,6 +244,7 @@ sub load_descriptions {
 	$COMMAND_DESCRIPTOR{"atac_callpeak"} = "Call peaks on bam file using macs2";
 	$COMMAND_DESCRIPTOR{"atac_mergepeak"} = "Merge ATAC_seq peak files";
 	$COMMAND_DESCRIPTOR{"atac_count"} = "Bam and peak file to a counts matrix";
+	$COMMAND_DESCRIPTOR{"atac_enrich"} = "Test for the enrichment of one feature set in another";
 	$COMMAND_DESCRIPTOR{"signal_make"} = "Generate windowed signal over features from bam";
 	$COMMAND_DESCRIPTOR{"plot_signal"} = "Plot windowed signal views";
 	$COMMAND_DESCRIPTOR{"matrix_summarize"} = "Generate a summary and plots on matrix properties";
@@ -223,6 +260,7 @@ sub load_descriptions {
 	$COMMAND_DESCRIPTOR{"matrix_aggregate"} = "Aggregate cells in counts matrix by annotation";
 	$COMMAND_DESCRIPTOR{"matrix_merge"} = "Merge matrices, no overlap in cell names assumed";
 	$COMMAND_DESCRIPTOR{"matrix_pull"} = "Pull entries from a matrix and print them";
+	$COMMAND_DESCRIPTOR{"matrix_DA"} = "Differential accessibility on counts matrix";
 	$COMMAND_DESCRIPTOR{"counts2tsne"} = "Process a counts matrix to dims by: tfidf->irlba->tSNE";
 	$COMMAND_DESCRIPTOR{"dims_kmeans"} = "Kmeans clustering on dims file";
 	$COMMAND_DESCRIPTOR{"dims_dbscan"} = "Density-base (dbscan) clustering on dims file";
@@ -237,6 +275,12 @@ sub load_descriptions {
 	$COMMAND_DESCRIPTOR{"index_performance"} = "Index performance on fastq or bam";
 	$COMMAND_DESCRIPTOR{"data_combine"} = "Combine matrixes, annotations, dims to a table";
 	$COMMAND_DESCRIPTOR{"data_split"} = "Breaks a combined data file into component files";
+	
+	$COMMAND_DESCRIPTOR{"met_NOMeextract"} = "Extract NOMe seq methylation data";
+	$COMMAND_DESCRIPTOR{"met_metextract"} = "Extract methylaiton data from sci-MET";
+	$COMMAND_DESCRIPTOR{"met_metfilter"} = "Filter extracted methylaiton data";
+	$COMMAND_DESCRIPTOR{"met_probesummary"} = "Summarize methylaiton over regions";
+	$COMMAND_DESCRIPTOR{"met_probeview"} = "Visualize methylaiton over regions";
 	
 	# INTERNAL / DEVELOPMENT COMMANDS
 	

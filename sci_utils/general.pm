@@ -76,20 +76,19 @@ sub load_defaults {
 				}
 			}
 		} close DEF;
-	} else {
-		# No config file = load default executables for convenience
-		$gzip = "gzip";
-		$zcat = "zcat";
-		$bwa = "bwa";
-		$samtools = "samtools";
-		$scitools = "scitools";
-		$macs2 = "macs2";
-		$bedtools = "bedtools";
-		$Rscript = "Rscript";
-		$Pscript = "python";
-		$bowtie2 = "bowtie2";
-		$bismark = "bismark";
 	}
+	# Load vars that need to be specified for functionality if they are not found in the config file
+	if (!defined $gzip) {$gzip = "gzip"};
+	if (!defined $zcat) {$zcat = "zcat"};
+	if (!defined $bwa) {$bwa = "bwa"};
+	if (!defined $samtools) {$samtools = "samtools"};
+	if (!defined $scitools) {$scitools = "scitools"};
+	if (!defined $macs2) {$macs2 = "macs2"};
+	if (!defined $bedtools) {$bedtools = "bedtools"};
+	if (!defined $Rscript) {$Rscript = "Rscript"};
+	if (!defined $Pscript) {$Pscript = "python"};
+	if (!defined $bowtie2) {$bowtie2 = "bowtie2"};
+	if (!defined $bismark) {$bismark = "bismark"};
 	if (!defined $VAR{'index_directory'}) {$VAR{'index_directory'} = "$_[1]/index_files"};
 	if (!defined $VAR{'SCI_index_file'}) {$VAR{'SCI_index_file'} = "$_[1]/SCI_Indexes.txt"};
 	if (!defined $VAR{'sci_modes'}) {$VAR{'sci_modes'} = "$_[1]/sci_modes.cfg"};
