@@ -8,7 +8,11 @@ use Exporter "import";
 sub plot_complexity {
 
 @ARGV = @_;
-getopts("O:A:a:C:c:R:M", \%opt);
+getopts("O:A:a:C:c:R:Mf:p:", \%opt);
+
+#defaults
+$alpha = 0.3;
+$ptSize = 1;
 
 $die2 = "
 scitools plot-complexity [options] [complexity file(s) can be comma separated]
@@ -22,6 +26,8 @@ Options:
    -C   [STR]   Color coding file (annot (tab) #hexColor)
    -c   [STR]   Color coding string
                 Annot=#hexColor,Annot2=#hexColor
+   -p   [FLT]   Point size (def = $ptSize)
+   -f   [FLT]   Alpha for plotting points (def = $alpha)
    -R   [STR]   Rscript call (def = $Rscript)
 
 Note: Requires ggplot2 R package
@@ -41,6 +47,9 @@ if (defined $opt{'a'}) {
 }
 if (defined $opt{'C'}) {read_color_file($opt{'C'})};
 if (defined $opt{'c'}) {read_color_string($opt{'c'})};
+if (defined $opt{'p'}) {$ptSize = $opt{'p'}};
+if (defined $opt{'f'}) {$alpha = $opt{'f'}};
+
 if (!defined $opt{'O'}) {$opt{'O'} = $ARGV[0]};
 $opt{'O'} =~ s/\.txt$//;
 
@@ -65,7 +74,7 @@ print R "
 library(ggplot2)
 IN<-read.table(\"$opt{'O'}.plot.txt\")
 PLT<-ggplot(data=subset(IN,V4<100&V4>0)) + theme_bw() +
-   geom_point(aes(V4,log10(V3),color=V2),size=1,alpha=0.3) +
+   geom_point(aes(V4,log10(V3),color=V2),size=$ptSize,alpha=$alpha) +
    geom_density2d(aes(V4,log10(V3),color=V2),size=0.3) +
 ";
 if (defined $opt{'C'} || defined $opt{'c'}) {
