@@ -33,6 +33,8 @@ Options:
    -G   [STR]   Gene info (refGene.txt formats) - required if using a gene list
                  Shortcut eg: hg38, hg19, mm10
                  Gene list must be annotated, ie: geneName (tab) GeneSetName
+                 OR fasta-like: >annotation, then subsequent lines as the
+                    genes associated with it (can be comma-sep)
    -S   [INT]   Flanking size (out from TSS in bp, def = $TSS_flanking)
    -b   [STR]   Bedtools call (def = $bedtools)
    -X           Retain intermediate files (def = remove)
@@ -96,29 +98,51 @@ if (defined $opt{'G'}) {
 	print LOG "\t\t\t\tMatching genes to coordinates and builing annotated bed.\n";
 	open IN, "$ARGV[1]";
 	open OUT, ">$opt{'O'}.dev/genes_TSS_$TSS_flanking.bed";
+	$gene_spec_mode = 0;
 	while ($l = <IN>) {
 		chomp $l;
-		($gene,$annot) = split(/\t/, $l);
-		$geneCT++;
-		if (defined $GENENAME_geneID{$gene}) {
-			$geneID = $GENENAME_geneID{$gene};
-		} else {$geneID = $gene};
-		if (defined $GENEID_coords{$geneID}) {
-			$genes_found++;
-			($chr,$start,$end) = split(/[:-_]/, $GENEID_coords{$geneID});
-			if ($GENEID_strand{$geneID} =~ /\+/) {
-				$TSS_pos = $start;
-			} else {
-				$TSS_pos = $end;
-			}
-			$flank_start = ($TSS_pos-$TSS_flanking); if ($flank_start<1) {$flank_start=1};
-			$flank_end = ($TSS_pos+$TSS_flanking);
-			print OUT "$chr\t$flank_start\t$flank_end\t$annot\n";
+		if ($l =~ /^>/) {$gene_spec_mode=1};
+		if ($gene_spec_mode<1) {
+			($listed_gene,$listed_annot) = split(/\t/, $l);
+			$geneCT++;
+			process_gene($listed_gene,$listed_annot);
 		} else {
-			$genes_missing++;
+			if ($l =~ /^>/) {
+				$listed_annot = $l;
+				$listed_annot =~ s/^>//;
+			} else {
+				$l =~ s/\s//g;
+				@GENES = split(/,/, $l);
+				foreach $listed_gene (@GENES) {
+					$geneCT++;
+					process_gene($listed_gene,$listed_annot);
+				}
+			}
 		}
 	} close IN; close OUT;
 	if ($genes_found<1) {die "ERROR: Gene mode was specified but no genes provided could be found in the refgene file: $opt{'G'}\n"};
+}
+
+sub process_gene {
+	$gene = $_[0];
+	$annot = $_[1];
+	if (defined $GENENAME_geneID{$gene}) {
+		$geneID = $GENENAME_geneID{$gene};
+	} else {$geneID = $gene};
+	if (defined $GENEID_coords{$geneID}) {
+		$genes_found++;
+		($chr,$start,$end) = split(/[:-_]/, $GENEID_coords{$geneID});
+		if ($GENEID_strand{$geneID} =~ /\+/) {
+			$TSS_pos = $start;
+		} else {
+			$TSS_pos = $end;
+		}
+		$flank_start = ($TSS_pos-$TSS_flanking); if ($flank_start<1) {$flank_start=1};
+		$flank_end = ($TSS_pos+$TSS_flanking);
+		print OUT "$chr\t$flank_start\t$flank_end\t$annot\n";
+	} else {
+		$genes_missing++;
+	}
 }
 
 # if this file is not defined, make it
