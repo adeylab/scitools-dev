@@ -89,6 +89,8 @@ if (defined $opt{'M'}) {
 	if (defined $opt{'T'}) {$common_opts .= "-T $opt{'T'} "};
 	if (defined $opt{'S'}) {$common_opts .= "-S $opt{'S'} "};
 	if (defined $opt{'R'}) {$common_opts .= "-R $opt{'R'} "};
+	if (defined $opt{'p'}) {$common_opts .= "-p $opt{'p'} "};
+	if (defined $opt{'f'}) {$common_opts .= "-f $opt{'f'} "};
 	if (defined $opt{'X'}) {$common_opts .= "-X "};
 	$common_opts =~ s/\s$//;
 	
