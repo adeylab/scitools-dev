@@ -8,7 +8,7 @@ use Exporter "import";
 sub plot_complexity {
 
 @ARGV = @_;
-getopts("O:A:a:C:c:R:Mf:p:", \%opt);
+getopts("O:A:a:C:c:R:Mf:p:k:", \%opt);
 
 #defaults
 $alpha = 0.3;
@@ -28,6 +28,7 @@ Options:
                 Annot=#hexColor,Annot2=#hexColor
    -p   [FLT]   Point size (def = $ptSize)
    -f   [FLT]   Alpha for plotting points (def = $alpha)
+   -k   [STR]   If defined will color density lines the specified color (def = same as points)
    -R   [STR]   Rscript call (def = $Rscript)
 
 Note: Requires ggplot2 R package
@@ -75,8 +76,14 @@ library(ggplot2)
 IN<-read.table(\"$opt{'O'}.plot.txt\")
 PLT<-ggplot(data=subset(IN,V4<100&V4>0)) + theme_bw() +
    geom_point(aes(V4,log10(V3),color=V2),size=$ptSize,alpha=$alpha) +
-   geom_density2d(aes(V4,log10(V3),color=V2),size=0.3) +
 ";
+if (defined $opt{'k'}) {
+print R "   geom_density2d(aes(V4,log10(V3),color=$opt{'k'}),size=0.3) +
+";
+} else {
+print R "   geom_density2d(aes(V4,log10(V3),color=V2),size=0.3) +
+";
+}
 if (defined $opt{'C'} || defined $opt{'c'}) {
 	print R "   scale_colour_manual(values = c($color_mapping)) +
 	guides(colour = guide_legend(override.aes = list(size=4))) +";

@@ -171,7 +171,7 @@ if (!defined $opt{'c'} && !defined $opt{'C'} && !defined $opt{'A'} && !defined $
 } elsif (!defined $opt{'V'}) {
 	print R "
 	geom_point(aes(IN\$V3,IN\$V4,color=IN\$V2),size=$ptSize,alpha=$alpha) +
-	guides(colour = guide_legend(override.aes = list(size=4))) +";
+	guides(colour = guide_legend(override.aes = list(size=4,alpha=1))) +";
 } else {
 	print R "
 	geom_point(aes(IN\$V3,IN\$V4,color=IN\$V2),size=$ptSize,alpha=$alpha) +";
