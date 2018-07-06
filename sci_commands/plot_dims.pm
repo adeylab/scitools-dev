@@ -193,7 +193,15 @@ open R, ">$opt{'O'}.plot.r";
 print R "
 library(ggplot2)
 IN<-read.table(\"$opt{'O'}.plot.txt\")
-$gradient_function
+$gradient_function";
+
+if (defined $opt{'B'} && defined $opt{'V'}) {
+print R "
+fail<-subset(IN,V5==\"FAIL\")
+pass<-subset(IN,V5==\"PASS\")";
+}
+
+print R "
 PLT<-ggplot() +";
 
 if (!defined $opt{'c'} && !defined $opt{'C'} && !defined $opt{'A'} && !defined $opt{'V'}) { # no special mode specified
@@ -209,8 +217,6 @@ if (!defined $opt{'c'} && !defined $opt{'C'} && !defined $opt{'A'} && !defined $
 	geom_point(aes(IN\$V3,IN\$V4,color=IN\$V2),size=$ptSize,alpha=$alpha) +";
 	} else {
 	print R "
-	fail<-subset(IN,\$V5==\"FAIL\")
-	pass<-subset(IN,\$V5==\"PASS\")
 	geom_point(aes(fail\$V3,fail\$V4),color=$binary_fail_color,size=$ptSize,alpha=$alpha) +
 	geom_point(aes(pass\$V3,pass\$V4),color=$binary_pass_color,size=$ptSize,alpha=$alpha) +";
 	}
