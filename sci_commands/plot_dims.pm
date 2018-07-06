@@ -16,8 +16,9 @@ $maxV = 10;
 $theme = "Clean";
 $gradient_def = "BuG90Rd";
 $ptSize = 1;
+$alpha = 1;
 
-getopts("O:A:a:C:c:R:x:y:T:V:M:XS:s:G:p:", \%opt);
+getopts("O:A:a:C:c:R:x:y:T:V:M:XS:s:G:p:f:", \%opt);
 
 $die2 = "
 scitools plot-dims [options] [dimensions file(s), comma sep]
@@ -36,6 +37,7 @@ Options:
    -C   [STR]   Color coding file (annot (tab) #hexColor)
    -c   [STR]   Color coding string
                   Annot=#hexColor,Annot2=#hexColor
+   -f   [FLT]   Alpha for plotting points (def = $alpha)
    -V   [STR]   Values file. tab-delimited, cellID (tab) value
                   Will plot as teh color of points (overrides
                   annotation colors)
@@ -63,6 +65,7 @@ $opt{'O'} =~ s/\.txt$//; $opt{'O'} =~ s/\.dims$//;
 if (!defined $opt{'G'}) {$opt{'G'} = $gradient_def};
 $gradient_function = get_gradient($opt{'G'});
 if (defined $opt{'p'}) {$ptSize = $opt{'p'}};
+if (defined $opt{'f'}) {$alpha = $opt{'f'}};
 
 read_dims($ARGV[0]);
 
@@ -164,14 +167,14 @@ PLT<-ggplot() +";
 
 if (!defined $opt{'c'} && !defined $opt{'C'} && !defined $opt{'A'} && !defined $opt{'V'}) {
 	print R "
-	geom_point(aes(IN\$V3,IN\$V4),color=\"lightsteelblue4\",size=$ptSize) +";
+	geom_point(aes(IN\$V3,IN\$V4),color=\"lightsteelblue4\",size=$ptSize,alpha=$alpha) +";
 } elsif (!defined $opt{'V'}) {
 	print R "
-	geom_point(aes(IN\$V3,IN\$V4,color=IN\$V2),size=$ptSize) +
+	geom_point(aes(IN\$V3,IN\$V4,color=IN\$V2),size=$ptSize,alpha=$alpha) +
 	guides(colour = guide_legend(override.aes = list(size=4))) +";
 } else {
 	print R "
-	geom_point(aes(IN\$V3,IN\$V4,color=IN\$V2),size=$ptSize) +";
+	geom_point(aes(IN\$V3,IN\$V4,color=IN\$V2),size=$ptSize,alpha=$alpha) +";
 }
 
 if ($color_mapping !~ /none/i && !defined $opt{'V'}) {
