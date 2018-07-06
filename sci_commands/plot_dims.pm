@@ -106,9 +106,10 @@ if (defined $opt{'M'}) {
 	if (defined $opt{'R'}) {$common_opts .= "-R $opt{'R'} "};
 	if (defined $opt{'p'}) {$common_opts .= "-p $opt{'p'} "};
 	if (defined $opt{'f'}) {$common_opts .= "-f $opt{'f'} "};
-	if (defined $opt{'B'}) {$common_opts .= "-B $opt{'B'} "};
+	if (defined $opt{'k'}) {$common_opts .= "-k $opt{'k'} "};
 	if (defined $opt{'b'}) {$common_opts .= "-b $opt{'b'} "};
 	if (defined $opt{'X'}) {$common_opts .= "-X "};
+	if (defined $opt{'B'}) {$common_opts .= "-B "};
 	$common_opts =~ s/\s$//;
 	
 	foreach $feature (keys %MATRIX_feature_nonZero) {
