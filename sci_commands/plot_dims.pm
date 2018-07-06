@@ -17,38 +17,53 @@ $theme = "Clean";
 $gradient_def = "BuG90Rd";
 $ptSize = 1;
 $alpha = 1;
+$binary_thresh = 1;
+$binary_fail_color = "gray50";
+$binary_pass_color = "red3";
 
-getopts("O:A:a:C:c:R:x:y:T:V:M:XS:s:G:p:f:", \%opt);
+getopts("O:A:a:C:c:R:x:y:T:V:M:XS:s:G:p:f:Bb:k:", \%opt);
 
 $die2 = "
 scitools plot-dims [options] [dimensions file(s), comma sep]
 
-Options:
+Options - general:
    -O   [STR]   Output prefix (default is dims file 1 prefix)
-   -A   [STR]   Annotation file (to color code points)
-   -a   [STR]   Comma separated list of annotations to include in plot
-                  (requires -A to be specified)
    -x   [INT]   X-dimension to plot (def = $xdim)
    -y   [INT]   Y-dimension to plot (def = $ydim)
    -T   [STR]   Theme: (def = $theme)
                   Clean = no axis lines (for tSNE)
                   Reg = regular, include axes and grid (for PCA)
    -p   [FLT]   Point size (def = $ptSize)
+   -f   [FLT]   Alpha for plotting points (def = $alpha)
+
+Plotting by annotations:
+   -A   [STR]   Annotation file (to color code points)
+   -a   [STR]   Comma separated list of annotations to include in plot
+                  (requires -A to be specified)
    -C   [STR]   Color coding file (annot (tab) #hexColor)
    -c   [STR]   Color coding string
-                  Annot=#hexColor,Annot2=#hexColor
-   -f   [FLT]   Alpha for plotting points (def = $alpha)
+                  Annot=#hexColor,Annot2=#hexColor  
+
+Plotting by values:				  
    -V   [STR]   Values file. tab-delimited, cellID (tab) value
                   Will plot as teh color of points (overrides
                   annotation colors)
    -S   [MIN,MAX]   Min and max values for scaling (if -V specified)
-                  (default = -10,10)
+                  (def = $minV,$maxV)
    -G   [GRD]   Color gradient (def = $gradient_def)
-                  For all available gradients, run 'scitools gradient'
+                  For all available gradients, run 'scitools gradients'
+   -B           Binary on/off for values plotting (Overrides -S & -G)
+   -b   [FLT]   Binary threshold (def = $binary_thresh)
+   -k   [NEG,POS]   Colors for failing and passing cells by binary threshold
+                  (def = $binary_fail_color,$binary_pass_color)
+
+To plot multiple values specified in a matrix file:
    -M   [STR]   Matrix file (e.g. deviation z-scores from chromVAR)
                   Will create a folder as -O option and produce
                   a plot for each row of the matrix. Overrides -V.
                   Only includes rows with at least one non-zero value.
+
+Other options:
    -R   [STR]   Rscript call (def = $Rscript)
    -s   [STR]   scitools call (def = $scitools)
    -X           Do not delete intermediate files (def = delete)
@@ -91,6 +106,8 @@ if (defined $opt{'M'}) {
 	if (defined $opt{'R'}) {$common_opts .= "-R $opt{'R'} "};
 	if (defined $opt{'p'}) {$common_opts .= "-p $opt{'p'} "};
 	if (defined $opt{'f'}) {$common_opts .= "-f $opt{'f'} "};
+	if (defined $opt{'B'}) {$common_opts .= "-B $opt{'B'} "};
+	if (defined $opt{'b'}) {$common_opts .= "-b $opt{'b'} "};
 	if (defined $opt{'X'}) {$common_opts .= "-X "};
 	$common_opts =~ s/\s$//;
 	
@@ -125,6 +142,10 @@ if (defined $opt{'V'}) {read_values($opt{'V'})};
 if (defined $opt{'x'}) {$xdim = $opt{'x'}};
 if (defined $opt{'y'}) {$ydim = $opt{'y'}};
 if (defined $opt{'S'}) {($minV,$maxV) = split(/,/, $opt{'S'})};
+if (defined $opt{'b'}) {$binary_thresh = $opt{'b'}};
+if (defined $opt{'k'}) {($binary_fail_color,$binary_pass_color) = split(/,/, $opt{'k'})};
+if ($binary_fail_color !~ /^#/) {$binary_fail_color = "\"".$binary_fail_color."\""};
+if ($binary_pass_color !~ /^#/) {$binary_pass_color = "\"".$binary_pass_color."\""};
 
 open DATA, ">$opt{'O'}.plot.txt";
 foreach $cellID (keys %CELLID_DIMS) {
@@ -150,6 +171,13 @@ foreach $cellID (keys %CELLID_DIMS) {
 			print DATA "$cellID\t$annot\t$CELLID_DIMS{$cellID}[$xdim]\t$CELLID_DIMS{$cellID}[$ydim]\n";
 		} else { # value annotations
 			if (defined $CELLID_value{$cellID}) {
+				if (defined $opt{'B'}) { # binary threshold
+					if ($CELLID_value{$cellID}>=$binary_thresh) {
+						$annot = "PASS";
+					} else {
+						$annot = "FAIL";
+					}
+				}
 				print DATA "$cellID\t$CELLID_value{$cellID}\t$CELLID_DIMS{$cellID}[$xdim]\t$CELLID_DIMS{$cellID}[$ydim]\t$annot\n";
 			} else {
 				print STDERR "WARNING: $cellID does not have values specified in $opt{'V'}, skipping.\n";
@@ -167,22 +195,30 @@ IN<-read.table(\"$opt{'O'}.plot.txt\")
 $gradient_function
 PLT<-ggplot() +";
 
-if (!defined $opt{'c'} && !defined $opt{'C'} && !defined $opt{'A'} && !defined $opt{'V'}) {
+if (!defined $opt{'c'} && !defined $opt{'C'} && !defined $opt{'A'} && !defined $opt{'V'}) { # no special mode specified
 	print R "
 	geom_point(aes(IN\$V3,IN\$V4),color=\"lightsteelblue4\",size=$ptSize,alpha=$alpha) +";
-} elsif (!defined $opt{'V'}) {
+} elsif (!defined $opt{'V'}) { # annotation specified
 	print R "
 	geom_point(aes(IN\$V3,IN\$V4,color=IN\$V2),size=$ptSize,alpha=$alpha) +
 	guides(colour = guide_legend(override.aes = list(size=4,alpha=1))) +";
-} else {
+} else { # values file specified
+	if (!defined $opt{'B'}) {
 	print R "
 	geom_point(aes(IN\$V3,IN\$V4,color=IN\$V2),size=$ptSize,alpha=$alpha) +";
+	} else {
+	print R "
+	fail<-subset(IN,\$V5==\"FAIL\")
+	pass<-subset(IN,\$V5==\"PASS\")
+	geom_point(aes(fail\$V3,fail\$V4),color=$binary_fail_color,size=$ptSize,alpha=$alpha) +
+	geom_point(aes(pass\$V3,pass\$V4),color=$binary_pass_color,size=$ptSize,alpha=$alpha) +";
+	}
 }
 
 if ($color_mapping !~ /none/i && !defined $opt{'V'}) {
 	print R "
 	scale_colour_manual(values = c($color_mapping)) +";
-} elsif (defined $opt{'V'}) {
+} elsif (defined $opt{'V'} && !defined $opt{'B'}) {
 	print R "
 	scale_colour_gradientn(colours=gradient_funct(21),limits=c($minV,$maxV)) +";
 }
