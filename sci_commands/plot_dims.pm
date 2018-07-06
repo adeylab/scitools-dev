@@ -17,8 +17,8 @@ $theme = "Clean";
 $gradient_def = "BuG90Rd";
 $ptSize = 1;
 $alpha = 1;
-$binary_thresh = 1;
-$binary_fail_color = "gray50";
+$binary_thresh = 4;
+$binary_fail_color = "gray75";
 $binary_pass_color = "red3";
 
 getopts("O:A:a:C:c:R:x:y:T:V:M:XS:s:G:p:f:Bb:k:", \%opt);
