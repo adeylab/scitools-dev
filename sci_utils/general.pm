@@ -36,7 +36,7 @@ use Exporter "import";
 		qw(%INDEX_TYPE_SEQ_seq),qw(%INDEX_TYPE_SEQ_id),qw(%INDEX_TYPE_length),qw($indexes_loaded),
 		qw(%INDEX_TYPE_class),qw(%INDEX_TYPE_format),qw(%INDEX_CLASS_format),
 	"read_refgene",
-		qw(%GENENAME_coords),qw(%GENEID_coords),qw(%GENECOORDS_refGene),
+		qw(%GENENAME_coords),qw(%GENEID_coords),qw(%GENECOORDS_refGene),qw(%GENEID_strand),qw(%GENENAME_geneID),
 	"get_gradient",
 	"load_gradient_defaults",
 		qw(%COLOR_GRADIENT),
@@ -337,7 +337,7 @@ sub read_refgene {
 	%GENENAME_coords = ();
 	%GENEID_coords = ();
 	%GENECOORDS_refGene = ();
-	open REFGENE, "$_[0]";
+	open REFGENE, "$_[0]" || die "ERROR: Cannot open refgene file: $_[0]!\n";
 	while ($refgene_line = <REFGENE>) {
 		chomp $refgene_line;
 		@REFGENE = split(/\t/, $refgene_line);
@@ -345,6 +345,8 @@ sub read_refgene {
 		$GENEID_coords{$REFGENE[1]} = $gene_coords;
 		$GENENAME_coords{$REFGENE[12]} = $gene_coords;
 		$GENECOORDS_refGene{$gene_coords} = $refgene_line;
+		$GENEID_strand{$REFGENE[1]} = $REFGENE[3];
+		$GENENAME_geneID{$REFGENE[12]} = $REFGENE[1];
 	} close REFGENE;
 }
 

@@ -14,11 +14,12 @@ $args = join("\t", @ARGV);
 $permCT = 100;
 $binCT = 100;
 $minTFCT = 10;
+$TSS_flanking = 20000;
 
-getopts("O:X:b:P:B:F:", \%opt);
+getopts("O:X:b:P:B:F:G:", \%opt);
 
 $die2 = "
-scitools atac-deviation [options] [counts matrix, may be unfiltered] [feature bed]
+scitools atac-deviation [options] [counts matrix, may be unfiltered] [feature bed / gene list]
    or    deviation
 
 Options:
@@ -29,6 +30,10 @@ Options:
    -P   [INT]   Permutation count (def = $permCT)
    -B   [INT]   Bin count (def = $binCT)
    -F   [INT]   Min peaks for a feature to include it (def = $minTFCT)
+   -G   [STR]   Gene info (refGene.txt formats) - required if using a gene list
+                 Shortcut eg: hg38, hg19, mm10
+                 Gene list must be annotated, ie: geneName (tab) GeneSetName
+   -S   [INT]   Flanking size (out from TSS in bp, def = $TSS_flanking)
    -b   [STR]   Bedtools call (def = $bedtools)
    -X           Retain intermediate files (def = remove)
 
@@ -77,13 +82,60 @@ print LOG "$ts\tMatrix read:
 \t\t\t\t$siteCT sites
 \t\t\t\t$sum_all_sites_all_cells total signal\n";
 
+if (defined $opt{'G'}) {
+	$genes_found = 0; $geneCT = 0; $genes_missing = 0;
+	$ts = localtime(time);
+	print LOG "$ts\tGene file specified - reading in refgene file.\n";
+	if (defined $REF{$opt{'G'}}) {
+		$ref_file = $REF{$opt{'G'}};
+		$opt{'G'} = $ref_file;
+		$opt{'G'} =~ s/\.fa$/\.refGene.txt/;
+	}
+	read_refgene($opt{'G'});
+	
+	print LOG "\t\t\t\tMatching genes to coordinates and builing annotated bed.\n";
+	open IN, "$ARGV[1]";
+	open OUT, ">$opt{'O'}.dev/genes_TSS_$TSS_flanking.bed";
+	while ($l = <IN>) {
+		chomp $l;
+		($gene,$annot) = split(/\t/, $l);
+		$geneCT++;
+		if (defined $GENENAME_geneID{$gene}) {
+			$geneID = $GENENAME_geneID{$gene};
+		} else {$geneID = $gene};
+		if (defined $GENEID_coords{$geneID}) {
+			$genes_found++;
+			($chr,$start,$end) = split(/[:-_]/, $GENEID_coords{$geneID});
+			if ($GENEID_strand{$geneID} =~ /\+/) {
+				$TSS_pos = $start;
+			} else {
+				$TSS_pos = $end;
+			}
+			$flank_start = ($TSS_pos-$TSS_flanking); if ($flank_start<1) {$flank_start=1};
+			$flank_end = ($TSS_pos+$TSS_flanking);
+			print OUT "$chr\t$flank_start\t$flank_end\t$annot\n";
+		} else {
+			$genes_missing++;
+		}
+	} close IN; close OUT;
+	if ($genes_found<1) {die "ERROR: Gene mode was specified but no genes provided could be found in the refgene file: $opt{'G'}\n"};
+}
+
 # if this file is not defined, make it
 if (!defined $opt{'I'}) {
 	
-	open IN, "$ARGV[1]";
+	if (defined $opt{'G'}) {
+		open IN, "$opt{'O'}.dev/genes_TSS_$TSS_flanking.bed";
+	} else {
+		open IN, "$ARGV[1]";
+	}
+	
 	while ($l = <IN>) {
 		chomp $l;
 		($chr,$start,$end,$TF) = split(/\t/, $l);
+		if (!defined $TF || $TF eq "") {
+			die "ERROR: Line = $l, cannot identify the feature set annotation. If it is a gene file, specify -G.\n";
+		}
 		$TF_count{$TF}++;
 	} close IN;
 	
