@@ -35,7 +35,7 @@ library(ggplot2)
 k_input<-read.table(file=\"$ARGV[0]\",header=TRUE)
 
 PLT<-ggplot(data=k_input,aes(x=k,y=recon.err)) + theme_bw() +
-	geom_point() + geom_line() +
+	geom_point(shape=16) + geom_line() +
 	xlab(\"Number of factors\") + ylab(\"Reconstruction error\") +
 	theme(strip.background=element_rect(fill=\"transparent\")) +
 	theme(strip.background=element_blank(),

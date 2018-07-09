@@ -80,7 +80,7 @@ print R "
 library(ggplot2)
 IN<-read.table(\"$opt{'O'}.plot.txt\")
 PLT<-ggplot(data=subset(IN,V4<100&V4>0)) + theme_bw() +
-   geom_point(aes(V4,log10(V3),color=V2),size=$ptSize,alpha=$alpha) +
+   geom_point(aes(V4,log10(V3),color=V2),size=$ptSize,alpha=$alpha,shape=16) +
 ";
 if (defined $opt{'k'}) {
 print R "   geom_density2d(aes(V4,log10(V3),color=$cont_col),size=0.3) +
