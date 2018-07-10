@@ -141,6 +141,7 @@ library(\"BiocParallel\")
 library(qvalue)
 register(MulticoreParam(30)) 
 counts_mat<-as.matrix(read.delim(\"$ARGV[0]\"))
+counts_mat<-na.omit(counts_mat)
 coldata<-read.table(file = \"$opt{'O'}.$name_out/Diff_acc_$contrast.annot\",sep = \"\\t\",row.names = 1)
 colnames(coldata)<-c(\"condition\")
 counts_mat <- counts_mat[, rownames(coldata)]
@@ -158,12 +159,8 @@ res <- lfcShrink(dds, coef=2)
 write.table(as.matrix(res),file = \"$opt{'O'}.$name_out/Differential_acc_$contrast\_shrunk.txt\", col.names = TRUE, row.names = TRUE, sep = \"\t\", quote = FALSE)
 
 
-# read in shrunk
-a<-read.delim(\"$opt{'O'}.$name_out/Differential_acc_$contrast\_shrunk.txt\")
-#read in normal
-b<-read.delim(\"$opt{'O'}.$name_out/Differential_acc_$contrast.txt\")
-shrunk_corr<-data.frame(log2FoldChange=a\$V1,pvalue=b\$pvalue,padj=b\$padj)
-row.names(shrunk_corr)<-row.names(b)
+shrunk_corr<-data.frame(log2FoldChange=res\$log2FoldChange,pvalue=res\$pvalue,padj=res\$padj)
+row.names(shrunk_corr)<-row.names(res)
 qval<-qvalue(shrunk_corr\$pvalue,fdr.level=0.01)
 shrunk_corr\$qval<-qval\$qvalues
 #write.table(as.matrix(shrunk_corr),file = \"Diff_acc_shrunk_$contrast\_combined.txt\", col.names = TRUE, row.names = TRUE, sep = \"\t\", quote = FALSE)
