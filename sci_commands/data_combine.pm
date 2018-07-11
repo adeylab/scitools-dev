@@ -23,10 +23,12 @@ specified, the file name will be used instead.
 Will auto detect the following filetypes from names:
    annot, dims, matrix, lambda, values, complexity
 If it is a different file type it will include as class 'other', to force specifying 'other'
-add another argument after the file as 'other', e.g.:
-   [data_name]=[data_file]=other    or    [data_name]=[data_file],other
+add another argument after the file that is the specified class - will force 'other'
+   [data_name]=[data_file]=[other_type]
 This can be used for other types of matrix that do not have cellID columns.
-   
+   e.g.   Mean_DevZ=myMeanDeviationByCluster.matrix=matrix
+Which will output with a suffix '.matrix', but will be of class 'other'
+
 For cells without information in a file, NA will be reported.
 
 Options:
@@ -61,11 +63,11 @@ if (defined $opt{'a'}) {
 $included_cell_ct = 0; $cellID_out = ""; @INCLUDED_CELLIDS = ();
 for ($i = 1; $i < @ARGV; $i++) {
 	if ($ARGV[$i] =~ /[,=]/) {
-		if ($ARGV[$i] =~ /other$/) {
-			($name,$file,$null) = split(/[,=]/, $ARGV[$i]);
+		$type = "";
+		($name,$file,$type) = split(/[,=]/, $ARGV[$i]);
+		if ($type ne "") {
 			$CLASS{$i} = "other";
-		} else {
-			($name,$file) = split(/[,=]/, $ARGV[$i]);
+			$TYPE{$i} = $type;
 		}
 	} else {
 		$name = $ARGV[$i]; $file = $ARGV[$i];
@@ -299,7 +301,7 @@ for ($i = 1; $i < @ARGV; $i++) {
 			}
 			close MAT;
 		} elsif ($CLASS{$i} eq "other") {
-			print OUT "#OTHER_DATA\tNAME=$NAMES{$i}\tFILE=$FILES{$i}\n";
+			print OUT "#OTHER_DATA\tNAME=$NAMES{$i}\tFILE=$FILES{$i}\tTYPE=$TYPE{$i}\n";
 			open IN, "$FILES{$i}";
 			while ($in_l = <IN>) {
 				chomp $in_l;

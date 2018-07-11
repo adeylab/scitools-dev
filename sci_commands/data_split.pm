@@ -87,7 +87,8 @@ while ($l = <IN>) {
 			} print OUT "\n";
 			$out_type = "matrix";
 		} elsif ($P[0] eq "#OTHER_DATA") {
-			open OUT, ">$opt{'O'}.$name.txt";
+			($null,$type) = split(/=/,$P[3]);
+			open OUT, ">$opt{'O'}.$name.$type";
 			$out_type = "other";
 		}
 	} else {
