@@ -14,7 +14,7 @@ $maxDim = 15;
 getopts("O:D:A:R:z", \%opt);
 
 $die2 = "
-scitools combine-data [output_file] [data1_name],[data1_file] [data2_name],[data2_file] etc...
+scitools combine-data [output_file] [data1_name]=[data1_file] [data2_name]=[data2_file] etc...
    or    data-combine
 
 Will report all data from files into the specified output file. If the data name is not
@@ -22,6 +22,10 @@ specified, the file name will be used instead.
 
 Will auto detect the following filetypes from names:
    annot, dims, matrix, lambda, values, complexity
+If it is a different file type it will include as class 'other', to force specifying 'other'
+add another argument after the file as 'other', e.g.:
+   [data_name]=[data_file]=other    or    [data_name]=[data_file],other
+This can be used for other types of matrix that do not have cellID columns.
    
 For cells without information in a file, NA will be reported.
 
@@ -57,17 +61,22 @@ if (defined $opt{'a'}) {
 $included_cell_ct = 0; $cellID_out = ""; @INCLUDED_CELLIDS = ();
 for ($i = 1; $i < @ARGV; $i++) {
 	if ($ARGV[$i] =~ /[,=]/) {
-		($name,$file) = split(/[,=]/, $ARGV[$i]);
+		if ($ARGV[$i] =~ /other$/) {
+			($name,$file,$null) = split(/[,=]/, $ARGV[$i]);
+			$CLASS{$i} = "other";
+		} else {
+			($name,$file) = split(/[,=]/, $ARGV[$i]);
+		}
 	} else {
 		$name = $ARGV[$i]; $file = $ARGV[$i];
 	}
 	if (-e "$file") {
-		if ($file =~ /\.annot$/) {$CLASS{$i} = "annot"}
-		elsif ($file =~ /\.dims$/) {$CLASS{$i} = "dims"}
-		elsif ($file =~ /\.complexity\.txt$/) {$CLASS{$i} = "complexity"}
-		elsif ($file =~ /\.lambda$/) {$CLASS{$i} = "lambda"}
-		elsif ($file =~ /\.values$/) {$CLASS{$i} = "values"}
-		elsif ($file =~ /\.matrix$/) {$CLASS{$i} = "matrix"}
+		if ($file =~ /\.annot$/ && !defined $CLASS{$i}) {$CLASS{$i} = "annot"}
+		elsif ($file =~ /\.dims$/ && !defined $CLASS{$i}) {$CLASS{$i} = "dims"}
+		elsif ($file =~ /\.complexity\.txt$/ && !defined $CLASS{$i}) {$CLASS{$i} = "complexity"}
+		elsif ($file =~ /\.lambda$/ && !defined $CLASS{$i}) {$CLASS{$i} = "lambda"}
+		elsif ($file =~ /\.values$/ && !defined $CLASS{$i}) {$CLASS{$i} = "values"}
+		elsif ($file =~ /\.matrix$/ && !defined $CLASS{$i}) {$CLASS{$i} = "matrix"}
 		else {
 			$CLASS{$i} = "other";
 		}
