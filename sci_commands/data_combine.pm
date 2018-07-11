@@ -11,7 +11,7 @@ sub data_combine {
 # Defaults
 $maxDim = 15;
 
-getopts("O:D:A:R:z", \%opt);
+getopts("O:D:A:R:zF:", \%opt);
 
 $die2 = "
 scitools combine-data [output_file] [data1_name]=[data1_file] [data2_name]=[data2_file] etc...
@@ -33,6 +33,7 @@ For cells without information in a file, NA will be reported.
 
 Options:
    -D   [INT]   Maximum dimension to include for dims files (def = $maxDim)
+   -F   [STR]   File specifying files to combine - will read each line as an input argument.
    -A   [STR]   Only include cells within specified annot file.
    -a   [STR]   Include only specified annotations (in -A), comma sep.
    -R   [STR]   Rename cells using rename.annot file
@@ -43,6 +44,7 @@ Options:
 
 if (defined $opt{'O'}) {unshift @ARGV, $opt{'O'}};
 if (!defined $ARGV[1]) {die $die2};
+if ($ARGV[0] =~ /[,=]/) {die "ERROR: First argument must be the output file, it looks like the first argument specified is an input file.\n$die2"};
 if (defined $opt{'D'}) {$maxDim = $opt{'D'}};
 if (defined $opt{'a'} && !defined $opt{'A'}) {die "\nMust provide an annotaiton file (-A) if specifying annotations to filter (-a)!\n$die2"};
 
@@ -57,6 +59,14 @@ if (defined $opt{'a'}) {
 	foreach $annot (keys %ANNOT_count) {
 		$ANNOT_include{$annot} = 1;
 	}
+}
+
+if (defined $opt{'F'}) {
+	open IN, "$opt{'F'}";
+	while ($l = <IN>) {
+		chomp $l;
+		push @ARGV, $l;
+	} close IN;
 }
 
 # get full file type info and cells present
@@ -301,6 +311,7 @@ for ($i = 1; $i < @ARGV; $i++) {
 			}
 			close MAT;
 		} elsif ($CLASS{$i} eq "other") {
+			if (!defined $TYPE{$i}) {$TYPE{$i} = "txt"};
 			print OUT "#OTHER_DATA\tNAME=$NAMES{$i}\tFILE=$FILES{$i}\tTYPE=$TYPE{$i}\n";
 			open IN, "$FILES{$i}";
 			while ($in_l = <IN>) {
