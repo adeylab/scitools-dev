@@ -69,8 +69,7 @@ for ($i = 1; $i < @ARGV; $i++) {
 		elsif ($file =~ /\.values$/) {$CLASS{$i} = "values"}
 		elsif ($file =~ /\.matrix$/) {$CLASS{$i} = "matrix"}
 		else {
-			print STDERR "\nWARNING: Cannot determine file type for file: $file, skipping!\n";
-			$SKIP{$i} = 1;
+			$CLASS{$i} = "other";
 		}
 		if (!defined $SKIP{$i}) {
 			$FILES{$i} = $file;
@@ -267,18 +266,36 @@ for ($i = 1; $i < @ARGV; $i++) {
 			}
 		} elsif ($CLASS{$i} eq "matrix") {
 			print OUT "#MATRIX_DATA\tNAME=$NAMES{$i}\tFILE=$FILES{$i}\n";
-			read_matrix($FILES{$i});
-			foreach $feature (sort {$a cmp $b} @MATRIX_ROWNAMES) {
+			open MAT, "$FILES{$i}";
+			$mat_head = <MAT>; chomp $mat_head; @MATRIX_CELLS = split(/\t/, $mat_head);
+			%MATRIX_CELLID_pos = ();
+			for ($cellPos = 0; $cellPos < @MATRIX_CELLS; $cellPos++) {
+				$MATRIX_CELLID_pos{$MATRIX_CELLS[$cellPos]} = $cellPos;
+			}
+			while ($mat_l = <MAT>) {
+				chomp $mat_l;
+				@MAT_FIELDS = split(/\t/, $mat_l);
+				$feature = shift(@MAT_FIELDS);
 				print OUT "$NAMES{$i}\t$feature";
 				for ($j = 0; $j < @INCLUDED_CELLIDS; $j++) {
 					$cellID = $INCLUDED_CELLIDS[$j];
-					if (defined $CELLID_FEATURE_value{$cellID}{$feature}) {
-						print OUT "\t$CELLID_FEATURE_value{$cellID}{$feature}";
+					if (defined $MATRIX_CELLID_pos{$cellID}) {
+						$value = $MAT_FIELDS[$MATRIX_CELLID_pos{$cellID}];
 					} else {
-						print OUT "\tNA";
+						$value = "NA";
 					}
-				} print OUT "\n";
+					print OUT "\t$value";
+				}
+				print OUT "\n";
 			}
+			close MAT;
+		} elsif ($CLASS{$i} eq "other") {
+			print OUT "#OTHER_DATA\tNAME=$NAMES{$i}\tFILE=$FILES{$i}\n";
+			open IN, "$FILES{$i}";
+			while ($in_l = <IN>) {
+				chomp $in_l;
+				print OUT "$NAMES{$i}\t$in_l\n";
+			} close IN;
 		}
 	}
 }
