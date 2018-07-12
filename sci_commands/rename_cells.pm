@@ -111,7 +111,7 @@ for ($in_file = 0; $in_file < @ARGV; $in_file++) {
 						$ORIGINAL_newID{$origID} = rename_cell($origID);
 					}
 					$newID = $ORIGINAL_newID{$origID};
-					$out_line = "\@RG\tID:$newID\tSM:$newID\tLB:$newID\tPL:SCI\n";
+					$out_line = "\@RG\tID:$newID\tSM:$newID\tLB:$newID\tPL:SCI";
 				} else {
 					$out_line = $l;
 				}
