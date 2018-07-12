@@ -337,6 +337,8 @@ sub read_refgene {
 	%GENENAME_coords = ();
 	%GENEID_coords = ();
 	%GENECOORDS_refGene = ();
+	%GENEID_strand = ();
+	%GENENAME_geneID = ();
 	open REFGENE, "$_[0]" || die "ERROR: Cannot open refgene file: $_[0]!\n";
 	while ($refgene_line = <REFGENE>) {
 		chomp $refgene_line;
