@@ -167,6 +167,7 @@ sub load_aliases {
 	foreach $alias ("matrix_filter", "filter_matrix") {$COMMAND_ALIAS{$alias} = "matrix_filter"};
 	foreach $alias ("matrix_naomit", "naomit_matrix") {$COMMAND_ALIAS{$alias} = "matrix_naomit"};
 	foreach $alias ("matrix_summarize", "summarize_matrix") {$COMMAND_ALIAS{$alias} = "matrix_summarize"};
+	foreach $alias ("matrix_correlate", "correlate_matrix") {$COMMAND_ALIAS{$alias} = "matrix_correlate"};
 	foreach $alias ("matrix_tf", "tf", "tf_matrix") {$COMMAND_ALIAS{$alias} = "matrix_tf"};
 	foreach $alias ("matrix_tfidf", "tfidf", "tfidf_matrix") {$COMMAND_ALIAS{$alias} = "matrix_tfidf"};
 	foreach $alias ("matrix_lsi", "lsi", "lsi_matix") {$COMMAND_ALIAS{$alias} = "matrix_lsi"};
@@ -253,6 +254,7 @@ sub load_descriptions {
 	$COMMAND_DESCRIPTOR{"matrix_filter"} = "Filter a sci-ATAC-seq counts matrix";
 	$COMMAND_DESCRIPTOR{"matrix_naomit"} = "Filter out rows with NA values";
 	$COMMAND_DESCRIPTOR{"matrix_zscore"} = "Z-scores matrix by rows, columns, or globally";
+	$COMMAND_DESCRIPTOR{"matrix_correlate"} = "Correlate columns/rows of a matrix";
 	$COMMAND_DESCRIPTOR{"matrix_tf"} = "Normalize only by term frequency";
 	$COMMAND_DESCRIPTOR{"matrix_tfidf"} = "Perform tf-idf on counts matrix";
 	$COMMAND_DESCRIPTOR{"matrix_lsi"} = "Perform Latent Semantic Indexing on matrix";
