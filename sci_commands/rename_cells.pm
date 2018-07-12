@@ -104,7 +104,7 @@ for ($in_file = 0; $in_file < @ARGV; $in_file++) {
 			chomp $l;
 			@P = split(/\t/, $l);
 			if ($P[0] =~ /^\@/) {
-				if ($P[0] =~ /\@RG/) {
+				if ($P[0] =~ /^\@RG/) {
 					$RG_lines = "TRUE";
 					$origID = $P[1]; $origID =~ s/^ID://;
 					if (!defined $ORIGINAL_newID{$origID}) {
