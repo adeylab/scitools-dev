@@ -107,7 +107,9 @@ for ($in_file = 0; $in_file < @ARGV; $in_file++) {
 				if ($P[0] =~ /\@RG/) {
 					$RG_lines = "TRUE";
 					$origID = $P[1]; $origID =~ s/^ID://;
-					$ORIGINAL_newID{$origID} = rename_cell($origID);
+					if (!defined $ORIGINAL_newID{$origID}) {
+						$ORIGINAL_newID{$origID} = rename_cell($origID);
+					}
 					$newID = $ORIGINAL_newID{$origID};
 					$out_line .= "\@RG\tID:$newID\tSM:$newID\tLB:$newID\tPL:SCI\n";
 				} else {
