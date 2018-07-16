@@ -10,7 +10,7 @@ sub matrix_DA {
 
 @ARGV = @_;
 use Getopt::Std; %opt = ();
-getopts("O:A:I:", \%opt);
+getopts("O:A:I:X", \%opt);
 
 $die2 = "
 scitools matrix-da [options] [counts matrix] [aggr annotation file]
@@ -26,6 +26,7 @@ Options:
 		      IND2_3	IND2
 		Warning: This will be used for comparisons instead of agg annot file
    -I	[STR]   If defined script compares an individual group to all others combined as opposed to comparing group by group (default) 	
+   -X           Retain intermediate files (def = delete)
 
    
 ";
@@ -204,8 +205,10 @@ write.table(as.matrix(output),file = \"$opt{'O'}.$name_out/Differential_acc_$con
 ";
 
 close(R);
-system("Rscript $opt{'O'}.$name_out/Diff_acc_$contrast.r > $opt{'O'}.$name_out/Diff_acc_$contrast.stdout 2> $opt{'O'}.$name_out/Diff_acc_$contrast.stderr");	
-system("rm -f $opt{'O'}.$name_out/Diff_acc_$contrast.r $opt{'O'}.$name_out/Diff_acc_$contrast.stdout $opt{'O'}.$name_out/Diff_acc_$contrast.stderr $opt{'O'}.$name_out/Differential_acc_$contrast.txt $opt{'O'}.$name_out/Differential_acc_$contrast\_shrunk.txt");	
+system("Rscript $opt{'O'}.$name_out/Diff_acc_$contrast.r > $opt{'O'}.$name_out/Diff_acc_$contrast.stdout 2> $opt{'O'}.$name_out/Diff_acc_$contrast.stderr");
+if (!defined $opt{'X'}) {
+	("rm -f $opt{'O'}.$name_out/Diff_acc_$contrast.r $opt{'O'}.$name_out/Diff_acc_$contrast.stdout $opt{'O'}.$name_out/Diff_acc_$contrast.stderr $opt{'O'}.$name_out/Differential_acc_$contrast.txt $opt{'O'}.$name_out/Differential_acc_$contrast\_shrunk.txt");	
+}
 }
 
 #from here we are looking at peaks that are specifially differentially accessible only in that contrast
@@ -309,7 +312,9 @@ for my $contrast1 (sort keys %contrast_hash)
         ";
         close(R);
         system("Rscript $opt{'O'}.$name_out/Diff_acc_$contrast1.r > $opt{'O'}.$name_out/Diff_acc_$contrast1.stdout 2> $opt{'O'}.$name_out/Diff_acc_$contrast1.stderr");	
-        system("rm -f $opt{'O'}.$name_out/Diff_acc_$contrast1.r $opt{'O'}.$name_out/Diff_acc_$contrast1.stdout $opt{'O'}.$name_out/Diff_acc_$contrast1.stderr");	
+		if (!defined $opt{'X'}) {
+			system("rm -f $opt{'O'}.$name_out/Diff_acc_$contrast1.r $opt{'O'}.$name_out/Diff_acc_$contrast1.stdout $opt{'O'}.$name_out/Diff_acc_$contrast1.stderr");
+		}
         }
 }
 
