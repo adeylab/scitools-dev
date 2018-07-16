@@ -76,7 +76,7 @@ if (defined $opt{'B'}) {
 	open BED, "| $bedtools sort -i - > $opt{'O'}.matrix_rows.bed";
 	while ($l = <MATRIX>) {
 		chomp $l; @P = split(/\t/, $l);
-		($chr,$start,$end) = split(/[_-:]/, $l);
+		($chr,$start,$end) = split(/_/, $l);
 		print BED "$chr\t$start\t$end\n";
 	}
 	close MATRIX; close BED;
