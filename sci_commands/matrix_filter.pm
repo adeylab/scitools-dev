@@ -98,9 +98,9 @@ if (defined $opt{'B'}) {
 		$opt{'B'} = "$opt{'O'}.selected_features.bed";
 	}
 	if (!defined $opt{'v'}) {
-		open INT "$bedtools intersect -a $opt{'O'}.matrix_rows.bed -b $opt{'B'} -wa -wb |";
+		open INT, "$bedtools intersect -a $opt{'O'}.matrix_rows.bed -b $opt{'B'} -wa -wb |";
 	} else {
-		open INT "$bedtools intersect -v -a $opt{'O'}.matrix_rows.bed -b $opt{'B'} -wa -wb |";
+		open INT, "$bedtools intersect -v -a $opt{'O'}.matrix_rows.bed -b $opt{'B'} -wa -wb |";
 	}
 	while ($l = <INT>) {
 		chomp $l;
