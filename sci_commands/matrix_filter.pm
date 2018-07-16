@@ -13,20 +13,24 @@ sub matrix_filter {
 $colMin = 1;
 $rowMin = 1;
 
-getopts("O:C:R:c:r:A:a:", \%opt);
+getopts("O:C:R:c:r:A:a:B:vb:f:", \%opt);
 
 $die2 = "
 scitools matrix-filter [options] [counts matrix]
    or    filter-matrix
    
 Options:
-   -O   [STR]   Output prefix (default is [input].filt_[colMin]_[rowMin].matrix)
+   -O   [STR]   Output prefix (default is [input prefix].filt.matrix)
    -C   [INT]   Number of nonZero sites per column to retain (def = $colMin)
    -R   [INT]   Number of nonZero sites per row to retain (def = $rowMin)
    -c   [STR]   List of CellIDs to retain
    -r   [STR]   List of RowIDs to retain
+   -B   [BED]   If chr_start_end features, will pull only those overlapping bed file
+   -v           If -B is toggeled will exclude those peaks
+   -f   [STR]   If -B has annotations, just consider those with the name -f
    -A   [STR]   Annotation file
    -a   [STR]   Comma separated list of annotations to include (requires -A)
+   -b   [STR]   Bedtools call (for -B filtering; def = $bedtools)
 
 Note: -C and -R filters are applied after all other filtering.
 
@@ -38,7 +42,7 @@ if (defined $opt{'R'}) {$rowMin = $opt{'R'}};
 if (!defined $opt{'O'}) {
 	$opt{'O'} = $ARGV[0];
 	$opt{'O'} =~ s/\.matrix$//;
-	$opt{'O'} .= ".filt_$colMin\_$rowMin";
+	$opt{'O'} .= ".filt";
 }
 if (defined $opt{'a'} && !defined $opt{'A'}) {die "\nMust provide an annotaiton file (-A) if specifying annotations to filter (-a)!\n$die2"};
 
@@ -67,6 +71,49 @@ if (defined $opt{'r'}) {
 	} close IN;
 }
 
+if (defined $opt{'B'}) {
+	open MATRIX, "$ARGV[0]"; $null = <MATRIX>;
+	open BED, "| $bedtools sort -i - > $opt{'O'}.matrix_rows.bed";
+	while ($l = <MATRIX>) {
+		chomp $l; @P = split(/\t/, $l);
+		($chr,$start,$end) = split(/[_-:]/, $l);
+		print BED "$chr\t$start\t$end\n";
+	}
+	close MATRIX; close BED;
+	if (defined $opt{'f'}) {
+		$opt_f_features = 0;
+		open IN, "$opt{'B'}";
+		open OUT, "| $bedtools sort -i - > $opt{'O'}.selected_features.bed";
+		while ($l = <IN>) {
+			chomp $l;
+			@P = split(/\t/, $l);
+			if ($P[3] eq "$opt{'f'}") {
+				$opt_f_features++;
+				print OUT "$P[0]\t$P[1]\t$P[2]\n";
+			}
+		} close IN; close OUT;
+		if ($opt_f_features<1) {
+			die "ERROR: Feature $opt{'f'} was specified for bed file $opt{'B'} and no features were found!\n";
+		}
+		$opt{'B'} = "$opt{'O'}.selected_features.bed";
+	}
+	if (!defined $opt{'v'}) {
+		open INT "$bedtools intersect -a $opt{'O'}.matrix_rows.bed -b $opt{'B'} -wa -wb |";
+	} else {
+		open INT "$bedtools intersect -v -a $opt{'O'}.matrix_rows.bed -b $opt{'B'} -wa -wb |";
+	}
+	while ($l = <INT>) {
+		chomp $l;
+		@P = split(/\t/, $l);
+		$rowID = "$P[0]_$P[1]_$P[2]";
+		$ROWID_list_include{$rowID} = 1;
+	} close INT;
+	system("rm -f $opt{'O'}.matrix_rows.bed");
+	if (defined $opt{'f'}) {
+		system("rm -f $opt{'O'}.selected_features.bed");
+	}
+}
+
 open MATRIX, "$ARGV[0]";
 $h = <MATRIX>; chomp $h; @MATRIX_COLNAMES = split(/\t/, $h);
 $matrix_colNum = @MATRIX_COLNAMES;
@@ -81,7 +128,7 @@ while ($l = <MATRIX>) {
 	@P = split(/\t/, $l);
 	$rowID = shift(@P);
 	$ROWNAME_nonzero{$rowID} = 0;
-	if (!defined $opt{'r'} || defined $ROWID_list_include{$rowID}) {
+	if (((defined $opt{'r'} || defined $opt{'B'}) && defined $ROWID_list_include{$rowID}) || (!defined $opt{'r'} && !defined $opt{'B'})) {
 		for ($cellNum = 0; $cellNum < @P; $cellNum++) {
 			$cellID = $MATRIX_COLNAMES[$cellNum];
 			if ((!defined $opt{'c'} || defined $CELLID_list_include{$cellID}) &&
