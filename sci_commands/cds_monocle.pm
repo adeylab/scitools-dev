@@ -16,6 +16,7 @@ $die2 = "
 scitools cds_monocle [options] [directory containing cds files]
    or    monocle_cds
 
+Prior to running, ensure you have ran scitools matrix-makecds. That function will convert matrix files into the CDS format that Monocle3 requires.
 Runs the current version of Monocle3 within a directory containing files for CDS format input. 
 WIP: Current version performs re-clustering using the monocle pipeline, will adjust to read in scitools generated dims file in the future.
 
@@ -43,10 +44,6 @@ open R, ">$opt{'O'}.monocle.r";
 print R "
 library(monocle)
 # reading in matrix, annotation, and dimension data
-# cds_cell_data <- read.delim("./cds_cell_data.txt")
-# cds_dims_data <- read.delim("./cds_dims_data.txt")
-# cds_site_data <- read.delim("./cds_site_data.txt")
-# cds_counts_matrix <- read.delim("./cds_counts_matrix.txt")
 
 cds_cell_data <- read.delim(\"$ARGV[0]/cds_cell_data.txt\")
 #cds_dims_data <- read.delim(\"$ARGV[0]/cds_dims_data.txt\")
@@ -58,9 +55,6 @@ cds_counts_matrix <- read.table(\"$ARGV[0]/cds_counts_matrix.txt\")
 #cds_cell_data<-cbind(cds_cell_data,cds_dims_data)
 
 # generating cell data set
-# feature_data <- new("AnnotatedDataFrame", data = cds_site_data)
-# sample_data <- new("AnnotatedDataFrame", data = cds_cell_data)
-
 feature_data <- new(\"AnnotatedDataFrame\", data = cds_site_data)
 sample_data <- new(\"AnnotatedDataFrame\", data = cds_cell_data)
 
@@ -74,13 +68,10 @@ cds <- detectGenes(cds)
 cds <- estimateSizeFactors(cds)
 cds <- estimateDispersions(cds)
 
-#cds<-preprocessCDS(cds,num_dim=100,use_tf_idf=TRUE,verbose=T)
-
 cds<-preprocessCDS(cds,num_dim=$opt{'P'},use_tf_idf=TRUE,verbose=T)
 #Write out PCA components data frame
 write.table(as.data.frame(cds\@normalized_data_projection), file=\"$opt{'O'}/$opt{'P'}_pca.dims\",quote=F,sep=\"\\t\",row.names=T,col.names=T)
 
-#cds<-reduceDimension(cds,max_components=3,reduction_method="UMAP",metric="cosine",verbose=T)
 cds <- reduceDimension(cds, max_components = $opt{'D'},reduction_method = \'UMAP\',metric=\"cosine\",verbose = T)
 write.table(as.data.frame(t(reducedDimS(cds))), file=\"$opt{'O'}/trajectory_$opt{'D'}D.dims\",quote=F,sep=\"\\t\",row.names=T,col.names=F)
 cds <- partitionCells(cds)
