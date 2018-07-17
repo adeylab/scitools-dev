@@ -46,6 +46,7 @@ $h2 = <M2>; chomp $h2; @H2 = split(/\t/, $h2);
 for ($m1 = 0; $m1 < @H1; $m1++) {
 	for ($m2 = 0; $m2 < @H2; $m2++) {
 		$M1_M2_dist{$m1}{$m2} = 0;
+		$M1_M2_nonzero{$m1}{$m2} = 0;
 	}
 }
 while ($l = <M2>) {
@@ -56,6 +57,9 @@ while ($l = <M2>) {
 		for ($m1 = 0; $m1 < @H1; $m1++) {
 			for ($m2 = 0; $m2 < @H2; $m2++) {
 				$M1_M2_dist{$m1}{$m2} += abs($P[$m2]-$SITEID_row{$siteID}[$m1]);
+				if ($P[$m2] != 0 && $SITEID_row{$siteID}[$m1] != 0) {
+					$M1_M2_nonzero{$m1}{$m2}++;
+				}
 			}
 		}
 		$siteCT++;
@@ -66,13 +70,15 @@ open D, ">$opt{'O'}.all_dist.txt";
 open A, ">$opt{'O'}.best_match.annot";
 open R, ">$opt{'O'}.best_match_rev.annot";
 
+
 for ($m1 = 0; $m1 < @H1; $m1++) {
 	$cellID1 = $H1[$m1];
 	print D "$cellID1";
 	$win = "null";
-	foreach $m2 (sort {$M1_M2_dist{$m1}{$a}<=>$M1_M2_dist{$m1}{$b}} keys %{$M1_M2_dist{$m1}}) {
+	# sort by the one with the most shared non-zero sites
+	foreach $m2 (sort {$M1_M2_nonzero{$m1}{$b}<=>$M1_M2_nonzero{$m1}{$a}} keys %{$M1_M2_nonzero{$m1}}) {
 		if ($win eq "null") {$win = $H2[$m2]; print D "\t$win"};
-		$av_d = sprintf("%.3f", $M1_M2_dist{$m1}{$m2}/$siteCT);
+		$av_d = $M1_M2_nonzero{$m1}{$m2};
 		print D "\t$av_d";
 	}
 	print D "\n";
