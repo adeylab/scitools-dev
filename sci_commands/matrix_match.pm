@@ -16,7 +16,8 @@ $die2 = "
 scitools matrix-match [options] [counts matrix 1] [counts matrix 2]
    or    match-matrix
 
-Term frequency normalization of matrix
+Calculates the distance between counts matrix cells and makes an
+annotation file for the top hit match.
 
 Options:
    -O   [STR]   Output prefix (default is [mat1_vs_mat2])
@@ -70,7 +71,7 @@ for ($m1 = 0; $m1 < @H1; $m1++) {
 	print D "$cellID1";
 	$win = "null";
 	foreach $m2 (sort {$M1_M2_dist{$m1}{$a}<=>$M1_M2_dist{$m1}{$b}} keys %{$M1_M2_dist{$m1}}) {
-		if ($win eq "null") {$win = $H2[$m2]};
+		if ($win eq "null") {$win = $H2[$m2]; print D "\t$win"};
 		$av_d = sprintf("%.3f", $M1_M2_dist{$m1}{$m2}/$siteCT);
 		print D "\t$av_d";
 	}
