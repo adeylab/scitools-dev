@@ -102,6 +102,7 @@ write.table(as.matrix(pData(agg_cds)),file=\"$opt{'O'}/monocle3_cells.txt\",col.
 write.table(as.matrix(Biobase::exprs(agg_cds)),file=\"$opt{'O'}/monocle3_aggragated_cells_count.txt\",col.names=TRUE,row.names=TRUE,sep=\"\\t\",quote=FALSE)
 write.table(as.matrix(fData(agg_cds)),file=\"$opt{'O'}/monocle3_features.txt\",col.names=TRUE,row.names=FALSE,sep=\"\\t\",quote=FALSE)
 ";
+}
 close R;
 system("$Rscript $opt{'O'}.monocle.r");
 if (!defined $opt{'X'}) {
@@ -110,5 +111,3 @@ if (!defined $opt{'X'}) {
 }
 1;
 
-}
-1;
