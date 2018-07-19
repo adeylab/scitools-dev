@@ -186,8 +186,15 @@ open OUT, ">$opt{'O'}.raw.signal";
 open NRM, ">$opt{'O'}.norm.signal";
 
 $header = ""; @COLNAMES = ();
+if (defined $ANNOT_LIST[1]) {@VLINES = ()};
+$vline_check = 0;
 for ($annot_pos = 0; $annot_pos < @ANNOT_LIST; $annot_pos++) {
 	$annot = $ANNOT_LIST[$annot_pos];
+	if ($vline_check < $annot_pos) {
+		$col_pos = @COLNAMES;
+		push @VLINES, $col_pos;
+		$vline_check = $annot_pos;
+	}
 	for ($subWin = 0; $subWin <= $totwin; $subWin++) {
 		$header .= "$annot\_window_$subWin\t";
 		push @COLNAMES, "$annot\_window_$subWin";
@@ -222,25 +229,49 @@ if (defined $opt{'r'}) {
 			push @ROW_ORDER, $winID;
 		}
 	} elsif ($matching_annot = "TRUE") {
+		$hline_check = 0; @HLINES = ();
 		for ($annot_pos = 0; $annot_pos < @ANNOT_LIST; $annot_pos++) {
 			$annot = $ANNOT_LIST[$annot_pos];
 			$midWinID = "$annot\_window_$midWin";
 			foreach $winID (sort {$WINID_SUB_ANNOT_count{$b}{$midWinID}<=>$WINID_SUB_ANNOT_count{$a}{$midWinID}} keys %{$FGROUP_WINID_list{$annot}}) {
 				push @ROW_ORDER, $winID;
 			}
+			if ($hline_check < $annot_pos && $annot_pos<(@ANNOT_LIST-1)) {
+				$row_coord = @ROW_ORDER;
+				push @HLINES, $row_coord;
+				$hline_check = $annot_pos;
+			}
 		}
 	} else {
 		($annot,$null) = split(/_window_/, $COLNAMES[0]);
+		@HLINES = ();
 		print STDERR "INFO: Annotaiton for cells provided, but annotaitons of peaks do not all match cell annotations.
       If this is incorrect - double check that annotaitons and bed feature names match.
       Proceeding with sorting on the first listed annotation: $annot\n";
 		$midWinID = "$annot\_window_$midWin";
 		foreach $fgroup (sort keys %FGROUP_WINID_list) {
+			if (@ROW_ORDER>1) {$row_coord = @ROW_ORDER; push @HLINES, $row_coord};
 			foreach $winID (sort {$WINID_SUB_ANNOT_count{$b}{$midWinID}<=>$WINID_SUB_ANNOT_count{$a}{$midWinID}} keys %{$FGROUP_WINID_list{$fgroup}}) {
 				push @ROW_ORDER, $winID;
 			}
 		}
 	}
+}
+
+if (defined $HLINES[0]) {
+	open HL, ">$opt{'O'}.hlines.txt";
+	for ($i = 0; $i < @HLINES; $i++) {
+		print HL "$HLINES[$i]\n";
+	}
+	close HL;
+}
+
+if (defined $VLINES[0]) {
+	open VL, ">$opt{'O'}.Vlines.txt";
+	for ($i = 0; $i < @VLINES; $i++) {
+		print VL "$VLINES[$i]\n";
+	}
+	close VL;
 }
 
 if (defined $opt{'v'}) {
