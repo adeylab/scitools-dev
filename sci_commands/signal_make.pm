@@ -207,7 +207,7 @@ print NRM "$header\n";
 $midWin = int($totwin/2); @ROW_ORDER = ();
 if (defined $opt{'r'}) {
 	open IN, "$ARGV[1]";
-	@HLINES = (); $row_annot = "null";
+	@HLINES = (); $row_annot = "null"; $is_first = 0;
 	while ($l = <IN>) {
 		chomp $l;
 		@P = split(/\t/, $l);
@@ -215,9 +215,12 @@ if (defined $opt{'r'}) {
 		if (defined $P[3]) {$row_annot=$P[3]};
 		if (defined $WINID_list{$winID}) {
 			push @ROW_ORDER, $winID;
-			if ($row_annot ne $prev_annot && $row_annot ne "null") {
-				$row_pos = @ROW_ORDER;
-				push @HLINES, $row_pos;
+			if ($row_annot ne $prev_annot) {
+				if ($is_first>0) {
+					$row_pos = @ROW_ORDER;
+					push @HLINES, $row_pos;
+				}
+				$is_first++;
 			}
 		}
 		$prev_annot = $row_annot;

@@ -107,12 +107,12 @@ PLT<-ggplot() + theme_bw() +
 
 if (defined $opt{'V'}) {
 	print R "
-	geom_vline(aes(xintercept = VL\$V1),linetype=dashed,color=\"black\",size=1) +";
+	geom_vline(aes(xintercept = VL\$V1),linetype=\"dashed\",color=\"black\",size=1) +";
 }
 
 if (defined $opt{'H'}) {
 	print R "
-	geom_hline(aes(xintercept = HL\$V1),linetype=dashed,color=\"black\",size=1) +";
+	geom_hline(aes(xintercept = HL\$V1),linetype=\"dashed\",color=\"black\",size=1) +";
 }
 
 print R "

@@ -129,7 +129,8 @@ sub load_aliases {
 	# General Commands
 	foreach $alias ("dependencies", "depend", "check_dependencies", "dependencies_check") {$COMMAND_ALIAS{$alias} = "dependencies"};
 	foreach $alias ("defaults", "check_defaults", "defaults_check") {$COMMAND_ALIAS{$alias} = "defaults"};
-	foreach $alias ("gradients_print", "gradients", "print_gradients", "list_gradients", "gradients_list") {$COMMAND_ALIAS{$alias} = "gradients_print"};
+	foreach $alias ("gradients_print", "gradients", "print_gradients", "list_gradients",
+					"gradients_list", "gradient", "gradient_print", "print_gradient", "list_gradient", "gradient_list") {$COMMAND_ALIAS{$alias} = "gradients_print"};
 	
 	# Fastq Commands
 	foreach $alias ("fastq_dump", "dump_fastq") {$COMMAND_ALIAS{$alias} = "fastq_dump"};
@@ -228,7 +229,6 @@ sub load_descriptions {
 	$COMMAND_DESCRIPTOR{"dependencies"} = "Check dependencies";
 	$COMMAND_DESCRIPTOR{"defaults"} = "Print out the defaults that are detected / specified";
 	$COMMAND_DESCRIPTOR{"gradients_print"} = "Print out the default gradients";
-	$COMMAND_DESCRIPTOR{"gradient"} = "Print out color gradient pre-sets and details";
 	$COMMAND_DESCRIPTOR{"fastq_dump"} = "Go from illumina fastqs to SCI fastq format";
 	$COMMAND_DESCRIPTOR{"fastq_split"} = "Split SCI fastq files using annotation file";
 	$COMMAND_DESCRIPTOR{"fastq_merge"} = "Merge fastq files that have the same barcodes";
