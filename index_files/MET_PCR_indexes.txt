@@ -32,3 +32,11 @@ PCR_A_i5_E	met_pcr_i5	ACGCTTCGTC
 PCR_A_i5_F	met_pcr_i5	CTACTGCAAG
 PCR_A_i5_G	met_pcr_i5	CATTACCAAG
 PCR_A_i5_H	met_pcr_i5	GGTCGACTTG
+PCR_B_i5_A	met_pcr_i5	TTGATGCCTC
+PCR_B_i5_B	met_pcr_i5	TTGGTCGAAT
+PCR_B_i5_C	met_pcr_i5	TGAGCCGCGG
+PCR_B_i5_D	met_pcr_i5	ACGAGGAGCC
+PCR_B_i5_E	met_pcr_i5	CTTGCGTAAC
+PCR_B_i5_F	met_pcr_i5	GGTACCGGCT
+PCR_B_i5_G	met_pcr_i5	AGATAGAGGT
+PCR_B_i5_H	met_pcr_i5	GTAGTAGTCC
