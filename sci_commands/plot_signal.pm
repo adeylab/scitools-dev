@@ -107,21 +107,21 @@ PLT<-ggplot() + theme_bw() +
 
 if (defined $opt{'V'}) {
 	print R "
-	geom_vline(aes(xintercept = VL\$V1),linetype=\"dashed\",color=\"black\",size=1) +";
+	geom_vline(aes(xintercept = VL\$V1),linetype=\"dotted\",color=\"black\",size=0.25) +";
 }
 
 if (defined $opt{'H'}) {
 	print R "
-	geom_hline(aes(yintercept = HL\$V1),linetype=\"dashed\",color=\"black\",size=1) +";
+	geom_hline(aes(yintercept = HL\$V1),linetype=\"dashed\",color=\"black\",size=0.25) +";
 }
 
 print R "
 	theme(axis.title.x=element_blank(),
 		axis.text.x=element_blank(),
-        axis.ticks.x=element_blank(),
+		axis.ticks.x=element_blank(),
 		axis.title.y=element_blank(),
 		axis.text.y=element_blank(),
-        axis.ticks.y=element_blank(),
+		axis.ticks.y=element_blank(),
 		panel.grid.major=element_blank(),
 		panel.grid.minor=element_blank(),
 		axis.line=element_blank(),

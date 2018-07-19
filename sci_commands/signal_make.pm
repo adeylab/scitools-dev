@@ -278,7 +278,7 @@ if (defined $HLINES[0]) {
 }
 
 if (defined $VLINES[0]) {
-	open VL, ">$opt{'O'}.Vlines.txt";
+	open VL, ">$opt{'O'}.vlines.txt";
 	for ($i = 0; $i < @VLINES; $i++) {
 		print VL "$VLINES[$i]\n";
 	}
