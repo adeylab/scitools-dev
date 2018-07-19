@@ -112,7 +112,7 @@ if (defined $opt{'V'}) {
 
 if (defined $opt{'H'}) {
 	print R "
-	geom_hline(aes(xintercept = HL\$V1),linetype=\"dashed\",color=\"black\",size=1) +";
+	geom_hline(aes(yintercept = HL\$V1),linetype=\"dashed\",color=\"black\",size=1) +";
 }
 
 print R "
