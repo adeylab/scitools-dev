@@ -207,14 +207,22 @@ print NRM "$header\n";
 $midWin = int($totwin/2); @ROW_ORDER = ();
 if (defined $opt{'r'}) {
 	open IN, "$ARGV[1]";
+	@HLINES = (); $row_annot = "null";
 	while ($l = <IN>) {
 		chomp $l;
 		@P = split(/\t/, $l);
 		$winID = "$P[0]\_$P[1]\_$P[2]";
+		if (defined $P[3]) {$row_annot=$P[3]};
 		if (defined $WINID_list{$winID}) {
 			push @ROW_ORDER, $winID;
+			if ($row_annot ne $prev_annot && $row_annot ne "null") {
+				$row_pos = @ROW_ORDER;
+				push @HLINES, $row_pos;
+			}
 		}
+		$prev_annot = $row_annot;
 	} close IN;
+	if (@HLINES > 100 || @HLINES >= (@ROW_ORDER/10)) {@HLINES = ()}; # 100 classes is too many for reasonable plotting, as would be groups w/ <= 10 rows
 } elsif (!defined $opt{'A'}) {
 	$midWinID = "all_window_$midWin";
 	foreach $fgroup (sort keys %FGROUP_WINID_list) {
