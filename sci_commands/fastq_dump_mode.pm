@@ -204,6 +204,10 @@ while ($tag = <R1>) {
 
 close_outs();
 
+# do some reprting of stats to LOG file here: ### TODO ###
+
+close LOG;
+
 }
 
 #### SUBROUTINES ####
