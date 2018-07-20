@@ -133,6 +133,13 @@ while ($tag = <R1>) {
 			} else {
 				# regular index
 				$index_seq = $mode->pull_index($modality,$index_name,$read_set);
+				if (defined $opt{'K'} && defined $MASKED_INDEXES{$index_name}[0]) {
+					@bases = split(//, $index_seq);
+					foreach $pos (@{$MASKED_INDEXES{$index_name}}) {
+						$bases[$pos] = "X";
+					}
+					$index_seq = join("", @bases);
+				}
 				if (defined $INDEX_TYPE_SEQ_seq{$index_name}{$index_seq}) {
 					$indexID = $INDEX_TYPE_SEQ_id{$index_name}{$INDEX_TYPE_SEQ_seq{$index_name}{$index_seq}};
 					$out_barc .= "$INDEX_TYPE_SEQ_seq{$index_name}{$index_seq}";
@@ -207,6 +214,44 @@ sub check_indexes {
 }
 
 sub make_hamming_hash {
+
+	# perform index masking
+	if (defined $opt{'K'}) {
+		@MASKS = split(/,/, $opt{'K'});
+		foreach $mask_specification (@MASKS) {
+			($mask_type,$mask) = split(/=/, $mask_specification);
+			print STDERR "INFO: applying mask $mask to index type $mask_type\n";
+			@MASK_BASES = split(//, $mask);
+			@posn = ();
+			for ($mask_pos = 0; $mask_pos < @MASK_BASES; $mask_pos++) {
+				if ($MASK_BASES[$mask_pos] < 1) {
+					push @posn, $mask_pos;
+				}
+			}
+			@{$MASKED_INDEXES{$mask_type}} = @posn;
+			%NEW_INDEX_HASH = ();
+			foreach $seq (keys %{$INDEX_TYPE_SEQ_seq{$mask_type}}) {
+				@bases = split(//, $seq);
+				foreach $pos (@posn) {
+					$bases[$pos] = "X";
+				}
+				$new_seq = join("", @bases);
+				if (defined $NEW_INDEX_HASH{$new_seq}) {
+					print STDERR "WARNING: Using mask $mask on $mask_type results in a collision between $NEW_INDEX_HASH{$new_seq} and $seq! Both will be excluded and auto-fail match!\n";
+					$NEW_INDEX_HASH{$new_seq} = "FAIL";
+				} else {
+					$NEW_INDEX_HASH{$new_seq} = $seq;
+				}
+			}
+			%{$INDEX_TYPE_SEQ_seq{$mask_type}} = ();
+			foreach $seq (%NEW_INDEX_HASH) {
+				if ($NEW_INDEX_HASH{$seq} !~ /FAIL/) {
+					$INDEX_TYPE_SEQ_seq{$mask_type}{$seq} = $NEW_INDEX_HASH{$seq};
+				}
+			}
+		}
+	}
+	
 	# make all-1-away hash
 	foreach $index_type (keys %INDEX_TYPE_SEQ_seq) {
 		foreach $seq (keys %{$INDEX_TYPE_SEQ_seq{$index_type}}) {
@@ -218,6 +263,8 @@ sub make_hamming_hash {
 						$new = join("", @NEW);
 						if (!defined $INDEX_TYPE_SEQ_seq{$index_type}{$new}) {
 							$INDEX_TYPE_SEQ_seq{$index_type}{$new} = $seq;
+						} else {
+							$INDEX_TYPE_SEQ_seq{$index_type}{$new} = "FAIL";
 						}
 					}
 				}
@@ -229,20 +276,36 @@ sub make_hamming_hash {
 	foreach $index_type (keys %INDEX_TYPE_SEQ_seq) {
 		foreach $id_seq (keys %{$INDEX_TYPE_SEQ_seq{$index_type}}) {
 			$seq = $INDEX_TYPE_SEQ_seq{$index_type}{$id_seq};
-			@TRUE = split(//, $seq);
-			for ($i = 0; $i < @TRUE; $i++) {
-				foreach $base (@BASES) {
-					if ($TRUE[$i] ne $base) {
-						@NEW = @TRUE; $NEW[$i] = $base;
-						$new = join("", @NEW);
-						if (!defined $INDEX_TYPE_SEQ_seq{$index_type}{$new}) {
-							$INDEX_TYPE_SEQ_seq{$index_type}{$new} = $seq;
+			if ($seq !~ /FAIL/) {
+				@TRUE = split(//, $seq);
+				for ($i = 0; $i < @TRUE; $i++) {
+					foreach $base (@BASES) {
+						if ($TRUE[$i] ne $base) {
+							@NEW = @TRUE; $NEW[$i] = $base;
+							$new = join("", @NEW);
+							if (!defined $INDEX_TYPE_SEQ_seq{$index_type}{$new}) {
+								$INDEX_TYPE_SEQ_seq{$index_type}{$new} = $seq;
+							} else {
+								$INDEX_TYPE_SEQ_seq{$index_type}{$new} = "FAIL";
+							}
 						}
 					}
 				}
 			}
 		}
-	} 
+	}
+	
+	# prune failed items
+	%NEW_INDEX_HASH = ();
+	foreach $index_type (keys %INDEX_TYPE_SEQ_seq) {
+		foreach $seq (keys %{$INDEX_TYPE_SEQ_seq{$index_type}}) {
+			if ($INDEX_TYPE_SEQ_seq{$index_type}{$seq} !~ /FAIL/) {
+				$NEW_INDEX_HASH{$index_type}{$seq} = $INDEX_TYPE_SEQ_seq{$index_type}{$seq};
+			}
+		}
+	}
+	%INDEX_TYPE_SEQ_seq = %NEW_INDEX_HASH;
+	
 	# Check in index exclusions
 	if (defined $opt{'k'}) {
 		@INDEX_EXCLUSIONS = split(/,/, $opt{'k'});
@@ -261,23 +324,6 @@ sub make_hamming_hash {
 				$INDEX_TYPE_SEQ_id{$excluded_type}{$xmer} = "EXCLUDED";
 				print STDERR "INFO: index type: $excluded_type will be excluded. Indexes in that position will auto-match to $xmer.\n";
 			}
-		}
-	}
-	# perform index masking
-	if (defined $opt{'K'}) {
-		@MASKS = split(/,/, $opt{'K'});
-		foreach $mask_specification (@MASKS) {
-			($mask_type,$mask) = split(/=/, $mask_specification);
-			@MASK_BASES = split(//, $mask);
-			@posn = ();
-			for ($mask_pos = 0; $mask_pos < @MASK_BASES; $mask_pos++) {
-				if ($MASK_BASES[$mask_pos] < 1) {
-					push @posn, $mask_pos;
-				}
-			}
-			@{$MASKED_INDEXES{$mask_type}} = @posn;
-			# mask the index database
-			#################################################################### WIP POINT
 		}
 	}
 }
