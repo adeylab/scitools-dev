@@ -24,32 +24,23 @@ The structure of scitools is the following:
       FOLDER -> sci_utils      This folder contains files / perl modules to be loaded by
                                scitools functions, most notably: general.pm
 
-      FOLDER -> sci_commands   This folder contains perl module ".pm" scitools commands.
+      FOLDER -> sci_commands   This folder contains perl module ".pm", python ".py", and R ".r"
+                               scitools commands.
 
-      FOLDER -> sci_python     This folder contains python scripts ".py" to be called.
-
-To add a new perl command, do the following:
+To add a new command, do the following:
 
    1) For a perl command, copy the empty_module.pm file and rename it with the command name.
-      The command can only have underscores in the name (will be dashes for calling it).
+      The command can only have underscores in the name (will be dashes for calling it). Do
+      the same for .py and .r equivalents.
 
-   2) Add in the command text - use the same GetOpts structure and help message as other
+   2) Add in the command text - use the same options structure and help message as other
       commands for consistency.
 
    3) Test the command and once functional, push it to the master branch. If a number of
       commands or modules will be used (particularly for sci_utils files), creating a new
       branch is recommended.
-
-To add a new python script, do the following:
-
-   1) Create the python script in the sci_python folder, the same naming rules apply, as this
-      is how the command directory and calling is carried out.
-
-   2) Conform to the same options and help text format as with other perl modules.
-
-   3) scitools will call the command and pass it all arguments (other than the command name)
    
-For either command type, once it is developed, do the following:
+For any command type, once it is developed, do the following:
 
    1) Within the scitools executable there are two subroutines: load_aliases and load_descriptions
 
