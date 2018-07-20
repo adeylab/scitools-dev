@@ -36,17 +36,17 @@ load_gradient_defaults();
 # LOAD COMMANDS DIRECTLY FROM MODULE FILES
 opendir CMDS, "$RealBin/sci_commands" || die "ERROR: Cannot locate the commands directory.\nERROR: It should be present in the same directory as the scitools executable: $RealBin\n";
 while ($command_module_name = readdir(CMDS)) {
-	if ($command_module_name !~ /(^\.|empty_module|test)/ && $command_module_name =~ /\.pm$/) { # exceptions -> do not show as available commands
-		$command_module_name =~ s/\.pm$//;
-		$COMMAND_NAMES{$command_module_name} = "pm";
-	}
-} closedir CMDS;
-# load commands written in python
-opendir CMDS, "$RealBin/sci_python" || die "ERROR: Cannot locate the python commands directory.\nERROR: It should be present in the same directory as the scitools executable: $RealBin\n";
-while ($command_module_name = readdir(CMDS)) {
-	if ($command_module_name !~ /(^\.|empty_module|test)/ && $command_module_name =~ /\.py$/) { # exceptions -> do not show as available commands
-		$command_module_name =~ s/\.py$//;
-		$COMMAND_NAMES{$command_module_name} = "py";
+	if ($command_module_name !~ /(^\.|empty_module|test)/) {
+		if ($command_module_name =~ /\.pm$/) { # exceptions -> do not show as available commands
+			$command_module_name =~ s/\.pm$//;
+			$COMMAND_NAMES{$command_module_name} = "pm";
+		} elsif ($command_module_name =~ /\.py$/) { # python commands
+			$command_module_name =~ s/\.py$//;
+			$COMMAND_NAMES{$command_module_name} = "py";
+		} elsif ($command_module_name =~ /\.r$/i) { # R commands
+			$command_module_name =~ s/\.(r|R)$//;
+			$COMMAND_NAMES{$command_module_name} = "r";
+		}
 	}
 } closedir CMDS;
 
@@ -99,13 +99,19 @@ if (defined $ARGV[0]) {
 			$command = lc($command);
 		}
 		if (defined $COMMAND_NAMES{$command}) {
+			if (defined $IS_DEV{$command}) {
+				print STDERR "\nWARNING: Command $command is considered to be in development.\n";
+			}
 			if ($COMMAND_NAMES{$command} =~ /pm/) {
 				require "sci_commands/$command.pm";
 				import "sci_commands::$command", "$command";
 				\&$command(@ARGV);
 			} elsif ($COMMAND_NAMES{$command} =~ /py/) {
-				$python_args = join(" ", @ARGV);
-				system("$Pscript $RealBin/sci_python/$command.py $python_args");
+				$args = join(" ", @ARGV);
+				system("$Pscript $RealBin/sci_commands/$command.py $args");
+			} elsif ($COMMAND_NAMES{$command} =~ /r/) {
+				$args = join(" ", @ARGV);
+				system("$Rscript $RealBin/sci_commands/$command.r $args");
 			}
 		} else {
 			$command =~ s/_/-/g;
