@@ -9,7 +9,7 @@ use Exporter "import";
 sub fastq_dump_mode {
 
 @ARGV = @_;
-getopts("R:F:O:o:I:1:2:A:i:j:r:M:f:k:m:x", \%opt);
+getopts("R:F:O:o:I:1:2:A:i:j:r:M:f:k:m:xK:", \%opt);
 
 # Defaults
 $def_read_name_format = "barc";
@@ -25,33 +25,35 @@ them into fastq files with matched barcodes.
 Options:
    -R   [STR]   Run name (preferred mode)
    -r   [STR]   Run ID (if additional sequencing for some
-                libraries. Will add .[ID] to end of read
-                names; optional)
+                 libraries. Will add .[ID] to end of read
+                 names; optional)
    -M   [STR]   Mode. (def = $mode_name)
    -A   [STR]   Annotation file (will split fastqs)
 
 Defaults:
    -F   [STR]   Fastq directory
-         ($VAR{'fastq_input_directory'})
+                ($VAR{'fastq_input_directory'})
    -O   [STR]   Output fastq directory
-         ($VAR{'SCI_fastq_directory'})
+                ($VAR{'SCI_fastq_directory'})
    -o   [STR]   Output prefix
-         (def = run name)
+                (def = run name)
 
 Index Options:
    -m   [STR]   Run format specification file
          (def = $VAR{'sci_modes'})
    -I   [STR]   Index files/directory - comma separated
-         Specify: DIR=[directory] to read all files present
-           or   NAME=[file] to include files
-         Def: DIR=$VAR{'index_directory'}
-         Index file format, tab-delimited:
-           col1 = <[PCR/Tn5/RNA/MET]_[Set_letter]_[i5/i7/r1]_[Row/Col_ID/well]>
-           col2 = <Index_type>
-           col3 = <Sequence>
+                 Specify: DIR=[directory] to read all files present
+                  or   NAME=[file] to include files
+                Def: DIR=$VAR{'index_directory'}
+                Index file format, tab-delimited:
+                  col1 = <[PCR/Tn5/RNA/MET]_[Set_letter]_[i5/i7/r1]_[Row/Col_ID/well]>
+                  col2 = <Index_type>
+                  col3 = <Sequence>
    -f   [STR]   Read name format: barc OR name (def = $def_read_name_format)
    -k   [STR]   Index types to skip, comma separated
-         Will set to a string of X's and every read will match.
+                 Will set to a string of X's and every read will match.
+   -K   [STR]   Base position masking: index_type=11011011, 1=use, 0=ignore
+                 Multiple can be specified, comma-separated
    -x           If -A is specified, reads matching barcodes but not an
                 annotation will be sent to fail (def = to unmatched)
 
@@ -259,6 +261,23 @@ sub make_hamming_hash {
 				$INDEX_TYPE_SEQ_id{$excluded_type}{$xmer} = "EXCLUDED";
 				print STDERR "INFO: index type: $excluded_type will be excluded. Indexes in that position will auto-match to $xmer.\n";
 			}
+		}
+	}
+	# perform index masking
+	if (defined $opt{'K'}) {
+		@MASKS = split(/,/, $opt{'K'});
+		foreach $mask_specification (@MASKS) {
+			($mask_type,$mask) = split(/=/, $mask_specification);
+			@MASK_BASES = split(//, $mask);
+			@posn = ();
+			for ($mask_pos = 0; $mask_pos < @MASK_BASES; $mask_pos++) {
+				if ($MASK_BASES[$mask_pos] < 1) {
+					push @posn, $mask_pos;
+				}
+			}
+			@{$MASKED_INDEXES{$mask_type}} = @posn;
+			# mask the index database
+			#################################################################### WIP POINT
 		}
 	}
 }
