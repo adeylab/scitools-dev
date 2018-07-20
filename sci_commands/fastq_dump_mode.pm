@@ -8,6 +8,7 @@ use Exporter "import";
 
 sub fastq_dump_mode {
 
+$arg_list = join(" ", @_);
 @ARGV = @_;
 getopts("R:F:O:o:I:1:2:A:i:j:r:M:f:k:m:xK:", \%opt);
 
@@ -91,6 +92,19 @@ for ($modalityID = 0; $modalityID < @MODALITIES; $modalityID++) {
 	@{$MODALITY_INDEXES{$modality}} = $mode->indexes($modality);
 }
 
+# Make output directory
+if (-d "$opt{'O'}/$opt{'o'}") {
+	print STDERR "INFO: Directory: $opt{'O'}/$opt{'o'} already exists! Will add files to this directory.\n";
+} else {
+	system("mkdir $opt{'O'}/$opt{'o'}");
+}
+
+# open LOG
+open LOG, ">$opt{'O'}/$opt{'o'}.fastq_dump.log";
+$ts = localtime(time);
+print LOG "$ts fastq-dump started. Options:
+\t$arg_list\n";
+
 # read in indexes
 read_indexdir($opt{'I'});
 check_indexes();
@@ -100,13 +114,6 @@ make_hamming_hash();
 
 # open input fastqs that are present int he mode & were detected
 open_input_fastqs();
-
-# Make output directory
-if (-d "$opt{'O'}/$opt{'o'}") {
-	print STDERR "INFO: Directory: $opt{'O'}/$opt{'o'} already exists! Will add files to this directory.\n";
-} else {
-	system("mkdir $opt{'O'}/$opt{'o'}");
-}
 
 # open output fastqs for each modality
 open_outs();
@@ -190,7 +197,7 @@ while ($tag = <R1>) {
 	if ($any_passing < 1) { # failed in all modalities - print to fail files
 		print_failing();
 	} elsif ($any_passing >= 2) {
-		print STDERR "WARNING: Read $tag passed in more than one modality.\n";
+		print LOG "WARNING: Read $tag passed in more than one modality.\n";
 	}
 	
 }
@@ -223,7 +230,7 @@ sub make_hamming_hash {
 		@INDEX_EXCLUSIONS = split(/,/, $opt{'k'});
 		foreach $excluded_type (@INDEX_EXCLUSIONS) {
 			if (!defined $INDEX_TYPE_SEQ_seq{$excluded_type}) {
-				print STDERR "WARNING: index type: $excluded_type specified, but not found in loaded indexes.\n";
+				print LOG "WARNING: index type: $excluded_type specified, but not found in loaded indexes.\n";
 			} else {
 				$xmer = "";
 				for ($x_pos = 1; $x_pos < $INDEX_TYPE_length{$excluded_type}; $x_pos++) {
@@ -234,7 +241,7 @@ sub make_hamming_hash {
 				%{$INDEX_TYPE_SEQ_id{$excluded_type}} = ();
 				$INDEX_TYPE_SEQ_seq{$excluded_type}{$xmer} = $xmer;
 				$INDEX_TYPE_SEQ_id{$excluded_type}{$xmer} = "EXCLUDED";
-				print STDERR "INFO: index type: $excluded_type will be excluded. Indexes in that position will auto-match to $xmer.\n";
+				print LOG "INFO: index type: $excluded_type will be excluded. Indexes in that position will auto-match to $xmer.\n";
 			}
 		}
 	}
@@ -245,12 +252,12 @@ sub make_hamming_hash {
 		foreach $mask_specification (@MASKS) {
 			($mask_type,$mask) = split(/=/, $mask_specification);
 			if (!defined $INDEX_TYPE_SEQ_seq{$mask_type}) {
-				print STDERR "WARNING: index type: $mask_type specified, but not found in loaded indexes.\n";
+				print LOG "WARNING: index type: $mask_type specified, but not found in loaded indexes.\n";
 			} else {
 				if (defined $INDEX_EXCLUDE{$mask_type}) {
-					print STDERR "INFO: $mask_type specified for masking is already excluded by -k\n";
+					print LOG "INFO: $mask_type specified for masking is already excluded by -k\n";
 				} else {
-					print STDERR "INFO: applying mask $mask to index type $mask_type\n";
+					print LOG "INFO: applying mask $mask to index type $mask_type\n";
 					@MASK_BASES = split(//, $mask);
 					@posn = ();
 					for ($mask_pos = 0; $mask_pos < @MASK_BASES; $mask_pos++) {
@@ -267,7 +274,7 @@ sub make_hamming_hash {
 						}
 						$new_seq = join("", @bases);
 						if (defined $NEW_INDEX_HASH{$new_seq}) {
-							print STDERR "WARNING: Using mask $mask on $mask_type results in a collision between $NEW_INDEX_HASH{$new_seq} and $seq! Both will be excluded and auto-fail match!\n";
+							print LOG "WARNING: Using mask $mask on $mask_type results in a collision between $NEW_INDEX_HASH{$new_seq} and $seq! Both will be excluded and auto-fail match!\n";
 							$NEW_INDEX_HASH{$new_seq} = "FAIL";
 						} else {
 							$NEW_INDEX_HASH{$new_seq} = $seq;
@@ -447,7 +454,7 @@ sub print_outs {
 			$qual = $mode->pull_qual($modality,$out_type,$read_set);
 			print $handle "$tag\n$seq\n\+\n$qual\n";
 		} else {
-			print STDERR "WARNING: $handle does not exist for read $tag\n";
+			print LOG "WARNING: $handle does not exist for read $tag\n";
 		}
 	}
 }
