@@ -9,7 +9,7 @@ use Exporter "import";
 sub annot_make_mode {
 
 @ARGV = @_;
-getopts("I:pM:m:v", \%opt);
+getopts("I:pM:m:vO:", \%opt);
 
 # DEFAULTS
 @LETTERS = ("0", "A", "B", "C", "D", "E", "F", "G", "H");
@@ -55,6 +55,7 @@ Note: If a multimodal format is specified, an index file will be created for
 each modality.
 
 Options:
+   -O   [STR]   Output prefix (if not specified as second argument)
    -I   [STR]   Index files/directory - comma separated (req)
          (def = DIR=$VAR{'index_directory'})
    -M   [STR]   Mode (def = $mode_name)
@@ -65,6 +66,9 @@ Options:
 
    -p           Print out sample plate file for modificaiton and exit
                 (ExamplePlateDescriptor.csv)
+
+Note: For reverse compatability 'NEX' is read as 'sci_tn5' as an index class
+and 'PCR' is read as 'sci_pcr' as an index class.
 
 ";
 
@@ -113,7 +117,8 @@ exit;
 }
 
 # parse options
-if (!defined $ARGV[1]) {die $die2};
+if (!defined $ARGV[0] || (!defined $ARGV[1] || !defined $opt{'O'})) {die $die2};
+if (!defined $ARGV[1] && defined $opt{'O'}) {$ARGV[1] = $opt{'O'}};
 if (!defined $opt{'I'}) {$opt{'I'} = "DIR=$VAR{'index_directory'}"};
 if (defined $opt{'M'}) {$mode_name = $opt{'M'}};
 if (!defined $opt{'f'}) {$opt{'f'} = $def_read_name_format};
