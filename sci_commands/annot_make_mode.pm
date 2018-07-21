@@ -117,7 +117,7 @@ exit;
 }
 
 # parse options
-if (!defined $ARGV[0] || (!defined $ARGV[1] || !defined $opt{'O'})) {die $die2};
+if (!defined $ARGV[0] || (!defined $ARGV[1] && !defined $opt{'O'})) {die $die2};
 if (!defined $ARGV[1] && defined $opt{'O'}) {$ARGV[1] = $opt{'O'}};
 if (!defined $opt{'I'}) {$opt{'I'} = "DIR=$VAR{'index_directory'}"};
 if (defined $opt{'M'}) {$mode_name = $opt{'M'}};
