@@ -321,7 +321,7 @@ sub load_plate_descriptions { # eg: #NEX,MySampleID1,AA,Partial
 					}
 				} else {
 					foreach $i5_id (keys %{$CLASS_I5_COMBO_LETTER_seq{$class}}) {
-						foreach $i7_id (keys %{$CLASS_I7_COMBO_LETTER_seq{$class}}) {
+						foreach $i7_id (keys %{$CLASS_I7_COMBO_NUMBER_seq{$class}}) {
 							$combo = $i5_id.$i7_id;
 							for ($wellID = 1; $wellID <= 96; $wellID++) {
 								$ANNOT_SETS{$annot}{$class}{$combo}{$wellID} = 1;
