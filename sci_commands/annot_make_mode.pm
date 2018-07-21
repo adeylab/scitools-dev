@@ -302,7 +302,6 @@ sub load_plate_descriptions { # eg: #NEX,MySampleID1,AA,Partial
 			if ($class =~ /NEX/i) {$class = "sci_tn5"}; # for reverse compatability
 			if ($class =~ /PCR/i) {$class = "sci_pcr"}; # for reverse compatability
 			$annot =~ s/ /_/g;
-			if (defined $opt{'v'}) {print STDERR "INFO:\tLoading $class, $annot, $combo, $subset\n"};
 			@CLASS_PARTS = split(/_/, $class);
 			$class = $CLASS_PARTS[0]."_".$CLASS_PARTS[1];
 			
@@ -310,26 +309,49 @@ sub load_plate_descriptions { # eg: #NEX,MySampleID1,AA,Partial
 				die "ERROR: There is no index format specified for index class $class.\n\tThe plate descriptor files must match the index files for the class of the indexes.\n\t(for at least the first two '_' separated fields)\n";
 			}
 			
-			if ($subset =~ /all/i) {
-				for ($wellID = 1; $wellID <= 96; $wellID++) {
-					$ANNOT_SETS{$annot}{$class}{$combo}{$wellID} = 1;
-					if (defined $opt{'v'}) {print STDERR "INFO:\t\tAdding wellID $wellID (annot=$annot,class=$class,combo=$combo)\n"};
-				}
-			} else {
-				for ($rowNum = 1; $rowNum <= 8; $rowNum++) {
-					$row = <CSV>; chomp $row;
-					@ROW_COLS = split(/,/, $row); unshift @ROW_COLS, "0";
-					for ($colNum = 1; $colNum <= 12; $colNum++) {
-						if ($ROW_COLS[$colNum]!=0) {
-							$well_name = $LETTERS[$rowNum].$colNum;
-							$wellID = $PLATE_FORMAT{$well_name};
+			if ($combo =~ /all/i) {
+				if (defined $opt{'v'}) {print STDERR "INFO:\tLoading $class, $annot - all index combos.\n"};
+				# add in all combos for that index class
+				if ($INDEX_TYPE_format{$check_index} =~ /96|all|plate/) {
+					foreach $combo (keys %{$CLASS_COMBO_WELLID_seq{$class}}) {
+						for ($wellID = 1; $wellID <= 96; $wellID++) {
 							$ANNOT_SETS{$annot}{$class}{$combo}{$wellID} = 1;
 							if (defined $opt{'v'}) {print STDERR "INFO:\t\tAdding wellID $wellID (annot=$annot,class=$class,combo=$combo)\n"};
 						}
 					}
+				} else {
+					foreach $i5_id (keys %{$CLASS_I5_COMBO_LETTER_seq{$class}}) {
+						foreach $i7_id (keys %{$CLASS_I7_COMBO_LETTER_seq{$class}}) {
+							$combo = $i5_id.$i7_id;
+							for ($wellID = 1; $wellID <= 96; $wellID++) {
+								$ANNOT_SETS{$annot}{$class}{$combo}{$wellID} = 1;
+								if (defined $opt{'v'}) {print STDERR "INFO:\t\tAdding wellID $wellID (annot=$annot,class=$class,combo=$combo)\n"};
+							}
+						}
+					}
+				}
+			} else {
+				if (defined $opt{'v'}) {print STDERR "INFO:\tLoading $class, $annot, $combo, $subset\n"};
+				if ($subset =~ /all/i) {
+					for ($wellID = 1; $wellID <= 96; $wellID++) {
+						$ANNOT_SETS{$annot}{$class}{$combo}{$wellID} = 1;
+						if (defined $opt{'v'}) {print STDERR "INFO:\t\tAdding wellID $wellID (annot=$annot,class=$class,combo=$combo)\n"};
+					}
+				} else {
+					for ($rowNum = 1; $rowNum <= 8; $rowNum++) {
+						$row = <CSV>; chomp $row;
+						@ROW_COLS = split(/,/, $row); unshift @ROW_COLS, "0";
+						for ($colNum = 1; $colNum <= 12; $colNum++) {
+							if ($ROW_COLS[$colNum]!=0) {
+								$well_name = $LETTERS[$rowNum].$colNum;
+								$wellID = $PLATE_FORMAT{$well_name};
+								$ANNOT_SETS{$annot}{$class}{$combo}{$wellID} = 1;
+								if (defined $opt{'v'}) {print STDERR "INFO:\t\tAdding wellID $wellID (annot=$annot,class=$class,combo=$combo)\n"};
+							}
+						}
+					}
 				}
 			}
-			
 		}
 	} close CSV;
 	
