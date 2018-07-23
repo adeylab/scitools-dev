@@ -205,7 +205,7 @@ sub print_barcs {
 	%NEW = ();
 	foreach $seq (@{$POS_INDEXES[0]}) {$NEW{$seq} = 1};
 	if (defined $MODALITY_INDEXES{$modality}[1]) {
-		for ($pos = 0; $pos < @{$MODALITY_INDEXES{$modality}}; $pos++) {
+		for ($pos = 1; $pos < @{$MODALITY_INDEXES{$modality}}; $pos++) {
 			%RUNNING = %NEW; %NEW = ();
 			foreach $in_progress (keys %RUNNING) {
 				foreach $seq (@{$POS_INDEXES[$pos]}) {
@@ -226,7 +226,7 @@ sub print_names {
 	%NEW = ();
 	foreach $seq (@{$POS_IDS[0]}) {$NEW{$seq} = 1};
 	if (defined $MODALITY_INDEXES{$modality}[1]) {
-		for ($pos = 0; $pos < @{$MODALITY_INDEXES{$modality}}; $pos++) {
+		for ($pos = 1; $pos < @{$MODALITY_INDEXES{$modality}}; $pos++) {
 			%RUNNING = %NEW; %NEW = ();
 			foreach $in_progress (keys %RUNNING) {
 				foreach $seq (@{$POS_IDS[$pos]}) {
