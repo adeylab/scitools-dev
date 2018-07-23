@@ -100,7 +100,7 @@ if (-d "$opt{'O'}/$opt{'o'}") {
 }
 
 # open LOG
-open LOG, ">$opt{'O'}/$opt{'o'}.fastq_dump.log";
+open LOG, ">$opt{'O'}/$opt{'o'}/$opt{'o'}.fastq_dump.log";
 $ts = localtime(time);
 print LOG "$ts fastq-dump started. Options:
 \t$arg_list\n";
@@ -164,7 +164,8 @@ while ($tag = <R1>) {
 		
 		if (defined $opt{'A'}) {
 			if (defined $CELLID_annot{$out_barc}) {
-				$annot = $CELLID_annot{$out_barc}
+				$annot = $CELLID_annot{$out_barc};
+				$ANNOT_matchCT{$annot}++;
 			} else {
 				$annot = "unmatched";
 			}
@@ -194,8 +195,11 @@ while ($tag = <R1>) {
 		}
 	}
 	
-	if ($any_passing < 1) { # failed in all modalities - print to fail files
+	if ($any_passing == 1) {
+		$passCT++;
+	} elsif ($any_passing < 1) { # failed in all modalities - print to fail files
 		print_failing();
+		$failCT++;
 	} elsif ($any_passing >= 2) {
 		print LOG "WARNING: Read $tag passed in more than one modality.\n";
 	}
@@ -204,7 +208,20 @@ while ($tag = <R1>) {
 
 close_outs();
 
-# do some reprting of stats to LOG file here: ### TODO ###
+$ts = localtime(time);
+$passPct = sprintf("%.2f", ($passCT/$read_number)*100);
+$failPct = sprintf("%.2f", ($failCT/$read_number)*100);
+print LOG "$ts\tfastq-dump complete!
+\t$read_number total read sets processed.
+\t$passCT matched an index combination ($passPct)
+\t$failCT did not match an index combination ($failPct)\n";
+if (defined $opt{'A'}) {
+	foreach $annot (keys %ANNOT_matchCT) {
+		$pctTot = sprintf("%.2f", ($ANNOT_matchCT{$annot}/$read_number)*100);
+		$pctPass = sprintf("%.2f", ($ANNOT_matchCT{$annot}/$passCT)*100);
+		print LOG "\tAnnot: $annot had $ANNOT_matchCT{$annot} matching ($pctTot of all reads, $pctPass of passing reads)\n";
+	}
+}
 
 close LOG;
 
