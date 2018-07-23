@@ -210,14 +210,15 @@ sub print_barcs {
 			foreach $in_progress (keys %RUNNING) {
 				foreach $seq (@{$POS_INDEXES[$pos]}) {
 					$new = $in_progress.$seq;
-					$NEW{$new} = 1;
-					if (defined $opt{'v'}) {print STDERR "INFO:\t\tSEQ: starting with $in_progress, adding $seq, to become $new\n"};
+					if ($pos == (@{$MODALITY_INDEXES{$modality}}-1)) {
+						print OUT "$new\t$annot_name\n";
+					} else {
+						$NEW{$new} = 1;
+						if (defined $opt{'v'}) {print STDERR "INFO:\t\tSEQ: starting with $in_progress, adding $seq, to become $new\n"};
+					}
 				}
 			}
 		}
-	}
-	foreach $barc (keys %NEW) {
-		print OUT "$barc\t$annot_name\n";
 	}
 }
 
@@ -231,14 +232,15 @@ sub print_names {
 			foreach $in_progress (keys %RUNNING) {
 				foreach $seq (@{$POS_IDS[$pos]}) {
 					$new = $in_progress."-".$seq;
-					$NEW{$new} = 1;
-					if (defined $opt{'v'}) {print STDERR "INFO:\t\tSEQ: starting with $in_progress, adding $seq, to become $new\n"};
+					if ($pos == (@{$MODALITY_INDEXES{$modality}}-1)) {
+						print OUT "$new\t$annot_name\n";
+					} else {
+						$NEW{$new} = 1;
+						if (defined $opt{'v'}) {print STDERR "INFO:\t\tSEQ: starting with $in_progress, adding $seq, to become $new\n"};
+					}
 				}
 			}
 		}
-	}
-	foreach $barc (keys %NEW) {
-		print OUT "$barc\t$annot_name\n";
 	}
 }
 
