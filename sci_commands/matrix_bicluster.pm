@@ -53,7 +53,7 @@ $opt{'O'} =~ s/\.matrix$//;
 if (!defined $opt{'G'}) {$opt{'G'} = $gradient_def};
 $gradient_function = get_gradient($opt{'G'});
 
-if (defined $opt{'d'}) {($width,$height) = split(/,/, $opt{'d'}};
+if (defined $opt{'d'}) {($width,$height) = split(/,/, $opt{'d'})};
 if (defined $opt{'t'}) {if ($opt{'t'} =~ /(pdf|png)/) {$imageType = $opt{'t'}} else {die "\nERROR: Must specift pdf OR png for option -t.\n"}};
 if (defined $opt{'s'}) {$res = $opt{'s'}};
 
