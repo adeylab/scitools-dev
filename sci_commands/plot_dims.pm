@@ -20,6 +20,7 @@ $alpha = 1;
 $binary_thresh = 4;
 $binary_fail_color = "gray75";
 $binary_pass_color = "red3";
+$panel_pass_color = "black";
 
 getopts("O:A:a:C:c:R:x:y:T:V:M:XS:s:G:p:f:Bb:k:", \%opt);
 
@@ -42,19 +43,24 @@ Plotting by annotations:
                   (requires -A to be specified)
    -C   [STR]   Color coding file (annot (tab) #hexColor)
    -c   [STR]   Color coding string
-                  Annot=#hexColor,Annot2=#hexColor  
+                  Annot=#hexColor,Annot2=#hexColor
+   -W           Wrap panels, one panel per annotation, each with all
+                  other annotations grayed out.
+   -k   [NEG,POS] Colors if -W is specified, pos can be set to 'annot'
+                  to use the provided annotation colors
+                  (def = $binary_fail_color,$panel_pass_color)
 
 Plotting by values:				  
    -V   [STR]   Values file. tab-delimited, cellID (tab) value
                   Will plot as teh color of points (overrides
                   annotation colors)
-   -S   [MIN,MAX]   Min and max values for scaling (if -V specified)
+   -S   [MIN,MAX] Min and max values for scaling (if -V specified)
                   (def = $minV,$maxV)
    -G   [GRD]   Color gradient (def = $gradient_def)
                   For all available gradients, run 'scitools gradients'
    -B           Binary on/off for values plotting (Overrides -S & -G)
    -b   [FLT]   Binary threshold (def = $binary_thresh)
-   -k   [NEG,POS]   Colors for failing and passing cells by binary threshold
+   -k   [NEG,POS] Colors for failing and passing cells by binary threshold
                   (def = $binary_fail_color,$binary_pass_color)
 
 To plot multiple values specified in a matrix file:
@@ -144,9 +150,15 @@ if (defined $opt{'x'}) {$xdim = $opt{'x'}};
 if (defined $opt{'y'}) {$ydim = $opt{'y'}};
 if (defined $opt{'S'}) {($minV,$maxV) = split(/,/, $opt{'S'})};
 if (defined $opt{'b'}) {$binary_thresh = $opt{'b'}};
-if (defined $opt{'k'}) {($binary_fail_color,$binary_pass_color) = split(/,/, $opt{'k'})};
-if ($binary_fail_color !~ /^#/) {$binary_fail_color = "\"".$binary_fail_color."\""};
-if ($binary_pass_color !~ /^#/) {$binary_pass_color = "\"".$binary_pass_color."\""};
+if (defined $opt{'W'}) {
+	if (defined $opt{'k'}) {($binary_fail_color,$panel_pass_color) = split(/,/, $opt{'k'})};
+	if ($binary_fail_color !~ /^#/) {$binary_fail_color = "\"".$binary_fail_color."\""};
+	if ($panel_pass_color !~ /^#/) {$panel_pass_color = "\"".$panel_pass_color."\""};
+} else {
+	if (defined $opt{'k'}) {($binary_fail_color,$binary_pass_color) = split(/,/, $opt{'k'})};
+	if ($binary_fail_color !~ /^#/) {$binary_fail_color = "\"".$binary_fail_color."\""};
+	if ($binary_pass_color !~ /^#/) {$binary_pass_color = "\"".$binary_pass_color."\""};
+}
 
 open DATA, ">$opt{'O'}.plot.txt";
 foreach $cellID (keys %CELLID_DIMS) {
@@ -189,6 +201,8 @@ foreach $cellID (keys %CELLID_DIMS) {
 } close DATA;
 
 open R, ">$opt{'O'}.plot.r";
+
+if (!defined $opt{'W'}) { # all modes other than panel plotting
 
 print R "
 library(ggplot2)
@@ -294,7 +308,15 @@ print R "
 ggsave(plot=Violin,filename=\"$opt{'O'}.violin.png\",width=7,height=3,dpi=900)
 ggsave(plot=Violin,filename=\"$opt{'O'}.violin.pdf\",width=7,height=3)";
 }
+} else { # Panel plotting mode
 
+print R "
+library(ggplot2)
+IN<-read.table(\"$opt{'O'}.plot.txt\")";
+
+##################################################### Add this in here
+
+}
 close R;
 
 system("$Rscript $opt{'O'}.plot.r");
