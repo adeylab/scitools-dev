@@ -128,7 +128,7 @@ if ($imageType =~ /pdf/i) {
 
 print R "HM2 <- heatmap.2(as.matrix(IN),
 	trace=\"none\",
-	col=colfunc(99),
+	col=gradient_funct(99),
 	tracecol=\"black\"";
 
 if (defined $opt{'r'} && (defined $opt{'n'} || defined $opt{'N'}) && defined $opt{'A'} && (defined $opt{'c'} || defined $opt{'C'})) {
