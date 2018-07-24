@@ -14,13 +14,10 @@ $method = "pearson";
 getopts("O:M:R", \%opt);
 
 $die2 = "
-scitools atac-distal [options] [input matrix/bed]
+scitools matrix-correlate [options] [input matrix]
 
-Filters a matrix or bed file to only include sites that are
-considered distal based on a threshold distance from the
-TSS of genes.
+Will correlate a matrix and produce a correlation matrix.
 
-Options: Either -B OR -G must be specified.
    -O   [STR]   Output prefix (default is input prefix)
    -M   [STR]   Method (pearson or spearman, def = $method)
    -R           Correlate rows (def = columns)
