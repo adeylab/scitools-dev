@@ -199,6 +199,7 @@ sub load_aliases {
 	# Plotting Commands
 	foreach $alias ("plot_complexity") {$COMMAND_ALIAS{$alias} = "plot_complexity"};
 	foreach $alias ("plot_dims", "dims_plot") {$COMMAND_ALIAS{$alias} = "plot_dims"};
+	foreach $alias ("plot_3ddims", "plot_dims_3d", "dims_plot3d", "dims_plot_3d") {$COMMAND_ALIAS{$alias} = "plot_3ddims"};
 	foreach $alias ("plot_pcurve", "pcurve_plot") {$COMMAND_ALIAS{$alias} = "plot_pcurve"};
 	foreach $alias ("plot_reads", "reads_plot") {$COMMAND_ALIAS{$alias} = "plot_reads"};
 	
@@ -280,8 +281,10 @@ sub load_descriptions {
 	$COMMAND_DESCRIPTOR{"pcurve_center"} = "Centers and normalizes a pcurve lambda";
 	$COMMAND_DESCRIPTOR{"pcurve_prune"} = "Prunes cells distant from the pcurve";
 	$COMMAND_DESCRIPTOR{"aggregate_cells"} = "Aggregate cells in proximity with one another";
+	
 	$COMMAND_DESCRIPTOR{"plot_complexity"} = "Plot complexity data";
 	$COMMAND_DESCRIPTOR{"plot_dims"} = "Plot tSNE or other dimensions file";
+	$COMMAND_DESCRIPTOR{"plot_3ddims"} = "Plot a dimensions file in 3d, uses a monocle CDS.rds file";
 	$COMMAND_DESCRIPTOR{"plot_pcurve"} = "Genrate multiple princurve plots";
 	$COMMAND_DESCRIPTOR{"plot_reads"} = "Plot reads as points in genomic window";
 	$COMMAND_DESCRIPTOR{"index_performance"} = "Index performance on fastq or bam";
