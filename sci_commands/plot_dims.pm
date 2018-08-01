@@ -120,6 +120,8 @@ if (defined $opt{'M'}) {
 	if (defined $opt{'f'}) {$common_opts .= "-f $opt{'f'} "};
 	if (defined $opt{'k'}) {$common_opts .= "-k $opt{'k'} "};
 	if (defined $opt{'b'}) {$common_opts .= "-b $opt{'b'} "};
+	if (defined $opt{'w'}) {$common_opts .= "-w $opt{'w'} "};
+	if (defined $opt{'h'}) {$common_opts .= "-h $opt{'h'} "};
 	if (defined $opt{'X'}) {$common_opts .= "-X "};
 	if (defined $opt{'B'}) {$common_opts .= "-B "};
 	$common_opts =~ s/\s$//;
