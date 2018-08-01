@@ -47,7 +47,16 @@ open OUT, ">$opt{'O'}.UMAP.py";
 print OUT"
 import numpy
 import umap
-data_matrix=numpy.loadtxt(\"$ARGV[0]\",skiprows=1,usecols=range(1,$matrix_colNum))
+";
+if ($ARGV[0] =~ /\.dims/) {
+print OUT "
+ori_matrix=numpy.loadtxt(\"$ARGV[0]\",skiprows=1,usecols=range(1,$matrix_colNum))
+data_matrix=ori_matrix.transpose()\n";
+} else {
+print OUT "data_matrix=numpy.loadtxt(\"$ARGV[0]\",skiprows=1,usecols=range(1,$matrix_colNum))\n";
+}
+
+print OUT "
 
 fit = umap.UMAP(
        n_neighbors=$neigh,
