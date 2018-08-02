@@ -21,8 +21,10 @@ $binary_thresh = 4;
 $binary_fail_color = "gray75";
 $binary_pass_color = "red3";
 $panel_pass_color = "black";
+$width = 5;
+$height = 4;
 
-getopts("O:A:a:C:c:R:x:y:T:V:M:XS:s:G:p:f:Bb:k:", \%opt);
+getopts("O:A:a:C:c:R:x:y:T:V:M:XS:s:G:p:f:Bb:k:w:h:", \%opt);
 
 $die2 = "
 scitools plot-dims [options] [dimensions file(s), comma sep]
@@ -36,6 +38,8 @@ Options - general:
                   Reg = regular, include axes and grid (for PCA)
    -p   [FLT]   Point size (def = $ptSize)
    -f   [FLT]   Alpha for plotting points (def = $alpha)
+   -w   [FLT]   Plot width (inches, def = $width)
+   -h   [FLT]   Plot height (inches, def = $height)
 
 Plotting by annotations:
    -A   [STR]   Annotation file (to color code points)
@@ -87,6 +91,8 @@ if (!defined $opt{'G'}) {$opt{'G'} = $gradient_def};
 $gradient_function = get_gradient($opt{'G'});
 if (defined $opt{'p'}) {$ptSize = $opt{'p'}};
 if (defined $opt{'f'}) {$alpha = $opt{'f'}};
+if (defined $opt{'h'}) {$height = $opt{'h'}};
+if (defined $opt{'w'}) {$width = $opt{'w'}};
 
 read_dims($ARGV[0]);
 
@@ -114,6 +120,8 @@ if (defined $opt{'M'}) {
 	if (defined $opt{'f'}) {$common_opts .= "-f $opt{'f'} "};
 	if (defined $opt{'k'}) {$common_opts .= "-k $opt{'k'} "};
 	if (defined $opt{'b'}) {$common_opts .= "-b $opt{'b'} "};
+	if (defined $opt{'w'}) {$common_opts .= "-w $opt{'w'} "};
+	if (defined $opt{'h'}) {$common_opts .= "-h $opt{'h'} "};
 	if (defined $opt{'X'}) {$common_opts .= "-X "};
 	if (defined $opt{'B'}) {$common_opts .= "-B "};
 	$common_opts =~ s/\s$//;
@@ -286,8 +294,8 @@ if ($theme =~ /Clean/i) {
 }
 
 print R "
-ggsave(plot=PLT,filename=\"$opt{'O'}.plot.png\",width=5,height=4,dpi=900)
-ggsave(plot=PLT,filename=\"$opt{'O'}.plot.pdf\",width=6,height=5)
+ggsave(plot=PLT,filename=\"$opt{'O'}.plot.png\",width=$width,height=$height,dpi=900)
+ggsave(plot=PLT,filename=\"$opt{'O'}.plot.pdf\",width=$width,height=$height)
 ";
 
 if (defined $opt{'A'} && defined $opt{'V'}) {
