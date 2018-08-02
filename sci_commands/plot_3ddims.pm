@@ -3,42 +3,54 @@ package sci_commands::plot_3ddims;
 use sci_utils::general;
 use Getopt::Std; %opt = ();
 use Exporter "import";
+use File::Basename;
+
 @EXPORT = ("plot_3ddims");
 
 sub plot_3ddims {
 
 @ARGV = @_;
-getopts("O:XR:A:T:t:a:p:", \%opt);
+getopts("O:XR:A:T:t:a:p:o:", \%opt);
 
 $die2 = "
 scitools plot-3ddims [options] [3D dims file]
 
-Uses a CDS.rds file, output from cds_monocle function call and generates rotating 3D point plots.
+Generate rotating 3D Plots as animated GIFs or webGL output.
+[3D dims file]      can be either a *CDS.rds file, output from scitools cds_monocle function call with the -D 3 option 
+                    or a 3-dimension dims file generated through scitools matrix_[tsne|umap|swne] call with -D 3 option
+
+Note: To have branch points plotted, you must use the CDS.rds file for [3D dims file].
 
 Options:
    -o   [STR]   Output prefix (default is [input].3dplot.gif)
+   -O   [STR]   Output directory (default is [3D dims file] directory)
    -A 	[STR] 	Annotation file to color points by
    -T 	[STR] 	ChromVar Deviation Scores Matrix (Required for -t option)
    -t 	[STR] 	Comma separated list of Transcription Factors to Output Z scored-colored points
    -X           Retain intermediate files (def = delete)
-   -a 	[NUM] 	0 to 1 range for point alpha values (Default = 0.4)
+   -a 	[NUM] 	0 to 1 range for point alpha values (Default = 0.6)
    -p 	[INT] 	Point size (Default=3)
    -R   [STR]   Rscript call (def = $Rscript)
 ";
 
 if (!defined $ARGV[0]) {die $die2};
-if (!defined $opt{'o'}) {$opt{'o'} = $ARGV[0]; $opt{'o'} =~ s/\.rds$//};
 if (defined $opt{'R'}) {$Rscript = $opt{'R'}};
-if (!defined $opt{'a'}) {$opt{'a'}=0.4}
+if (!defined $opt{'a'}) {$opt{'a'}=0.6}
 if (!defined $opt{'p'}) {$opt{'p'}=3}
+if (!defined $opt{'O'}) {$opt{'O'}= dirname($ARGV[0])}
 
+if ($ARGV[0] =~ /rds$/){
+if (!defined $opt{'o'}) {$opt{'o'} = $ARGV[0]; $opt{'o'} =~ s/\.rds$//; $opt{'o'}=basename($opt{'o'})};
 
-open R, ">$opt{'o'}.3Dplot.r";
+open R, ">$opt{'O'}/$opt{'o'}.3Dplot.r";
 print R "
 	#Defined 3D Trajectory function
     library(monocle)
     library(rgl)
     library(RColorBrewer)
+
+    dir=\"$opt{'O'}\"
+    if(dir==\".\"){dir=getwd()}
 
     cds<-readRDS(file=\"$ARGV[0]\")
     cell_alpha=$opt{'a'}
@@ -86,12 +98,47 @@ print R "
 
     #Generate Uncolored Rotating Gif
 
-    open3d(windowRect = c(0, 0, 500, 500))
+    open3d(windowRect = c(0, 50, 800, 800))
     segments3d(x=as.vector(t(edge_df[, c(3,7)])),y=as.vector(t(edge_df[, c(4,8)])),z=as.vector(t(edge_df[, c(5,9)])), lwd = 2, col = backbone_segment_color,line_antialias = TRUE)
     points3d(point_colors_df[, c(\"data_dim_1\", \"data_dim_2\", \"data_dim_3\")], size = cell_size, col = point_colors_df\$point_colors, alpha = point_colors_df\$point_alpha,point_antialias = TRUE)
-    movie3d(spin3d(axis=c(0,0,1),rpm=5),duration=30,movie=\"Unannotated\",dir=getwd(),convert=TRUE)
+    movie3d(spin3d(axis=c(0,0,1),rpm=5),duration=30,movie=\"Unannotated\",dir=dir,convert=TRUE)
 
 ";
+} else {
+
+if (!defined $opt{'o'}) {$opt{'o'} = $ARGV[0]; $opt{'o'} =~ s/\.dims$//; $opt{'o'}=basename($opt{'o'})};
+
+open R, ">$opt{'O'}/$opt{'o'}.3Dplot.r";
+print R "
+    #Defined 3D Trajectory function
+    library(rgl)
+    library(RColorBrewer)
+
+    dir=$opt{'O'}
+    if(dir==\".\"){dir=getwd()}
+
+    data_df<-read.table(file=\"$ARGV[0]\",header=F)
+    cell_alpha=$opt{'a'}
+    cell_size=$opt{'p'}
+    backbone_segment_color=\"#000000\"
+
+    colnames(data_df) <- c(\"data_dim_1\", \"data_dim_2\", \"data_dim_3\")
+    data_df\$sample_name <- row.names(data_df)
+    point_colors_df <- data.frame(sample_name = data_df\$sample_name,point_colors = \"darkgray\")
+
+    point_colors_df\$point_alpha = cell_alpha
+    point_colors_df\$point_alpha[is.na(point_colors_df\$point_colors)] = 0
+    point_colors_df = merge(point_colors_df, data_df,by=\"sample_name\")
+
+    #Generate Uncolored Rotating Gif
+
+    open3d(windowRect = c(0, 50, 800, 800))
+    points3d(point_colors_df[, c(\"data_dim_1\", \"data_dim_2\", \"data_dim_3\")], size = cell_size, col = point_colors_df\$point_colors, alpha = point_colors_df\$point_alpha,point_antialias = TRUE)
+    movie3d(spin3d(axis=c(0,0,1),rpm=5),duration=30,movie=\"Unannotated\",dir=dir,convert=TRUE)
+
+";
+
+}
 
 if (defined $opt{'A'}){
 print R "
@@ -103,30 +150,13 @@ print R "
     point_colors_df<-transform(point_colors_df,colsplit=as.numeric(factor(point_colors_df\$anno)))
     point_colors_df\$point_colors<-colors[point_colors_df\$colsplit]
 
-    open3d(windowRect = c(10, 10, 500, 500))
-    segments3d(x=as.vector(t(edge_df[, c(3,7)])),y=as.vector(t(edge_df[, c(4,8)])),z=as.vector(t(edge_df[, c(5,9)])), lwd = 2, col = backbone_segment_color,line_antialias = TRUE)
-    point_colors_df\$point_alpha = cell_alpha
-    point_colors_df\$point_alpha[is.na(point_colors_df$point_colors)] = 0
-    points3d(point_colors_df[, c(\"data_dim_1\", \"data_dim_2\", \"data_dim_3\")], size = cell_size, col = point_colors_df\$point_colors, alpha = point_colors_df\$point_alpha,point_antialias = TRUE)
-    legend3d(\"bottomright\",legend=unique(point_colors_df[,7]),pch = 16,col=unique(point_colors_df\$point_colors),cex=1, inset=c(0.02))
-	movie3d(spin3d(axis=c(0,0,1),rpm=5),duration=30,movie=\"Annotation\",dir=getwd(),convert=TRUE)
-";
-} else {
-    #Generate Annotation Colored Rotating Gif
-print R "
-	# Generate Annotation Plot
-
-    colors<-colorRampPalette(brewer.pal(length(unique(point_colors_df[,7])),\"Set2\"))(length(unique(point_colors_df[,7])))
-    point_colors_df<-transform(point_colors_df,colsplit=as.numeric(factor(point_colors_df[,7])))
-    point_colors_df\$point_colors<-colors[point_colors_df\$colsplit]
-
-    open3d(windowRect = c(10, 10, 500, 500))
+    open3d(windowRect = c(0, 50, 800, 800))
     segments3d(x=as.vector(t(edge_df[, c(3,7)])),y=as.vector(t(edge_df[, c(4,8)])),z=as.vector(t(edge_df[, c(5,9)])), lwd = 2, col = backbone_segment_color,line_antialias = TRUE)
     point_colors_df\$point_alpha = cell_alpha
     point_colors_df\$point_alpha[is.na(point_colors_df\$point_colors)] = 0
     points3d(point_colors_df[, c(\"data_dim_1\", \"data_dim_2\", \"data_dim_3\")], size = cell_size, col = point_colors_df\$point_colors, alpha = point_colors_df\$point_alpha,point_antialias = TRUE)
     legend3d(\"bottomright\",legend=unique(point_colors_df[,7]),pch = 16,col=unique(point_colors_df\$point_colors),cex=1, inset=c(0.02))
-    movie3d(spin3d(axis=c(0,0,1),rpm=5),duration=30,movie=paste(colnames(point_colors_df)[7]),dir=getwd(),convert=TRUE)
+	movie3d(spin3d(axis=c(0,0,1),rpm=5),duration=30,movie=\"Annotation\",dir=dir,convert=TRUE)
 ";
 }
 
@@ -141,7 +171,6 @@ print R "
 
     tf_list<-c($opt{'t'})
     out<- c()
-
     for (x in tf_list){
     check_each <- rownames(dev)[grepl(x,rownames(dev),ignore.case=TRUE)]
     out<-c(out,check_each)
@@ -154,26 +183,27 @@ print R "
 
     colors<-colorRampPalette(brewer.pal(6,\"RdBu\"))(100)
 
-    for (i in 13:ncol(point_colors_df)){
+    for (i in grep(\"ENS\",colnames(point_colors_df))){
     title=colnames(point_colors_df)[i]
     point_colors_df\$colsplit<-as.numeric(cut(scale(point_colors_df[i]),100))
     point_colors_df\$point_colors<-colors[point_colors_df\$colsplit]
 
-    open3d(windowRect = c(10, 10, 500, 500))
+    open3d(windowRect = c(200, 200, 1024, 1024))
     segments3d(x=as.vector(t(edge_df[, c(3,7)])),y=as.vector(t(edge_df[, c(4,8)])),z=as.vector(t(edge_df[, c(5,9)])), lwd = 2, col = backbone_segment_color,line_antialias = TRUE)
-    point_colors_df\$point_alpha = cell_alpha
+    point_colors_df\$point_alpha = 0.8
     point_colors_df\$point_alpha[is.na(point_colors_df\$point_colors)] = 0
     points3d(point_colors_df[, c(\"data_dim_1\", \"data_dim_2\", \"data_dim_3\")], size = cell_size, col = point_colors_df\$point_colors, alpha = point_colors_df\$point_alpha, point_antialias = TRUE)
-    legend3d(\"bottomright\",legend=colnames(point_colors_df)[i],inset=c(0.02),cex=0.6)
-    movie3d(spin3d(axis=c(0,0,1),rpm=5),duration=30,movie=paste(colnames(point_colors_df)[i]),dir=getwd(),convert=TRUE)}
+    legend3d(\"bottomright\",legend=colnames(point_colors_df)[i],inset=c(0.02),cex=0.8)
+    movie3d(spin3d(axis=c(0,0,1),rpm=5),duration=30,movie=paste(colnames(point_colors_df)[i]),dir=dir,convert=TRUE)
+}
 
 ";
 }
 
 close R;
-system("$Rscript $opt{'o'}.3Dplot.r");
+system("$Rscript $opt{'O'}/$opt{'o'}.3Dplot.r");
 if (!defined $opt{'X'}) {
-	system("rm -f $opt{'o'}.3Dplot.r");
+	system("rm -f $opt{'O'}/$opt{'o'}.3Dplot.r");
 }
 }
 1;

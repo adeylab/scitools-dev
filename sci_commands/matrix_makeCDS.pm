@@ -14,7 +14,7 @@ getopts("O:R:", \%opt);
 
 $die2 = "
 scitools matrix_makecds [options] [input matrix] [annotation file] [dims file]
-   or    ddrtree-matrix
+   or    makecds-matrix
  Generates CDS format files necessary for Monocle3 and Cicero calls. Places formatted files in a subdirectory.
  Generates 4 txt files to be used in scitools atac-monocle3 and scitools atac-cicero calls.
  1. cds_site_data.txt 		:	Feature set file (called peaks used in counts matrix)

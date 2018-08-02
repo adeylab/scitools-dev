@@ -10,7 +10,7 @@ sub cds_monocle {
 @ARGV = @_;
 # Defaults
 
-getopts("O:R:XP:D:", \%opt);
+getopts("O:R:XP:D:L:", \%opt);
 
 $die2 = "
 scitools cds_monocle [options] [directory containing cds files]
@@ -70,7 +70,7 @@ sample_data <- new(\"AnnotatedDataFrame\", data = cds_cell_data)
 message(\"No dims file given, using Monocle3 for dimensionality reduction\")
 cds <- suppressWarnings(newCellDataSet(as.matrix(cds_counts_matrix), phenoData = sample_data, featureData = feature_data))
 set.seed(2017)
-pData(cds)\$cells <- NULL
+pData(cds)\$cells <- NULL 
 cds <- detectGenes(cds)
 cds <- estimateSizeFactors(cds)
 cds <- estimateDispersions(cds)
@@ -89,7 +89,9 @@ print R "
 message(\"Generating 3D Plots\")
 cds <- learnGraph(cds, max_components = 3, RGE_method = \"$opt{'L'}\", partition_component = T,verbose = T)
 #Writing out full CDS file
-saveRDS(cds,file=\"monocle.CDS.rds\")
+saveRDS(cds,file=\"$opt{'O'}/monocle.CDS.rds\")
+
+
 
 
 #Save branch point coordinates
@@ -110,11 +112,6 @@ write.table(as.matrix(edge_df),file=\"$opt{'O'}/monocle3_branchpoints.txt\",col.
 #Plot out 3D version
 plot_3d_cell_trajectory(cds,color_by=paste(colnames(pData(cds))[1]),webGL_filename=\"$opt{'O'}/trajectory_3D.html\",image_filename=\"$opt{'O'}/trajectory_3D.gif\",show_backbone=TRUE,backbone_segment_color=\"#000000\")
 
-# writing out pseudotime etc so you can recreate everything
-write.table(as.matrix(pData(agg_cds)),file=\"$opt{'O'}/monocle3_cells.txt\",col.names=TRUE,row.names=FALSE,sep=\"\\t\",quote=FALSE)
-write.table(as.matrix(Biobase::exprs(agg_cds)),file=\"$opt{'O'}/monocle3_aggragated_cells_count.txt\",col.names=TRUE,row.names=TRUE,sep=\"\\t\",quote=FALSE)
-write.table(as.matrix(fData(agg_cds)),file=\"$opt{'O'}/monocle3_features.txt\",col.names=TRUE,row.names=FALSE,sep=\"\\t\",quote=FALSE)
-
 ";
 
 } else {
@@ -122,7 +119,7 @@ print R "
 message(\"Generating Plots\")
 cds <- learnGraph(cds, max_components = 2, RGE_method = \"$opt{'L'}\", partition_component = T,verbose = T)
 #Writing out full CDS file
-saveRDS(cds,file=\"monocle.CDS.rds\")
+saveRDS(cds,file=\"$opt{'O'}/monocle.CDS.rds\")
 
 p<-plot_cell_trajectory(cds, color_by = paste(colnames(pData(cds))[1]),backbone_color=\"#000000\")
 ggsave(plot=p,filename=paste0(\"$opt{'O'}/monocle3_\",paste(colnames(pData(cds))[1]),\".timepoint_plot.png\"),width=5,height=4,dpi=900)
@@ -131,23 +128,30 @@ ggsave(plot=p,filename=\"$opt{'O'}.monocle3.timepoint_plot.pdf\",width=5,height=
 p<-plot_cell_trajectory(cds, color_by = \"State\",backbone_color=\"#000000\")
 ggsave(plot=p,filename=\"$opt{'O'}/monocle3_state_plot.png\",width=5,height=4,dpi=900)
 ggsave(plot=p,filename=\"$opt{'O'}/monocle3_state_plot.pdf\",width=5,height=4);
-#add stuff here if you want to reroot agg_cds <- orderCells(agg_cds, root_state = \"D\")
 
 p<-plot_cell_trajectory(cds, color_by = \"Pseudotime\",backbone_color=\"#000000\")
-ggsave(plot=p,filename=\"$opt{'O'}monocle_output/monocle3_lambda_plot.png\",width=5,height=4,dpi=900)
-ggsave(plot=p,filename=\"$opt{'O'}/monocle3_lambda_plot.pdf\",width=5,height=4);
-pData(input_cds)\$Pseudotime <- pData(cds)[colnames(),]$Pseudotime
-pData(input_cds)\$State <- pData(cds)[colnames(cds),]$State
-
-# writing out pseudotime etc so you can recreate everything
-write.table(as.matrix(pData(agg_cds)),file=\"$opt{'O'}/monocle3_cells.txt\",col.names=TRUE,row.names=FALSE,sep=\"\\t\",quote=FALSE)
-write.table(as.matrix(Biobase::exprs(agg_cds)),file=\"$opt{'O'}/monocle3_aggragated_cells_count.txt\",col.names=TRUE,row.names=TRUE,sep=\"\\t\",quote=FALSE)
-write.table(as.matrix(fData(agg_cds)),file=\"$opt{'O'}/monocle3_features.txt\",col.names=TRUE,row.names=FALSE,sep=\"\\t\",quote=FALSE)
-
-writeRDS(cds,file=\"monocle.CDS.rds\")
-
 ";
 }
+
+print R "
+#Determine the root state.
+orderCells(cds)
+pr_graph_test <- principalGraphTest(cds, k=3, cores=10)
+diff_access <- dplyr::add_rownames(pr_graph_test) %>% dplyr::arrange(plyr::desc(morans_test_statistic), plyr::desc(-qval))
+write.table(as.matrix(diff_access),file=\"$opt{'O'}/monocle3_diffaccess.txt\",col.names=TRUE,row.names=FALSE,sep=\"\\t\",quote=FALSE)
+
+#Overwrite monocle.CDS file with final analysis
+saveRDS(cds,file=\"$opt{'O'}/monocle.CDS.rds\")
+
+pData(cds)\$Pseudotime <- pData(cds)[colnames(),]\$Pseudotime
+pData(cds)\$State <- pData(cds)[colnames(cds),]\$State
+
+# writing out pseudotime etc so you can recreate everything
+write.table(as.matrix(pData(cds)),file=\"$opt{'O'}/monocle3_cells.txt\",col.names=TRUE,row.names=FALSE,sep=\"\\t\",quote=FALSE)
+write.table(as.matrix(Biobase::exprs(cds)),file=\"$opt{'O'}/monocle3_aggragated_cells_count.txt\",col.names=TRUE,row.names=TRUE,sep=\"\\t\",quote=FALSE)
+write.table(as.matrix(fData(cds)),file=\"$opt{'O'}/monocle3_features.txt\",col.names=TRUE,row.names=FALSE,sep=\"\\t\",quote=FALSE)
+
+";
 close R;
 system("$Rscript $opt{'O'}/monocle.r");
 if (!defined $opt{'X'}) {
@@ -155,4 +159,3 @@ if (!defined $opt{'X'}) {
 }
 }
 1;
-
