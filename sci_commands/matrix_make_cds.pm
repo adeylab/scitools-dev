@@ -1,11 +1,11 @@
-package sci_commands::matrix_makecds;
+package sci_commands::matrix_make_cds;
 
 use sci_utils::general;
 use Getopt::Std; %opt = ();
 use Exporter "import";
-@EXPORT = ("matrix_makecds");
+@EXPORT = ("matrix_make_cds");
 
-sub matrix_makecds {
+sub matrix_make_cds {
 
 @ARGV = @_;
 # Defaults
@@ -13,8 +13,10 @@ sub matrix_makecds {
 getopts("O:R:", \%opt);
 
 $die2 = "
-scitools matrix_makecds [options] [input matrix] [annotation file] [dims file]
-   or    makecds-matrix
+scitools matrix_make_cds [options] [input matrix] [annotation file] [dims file]
+   or    matrix_makecds
+         matrix2cds
+		 
  Generates CDS format files necessary for Monocle3 and Cicero calls. Places formatted files in a subdirectory.
  Generates 4 txt files to be used in scitools atac-monocle3 and scitools atac-cicero calls.
  1. cds_site_data.txt 		:	Feature set file (called peaks used in counts matrix)

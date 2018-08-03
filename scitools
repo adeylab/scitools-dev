@@ -224,6 +224,7 @@ sub load_aliases {
 	foreach $alias ("atac_deviation", "deviation", "deviation_atac") {$COMMAND_ALIAS{$alias} = "atac_deviation"};
 	foreach $alias ("matrix_makecds", "matrix_makeCDS","makeCDS_matrix","makecds_matrix") {$COMMAND_ALIAS{$alias} = "matrix_makecds"};
 	foreach $alias ("cds_monocle","monocle_cds") {$COMMAND_ALIAS{$alias} = "cds_monocle"};
+	foreach $alias ("matrix_makeCDS","matrix_make_cds","matrix2cds","matrix_makecds","makecds") {$COMMAND_ALIAS{$alias} = "matrix_make_cds"};
 
 }
 
@@ -308,7 +309,7 @@ sub load_descriptions {
 	$COMMAND_DESCRIPTOR{"plot_factors"} = "Generates factor vs reconstruction error plot";
 	$COMMAND_DESCRIPTOR{"atac_deviation"} = "Deviation and variability for a feature set";
 	$COMMAND_DESCRIPTOR{"cds_monocle"} = "Monocle3 Call for branch analysis on sci-ATAC-seq data";
-	$COMMAND_DESCRIPTOR{"matrix_makecds"} = "Convert scitools files into CDS format for Monocle3";
+	$COMMAND_DESCRIPTOR{"matrix_make_cds"} = "Convert scitools files into CDS format for Monocle3";
 
 	
 	$COMMAND_DESCRIPTOR{"matrix_bicluster"} = "Bicluster and plot a heatmap";
