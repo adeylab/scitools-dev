@@ -40,11 +40,14 @@ if (!defined $ARGV[1]) {die $die2};
 if (!defined $ARGV[2]) {die $die2};
 
 if (!defined $opt{'O'}) {$opt{'O'} = $ARGV[0]; $opt{'O'} =~ s/\.matrix$//};
+$opt{'O'} =~ s/\.cds_files$//;
 
-open SITE_DATA, ">./cds_site_data.txt";
-open CELL_DATA, ">./cds_cell_data.txt";
-open DIMS_DATA, ">./cds_dims_data.txt";
-open COUNTS, ">./cds_counts_matrix.txt";
+system("mkdir $opt{'O'}.cds_files");
+
+open SITE_DATA, ">$opt{'O'}.cds_files/cds_site_data.txt";
+open CELL_DATA, ">$opt{'O'}.cds_files/cds_cell_data.txt";
+open DIMS_DATA, ">$opt{'O'}.cds_files/cds_dims_data.txt";
+open COUNTS, ">$opt{'O'}.cds_files/cds_counts_matrix.txt";
 
 read_annot($ARGV[1]);
 read_dims($ARGV[2]);

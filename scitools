@@ -224,7 +224,7 @@ sub load_aliases {
 	foreach $alias ("atac_deviation", "deviation", "deviation_atac") {$COMMAND_ALIAS{$alias} = "atac_deviation"};
 	foreach $alias ("matrix_makecds", "matrix_makeCDS","makeCDS_matrix","makecds_matrix") {$COMMAND_ALIAS{$alias} = "matrix_makecds"};
 	foreach $alias ("cds_monocle","monocle_cds") {$COMMAND_ALIAS{$alias} = "cds_monocle"};
-	foreach $alias ("matrix_makeCDS","matrix_make_cds","matrix2cds","matrix_makecds","makecds") {$COMMAND_ALIAS{$alias} = "matrix_make_cds"};
+	foreach $alias ("matrix_makeCDS","matrix_make_cds","matrix2cds","matrix_makecds","makecds","make-cds","cds-make") {$COMMAND_ALIAS{$alias} = "matrix_make_cds"};
 
 }
 
