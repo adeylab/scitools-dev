@@ -13,8 +13,8 @@ sub cds_cicero {
 getopts("O:R:XG:", \%opt);
 
 $die2 = "
-scitools cds_cicero [options] [directory containing cds files]
-   or    cicero_cds
+scitools cds-cicero [options] [directory containing cds files]
+   or    cicero-cds
 
 Prior to running, ensure you have ran scitools matrix-makecds. 
 That function will convert matrix files into the CDS format that Cicero requires.
