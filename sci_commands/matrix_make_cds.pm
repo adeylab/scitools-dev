@@ -19,14 +19,14 @@ scitools matrix_make_cds [options] [input matrix] [annotation file] [dims file]
 		 
  Generates CDS format files necessary for Monocle3 and Cicero calls. Places formatted files in a subdirectory.
  Generates 4 txt files to be used in scitools atac-monocle3 and scitools atac-cicero calls.
- 1. cds_site_data.txt 		:	Feature set file (called peaks used in counts matrix)
- 2. cds_cell_data.txt		:	Restructured Annotation file, with timepoints included.
- 3.	cds_dims_data.txt		:	Restructured dims file
- 4.	cds_counts_matrix.txt	:	Restructured counts matrix file.
+ 1. cds_site_data.txt       :   Feature set file (called peaks used in counts matrix)
+ 2. cds_cell_data.txt       :   Restructured Annotation file, with timepoints included.
+ 3. cds_dims_data.txt       :   Restructured dims file
+ 4. cds_counts_matrix.txt   :   Restructured counts matrix file.
 
-[input matrix]		=	filtered counts matrix
-[annotation file] 	=	<.annot> formatted file, generated through scitools make-annot command
-[dims file]			=	<.dims> formated file, generated through scitools matrix-[umap|swne|pca|irlba|tsne] command
+[input matrix]      =   filtered counts matrix
+[annotation file]   =   <.annot> formatted file, generated through scitools make-annot command
+[dims file]         =   <.dims> formated file, generated through scitools matrix-[umap|swne|pca|irlba|tsne] command
 
 Options:
    -O   [STR]   Output Directory (default is [current working directory]/cds_files)
