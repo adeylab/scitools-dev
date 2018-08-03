@@ -121,7 +121,8 @@ close COUNTS; close SITE_DATA;
 
 print CELL_DATA "cells\ttimepoint\tnum_genes_expressed\n";
 #might need to modify this to be more general than "timepoints"
-print DIMS_DATA "dimension_1\tdimension_2\n";
+####Removed DIMS_DATA HEADER
+#print DIMS_DATA "dimension_1\tdimension_2\n";
 
 for ($i = 0; $i < @H; $i++) {
 	if ((defined $CELLID_annot{$H[$i]}) && defined ($CELLID_DIMS{$H[$i]})) {
