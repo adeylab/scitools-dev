@@ -76,7 +76,7 @@ if (defined $ARGV[0]) {
 		load_descriptions();
 		$die .= "   Command:             Description:\n\n";
 		foreach $command_module_name (sort {$a cmp $b} keys %COMMAND_NAMES) {
-			if (!defined $ARGV[1] || $command_module_name =~ /$ARGV[1]/) {
+			if (!defined $ARGV[1] || $command_module_name =~ /$ARGV[1]/i) {
 				$list_command = sprintf("%-20s", $command_module_name);
 				$list_command =~ s/_/-/g;
 				if (defined $COMMAND_DESCRIPTOR{$command_module_name}) {
