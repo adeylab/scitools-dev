@@ -304,8 +304,16 @@ sub load_plate_descriptions { # eg: #NEX,MySampleID1,AA,Partial
 	while ($l = <CSV>) {
 		chomp $l;
 		if ($l =~ /^#/) {
-			($class,$annot,$combo,$subset) = split(/,/, $l);
-			$class =~ s/^#//;
+			$l =~ s/^#//;
+			@SPECIFICATION = split(/,/, $l);
+			$class = $SPECIFICATION[0];
+			$annot = $SPECIFICATION[1];
+			$combo = $SPECIFICATION[2];
+			if (defined $SPECIFICATION[3]) {
+				$subset = $SPECIFICATION[3];
+			} else {
+				$subset = "All";
+			}
 			if ($class =~ /NEX/i) {$class = "sci_tn5"}; # for reverse compatability
 			if ($class =~ /PCR/i) {$class = "sci_pcr"}; # for reverse compatability
 			$annot =~ s/ /_/g;

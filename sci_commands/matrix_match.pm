@@ -17,7 +17,7 @@ scitools matrix-match [options] [counts matrix 1] [counts matrix 2]
    or    match-matrix
 
 Calculates the distance between counts matrix cells and makes an
-annotation file for the top hit match.
+annotation file for the top hit match based on the shared nonzero sites.
 
 Options:
    -O   [STR]   Output prefix (default is [mat1_vs_mat2])
