@@ -32,6 +32,8 @@ if (!defined $opt{'O'}) {
 	$opt{'O'} =~ s/\.matrix$//;
 }
 
+print STDERR "INFO: Loading Matrix 1: $ARGV[0]\n";
+
 open M1, "$ARGV[0]";
 $h1 = <M1>; chomp $h1; @H1 = split(/\t/, $h1);
 while ($l = <M1>) {
@@ -41,11 +43,13 @@ while ($l = <M1>) {
 	@{$SITEID_row{$siteID}} = @P;
 } close M1;
 
+print STDERR "INFO: Matrix 1: $ARGV[0] loaded.\nINFO: Comparing to Matrix 2: $ARGV[1]\n";
+
 open M2, "$ARGV[1]";
 $h2 = <M2>; chomp $h2; @H2 = split(/\t/, $h2);
 for ($m1 = 0; $m1 < @H1; $m1++) {
 	for ($m2 = 0; $m2 < @H2; $m2++) {
-		$M1_M2_dist{$m1}{$m2} = 0;
+#		$M1_M2_dist{$m1}{$m2} = 0;
 		$M1_M2_nonzero{$m1}{$m2} = 0;
 	}
 }
@@ -56,7 +60,7 @@ while ($l = <M2>) {
 	if (defined $SITEID_row{$siteID}[0]) {
 		for ($m1 = 0; $m1 < @H1; $m1++) {
 			for ($m2 = 0; $m2 < @H2; $m2++) {
-				$M1_M2_dist{$m1}{$m2} += abs($P[$m2]-$SITEID_row{$siteID}[$m1]);
+#				$M1_M2_dist{$m1}{$m2} += abs($P[$m2]-$SITEID_row{$siteID}[$m1]);
 				if ($P[$m2] != 0 && $SITEID_row{$siteID}[$m1] != 0) {
 					$M1_M2_nonzero{$m1}{$m2}++;
 				}
@@ -70,6 +74,7 @@ open D, ">$opt{'O'}.all_dist.txt";
 open A, ">$opt{'O'}.best_match.annot";
 open R, ">$opt{'O'}.best_match_rev.annot";
 
+print STDERR "INFO: Printing out best matches.\n";
 
 for ($m1 = 0; $m1 < @H1; $m1++) {
 	$cellID1 = $H1[$m1];
