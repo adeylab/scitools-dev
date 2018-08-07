@@ -17,7 +17,10 @@ scitools matrix-match [options] [counts matrix 1] [counts matrix 2]
    or    match-matrix
 
 Calculates the distance between counts matrix cells and makes an
-annotation file for the top hit match based on the shared nonzero sites.
+annotation file for the top hit match based on the shared nonzero
+sites.
+
+Note: rows must be identical
 
 Options:
    -O   [STR]   Output prefix (default is [mat1_vs_mat2])
@@ -32,49 +35,41 @@ if (!defined $opt{'O'}) {
 	$opt{'O'} =~ s/\.matrix$//;
 }
 
-print STDERR "INFO: Loading Matrix 1: $ARGV[0]\n";
 
 open M1, "$ARGV[0]";
 $h1 = <M1>; chomp $h1; @H1 = split(/\t/, $h1);
-while ($l = <M1>) {
-	chomp $l;
-	@P = split(/\t/, $l);
-	$siteID = shift(@P);
-	@{$SITEID_row{$siteID}} = @P;
-} close M1;
-
-print STDERR "INFO: Matrix 1: $ARGV[0] loaded.\nINFO: Comparing to Matrix 2: $ARGV[1]\n";
-
 open M2, "$ARGV[1]";
 $h2 = <M2>; chomp $h2; @H2 = split(/\t/, $h2);
+
 for ($m1 = 0; $m1 < @H1; $m1++) {
 	for ($m2 = 0; $m2 < @H2; $m2++) {
-#		$M1_M2_dist{$m1}{$m2} = 0;
 		$M1_M2_nonzero{$m1}{$m2} = 0;
 	}
 }
-while ($l = <M2>) {
-	chomp $l;
-	@P = split(/\t/, $l);
-	$siteID = shift(@P);
-	if (defined $SITEID_row{$siteID}[0]) {
-		for ($m1 = 0; $m1 < @H1; $m1++) {
-			for ($m2 = 0; $m2 < @H2; $m2++) {
-#				$M1_M2_dist{$m1}{$m2} += abs($P[$m2]-$SITEID_row{$siteID}[$m1]);
-				if ($P[$m2] != 0 && $SITEID_row{$siteID}[$m1] != 0) {
-					$M1_M2_nonzero{$m1}{$m2}++;
-				}
+
+$lineID = 0;
+while ($l1 = <M1>) {
+	chomp $l1; $l2 = <M2>; chomp $l2;
+	@P1 = split(/\t/, $l1); @P2 = split(/\t/, $l2);
+	$siteID1 = shift(@P1); $siteID2 = shift(@P2);
+	$lineID++;
+	if ($siteID1 ne $siteID2) {
+		die "ERROR: Rows must be identical between the two matrixes! $siteID1 ne $siteID2! (line $lineID)\n";
+	}
+	for ($m1 = 0; $m1 < @H1; $m1++) {
+		for ($m2 = 0; $m2 < @H2; $m2++) {
+			if ($P1[$m1] != 0 && $P2[$m2] != 0) {
+				$M1_M2_nonzero{$m1}{$m2}++;
 			}
 		}
-		$siteCT++;
 	}
-} close M2;
+}
+close M1; close M2;
 
 open D, ">$opt{'O'}.all_dist.txt";
 open A, ">$opt{'O'}.best_match.annot";
 open R, ">$opt{'O'}.best_match_rev.annot";
 
-print STDERR "INFO: Printing out best matches.\n";
 
 for ($m1 = 0; $m1 < @H1; $m1++) {
 	$cellID1 = $H1[$m1];
