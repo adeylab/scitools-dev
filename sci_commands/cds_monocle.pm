@@ -135,7 +135,7 @@ p<-plot_cell_trajectory(cds, color_by = \"Pseudotime\",backbone_color=\"#000000\
 
 print R "
 #Determine the root state.
-orderCells(cds)
+cds<-orderCells(cds)
 pr_graph_test <- principalGraphTest(cds, k=3, cores=10)
 diff_access <- dplyr::add_rownames(pr_graph_test) %>% dplyr::arrange(plyr::desc(morans_test_statistic), plyr::desc(-qval))
 write.table(as.matrix(diff_access),file=\"$opt{'O'}/monocle3_diffaccess.txt\",col.names=TRUE,row.names=FALSE,sep=\"\\t\",quote=FALSE)

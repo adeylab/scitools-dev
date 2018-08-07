@@ -113,6 +113,9 @@ if ($ARGV[0] =~ /rds$/){
     print R "
             # Generate Annotation Plot
             annot<-read.table(file=\"$opt{'A'}\",header=F)
+            anno_name_list<-unlist(strsplit(\"$opt{'A'}\",\"/\"))
+            anno_name_list2<-unlist(strsplit(anno_name_list[length(anno_name_list)],\"[.]\"))
+            anno_name<-anno_name_list2[length(anno_name_list2)-1]
             colnames(annot)<-c(\"sample_name\",\"anno\")
             point_colors_df<-merge(point_colors_df,annot,by.x=\"sample_name\")
         colors<-colorRampPalette(brewer.pal(length(unique(point_colors_df\$anno)),\"Set2\"))(length(unique(point_colors_df\$anno)))
@@ -125,7 +128,7 @@ if ($ARGV[0] =~ /rds$/){
         point_colors_df\$point_alpha[is.na(point_colors_df\$point_colors)] = 0
         points3d(point_colors_df[, c(\"data_dim_1\", \"data_dim_2\", \"data_dim_3\")], size = cell_size, col = point_colors_df\$point_colors, alpha = point_colors_df\$point_alpha,point_antialias = TRUE)
         legend3d(\"bottomright\",legend=unique(point_colors_df\$anno),pch = 16,col=unique(point_colors_df\$point_colors),cex=1, inset=c(0.02))
-            movie3d(spin3d(axis=c(0,0,1),rpm=5),duration=30,movie=\"Annotation\",dir=dir,convert=TRUE)
+            movie3d(spin3d(axis=c(0,0,1),rpm=5),duration=30,movie=anno_name,dir=dir,convert=TRUE)
     ";
     }
 
@@ -208,6 +211,9 @@ if ($ARGV[0] =~ /rds$/){
     print R "
             # Generate Annotation Plot
             annot<-read.table(file=\"$opt{'A'}\",header=F)
+            anno_name_list<-unlist(strsplit(\"$opt{'A'}\",\"/\"))
+            anno_name_list2<-unlist(strsplit(anno_name_list[length(anno_name_list)],\"[.]\"))
+            anno_name<-anno_name_list2[length(anno_name_list2)-1]
             colnames(annot)<-c(\"sample_name\",\"anno\")
             point_colors_df<-merge(point_colors_df,annot,by.x=\"sample_name\")
         colors<-colorRampPalette(brewer.pal(length(unique(point_colors_df\$anno)),\"Set2\"))(length(unique(point_colors_df\$anno)))
@@ -219,7 +225,7 @@ if ($ARGV[0] =~ /rds$/){
         point_colors_df\$point_alpha[is.na(point_colors_df\$point_colors)] = 0
         points3d(point_colors_df[, c(\"data_dim_1\", \"data_dim_2\", \"data_dim_3\")], size = cell_size, col = point_colors_df\$point_colors, alpha = point_colors_df\$point_alpha,point_antialias = TRUE)
         legend3d(\"bottomright\",legend=unique(point_colors_df\$anno),pch = 16,col=unique(point_colors_df\$point_colors),cex=1, inset=c(0.02))
-            movie3d(spin3d(axis=c(0,0,1),rpm=5),duration=30,movie=\"Annotation\",dir=dir,convert=TRUE)
+            movie3d(spin3d(axis=c(0,0,1),rpm=5),duration=30,movie=anno_name,dir=dir,convert=TRUE)
     ";
     }
 
