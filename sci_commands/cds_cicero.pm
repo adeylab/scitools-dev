@@ -27,6 +27,8 @@ Options:
    -G    [STR]   Genome to be used. Must be of list:
                   human.hg38.genome,human.hg19.genome,human.hg38.genome,mouse.mm10.genome
                   Default: human.hg38.genome
+   -P 	 [INT] 	Distance (in bp) between Peaks for aggregation. (Default: 10000) 
+   -k 	 [INT] 	Number of cells to aggregate per bin. (Default: 50) 	
    -X           Retain intermediate files (Default = delete)
                   
 ";
@@ -34,7 +36,9 @@ Options:
 
 if (!defined $ARGV[0]) {die $die2};
 if (!defined $opt{'O'}) {$opt{'O'} = "$ARGV[0]/cicero_output"};
-if (!defined $opt{'D'}) {$opt{'G'} = "human.hg38.genome"};
+if (!defined $opt{'G'}) {$opt{'G'} = "human.hg38.genome"};
+if (!defined $opt{'P'}) {$opt{'P'} = "10000"};
+if (!defined $opt{'k'}) {$opt{'k'} = "50"};
 
 system("mkdir $opt{'O'}");
 
@@ -81,19 +85,34 @@ cds <- cds[order(fData(cds)\$chr, fData(cds)\$bp1),]
 
 set.seed(2017)
 pData(cds)\$cells <- NULL
-cds <- aggregate_nearby_peaks(cds, distance = 10000)
+cds <- aggregate_nearby_peaks(cds, distance = $opt{'P'})
 cds <- detectGenes(cds)
 cds <- estimateSizeFactors(cds)
 cds <- estimateDispersions(cds)
 
 message(\"Using Supplied Dims File.\")
-cds <- make_cicero_cds(cds, reduced_coordinates = dimension_reduction)
+cds <- make_cicero_cds(cds, reduced_coordinates = dimension_reduction, k=$opt{'k'})
 
 message(\"Running Cicero\")
-data(\"human.hg38.genome\")
-conns <- run_cicero(cds, human.hg38.genome) 
-# Takes a few minutes to run
+";
 
+if ($opt{'G'}=="human.hg38.genome") {
+print R, "
+
+human.hg38.genome<-read.table(\"/home/groups/oroaklab/refs/hg38/hg38.bedtools.genome\",header=F)
+conns <- run_cicero(cds, human.hg38.genome)
+
+";
+} else {
+print R, "
+
+data(\"$opt{'G'}\")
+conns <- run_cicero(cds, $opt{'G'})
+
+";
+}
+
+print R, "
 message(\"Sample Cicero Output:\")
 head(conns)
 

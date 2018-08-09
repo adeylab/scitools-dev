@@ -180,7 +180,7 @@ if ($ARGV[0] =~ /rds$/){
         library(rgl)
         library(RColorBrewer)
 
-        dir=$opt{'O'}
+        dir=\"$opt{'O'}\"
         if(dir==\".\"){dir=getwd()}
 
         data_df<-read.table(file=\"$ARGV[0]\",header=F)
