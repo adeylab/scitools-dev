@@ -7,6 +7,7 @@ use Exporter "import";
 
 sub matrix_match {
 
+$| = 1;
 @ARGV = @_;
 
 # Defaults
