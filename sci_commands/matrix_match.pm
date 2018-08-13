@@ -11,7 +11,8 @@ $| = 1;
 @ARGV = @_;
 
 # Defaults
-getopts("O:V", \%opt);
+$report_increment = 0.1;
+getopts("O:Vr:", \%opt);
 
 $die2 = "
 scitools matrix-match [options] [counts matrix 1] [counts matrix 2]
@@ -26,6 +27,8 @@ Note: rows must be identical
 Options:
    -O   [STR]   Output prefix (default is [mat1_vs_mat2])
    -V           Verbose (prints log to STDERR)
+   -r   [FLT]   Reporting increment (fraction) for -V progress
+                (def = $report_increment)
 
 ";
 
@@ -36,6 +39,7 @@ if (!defined $opt{'O'}) {
 	$opt{'O'} .= "_vs_".$ARGV[1];
 	$opt{'O'} =~ s/\.matrix$//;
 }
+if (defined $opt{'r'}) {$report_increment = $opt{'r'}};
 
 if (defined $opt{'V'}) {
 	$ts = localtime(time);
@@ -50,7 +54,7 @@ if (defined $opt{'V'}) {
 	$lineCT--; # header line
 	print STDERR "$lineCT rows.\n";
 	$ts = localtime(time);
-	print STDERR "$ts Building empty matrix ...\n";
+	print STDERR "$ts Building empty matrix ... ";
 }
 
 open M1, "$ARGV[0]";
@@ -61,13 +65,14 @@ $h2 = <M2>; chomp $h2; @H2 = split(/\t/, $h2);
 for ($m1 = 0; $m1 < @H1; $m1++) {
 	for ($m2 = 0; $m2 < @H2; $m2++) {
 		$M1_M2_nonzero{$m1}{$m2} = 0;
+		$total_match_sites++;
 	}
 }
 
 if (defined $opt{'V'}) {
 	$ts = localtime(time);
-	print STDERR "$ts Starting matching ...\n";
-	$report_increment = 0.1; $report = $report_increment;
+	print STDERR "$total_match_sites total match comparisons.\n$ts Starting matching ...\n";
+	$report = $report_increment;
 }
 
 $lineID = 0;
@@ -99,7 +104,7 @@ close M1; close M2;
 if (defined $opt{'V'}) {
 	$ts = localtime(time);
 	print STDERR "$ts Matching complete - reporting best hits and matching matrix.\n";
-	$report_increment = 0.1; $report = $report_increment;
+	$report = $report_increment;
 }
 
 open D, ">$opt{'O'}.all_dist.txt";
