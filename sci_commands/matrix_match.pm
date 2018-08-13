@@ -12,7 +12,7 @@ $| = 1;
 
 # Defaults
 $report_increment = 0.1;
-getopts("O:Vr:", \%opt);
+getopts("O:Vr:M:", \%opt);
 
 $die2 = "
 scitools matrix-match [options] [counts matrix 1] [counts matrix 2]
@@ -29,6 +29,7 @@ Options:
    -V           Verbose (prints log to STDERR)
    -r   [FLT]   Reporting increment (fraction) for -V progress
                 (def = $report_increment)
+   -M   [INT]   Max number of rows to examine (def = all)
 
 ";
 
@@ -81,21 +82,23 @@ while ($l1 = <M1>) {
 	@P1 = split(/\t/, $l1); @P2 = split(/\t/, $l2);
 	$siteID1 = shift(@P1); $siteID2 = shift(@P2);
 	$lineID++;
-	if ($siteID1 ne $siteID2) {
-		die "ERROR: Rows must be identical between the two matrixes! $siteID1 ne $siteID2! (line $lineID)\n";
-	}
-	for ($m1 = 0; $m1 < @H1; $m1++) {
-		for ($m2 = 0; $m2 < @H2; $m2++) {
-			if ($P1[$m1] != 0 && $P2[$m2] != 0) {
-				$M1_M2_nonzero{$m1}{$m2}++;
+	if (!defined $opt{'M'} || $lineID <= $opt{'M'}) {
+		if ($siteID1 ne $siteID2) {
+			die "ERROR: Rows must be identical between the two matrixes! $siteID1 ne $siteID2! (line $lineID)\n";
+		}
+		for ($m1 = 0; $m1 < @H1; $m1++) {
+			for ($m2 = 0; $m2 < @H2; $m2++) {
+				if ($P1[$m1] != 0 && $P2[$m2] != 0) {
+					$M1_M2_nonzero{$m1}{$m2}++;
+				}
 			}
 		}
-	}
-	if (defined $opt{'V'}) {
-		if (($lineID/$lineCT)>=$report) {
-			$ts = localtime(time);
-			print STDERR "\t$report fraction complete, $lineID lines processed. ($ts)\n";
-			$report += $report_increment;
+		if (defined $opt{'V'}) {
+			if (($lineID/$lineCT)>=$report) {
+				$ts = localtime(time);
+				print STDERR "\t$report fraction complete, $lineID lines processed. ($ts)\n";
+				$report += $report_increment;
+			}
 		}
 	}
 }
