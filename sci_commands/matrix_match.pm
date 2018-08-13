@@ -12,7 +12,7 @@ $| = 1;
 
 # Defaults
 $report_increment = 0.1;
-getopts("O:Vr:M:", \%opt);
+getopts("O:Vr:M:f:", \%opt);
 
 $die2 = "
 scitools matrix-match [options] [counts matrix 1] [counts matrix 2]
@@ -30,6 +30,8 @@ Options:
    -r   [FLT]   Reporting increment (fraction) for -V progress
                 (def = $report_increment)
    -M   [INT]   Max number of rows to examine (def = all)
+   -f   [FLT]   Only compare a random subset of lines (def = all)
+                (will be a fraction of -M, def is fraction of all)
 
 ";
 
@@ -76,13 +78,16 @@ if (defined $opt{'V'}) {
 	$report = $report_increment;
 }
 
+if (defined $opt{'M'}) {$lineCT = $opt{'M'}};
+if (defined $opt{'f'}) {$lineCT = int($opt{'f'}*$lineCT)};
+
 $lineID = 0;
 while ($l1 = <M1>) {
 	chomp $l1; $l2 = <M2>; chomp $l2;
 	@P1 = split(/\t/, $l1); @P2 = split(/\t/, $l2);
 	$siteID1 = shift(@P1); $siteID2 = shift(@P2);
-	$lineID++;
-	if (!defined $opt{'M'} || $lineID <= $opt{'M'}) {
+	$lineID++; $check = rand(1);
+	if (!defined $opt{'M'} || (defined $opt{'M'} && $lineID <= $opt{'M'}) || (defined $opt{'f'} && $check <= $opt{'f'})) {
 		if ($siteID1 ne $siteID2) {
 			die "ERROR: Rows must be identical between the two matrixes! $siteID1 ne $siteID2! (line $lineID)\n";
 		}
