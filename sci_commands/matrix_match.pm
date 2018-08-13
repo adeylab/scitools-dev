@@ -25,7 +25,7 @@ Note: rows must be identical
 
 Options:
    -O   [STR]   Output prefix (default is [mat1_vs_mat2])
-   -V           Verbose (prints a log file)
+   -V           Verbose (prints log to STDERR)
 
 ";
 
@@ -38,9 +38,8 @@ if (!defined $opt{'O'}) {
 }
 
 if (defined $opt{'V'}) {
-	open LOG, ">$opt{'O'}.matching.log";
 	$ts = localtime(time);
-	print LOG "$ts matrix-match called
+	print STDERR "$ts matrix-match called
 \tMatrix 1 = $ARGV[0]
 \tMatrix 2 = $ARGV[1]
 \tChecking row count ... ";
@@ -49,9 +48,9 @@ if (defined $opt{'V'}) {
 	while ($l = <M1>) {$lineCT++};
 	close M1;
 	$lineCT--; # header line
-	print LOG "$lineCT rows.\n";
+	print STDERR "$lineCT rows.\n";
 	$ts = localtime(time);
-	print LOG "$ts Building empty matrix ...\n";
+	print STDERR "$ts Building empty matrix ...\n";
 }
 
 open M1, "$ARGV[0]";
@@ -67,7 +66,7 @@ for ($m1 = 0; $m1 < @H1; $m1++) {
 
 if (defined $opt{'V'}) {
 	$ts = localtime(time);
-	print LOG "$ts Starting matching ...\n";
+	print STDERR "$ts Starting matching ...\n";
 	$report_increment = 0.1; $report = $report_increment;
 }
 
@@ -90,7 +89,7 @@ while ($l1 = <M1>) {
 	if (defined $opt{'V'}) {
 		if (($lineID/$lineCT)>=$report) {
 			$ts = localtime(time);
-			print LOG "\t$report fraction complete, $lineID lines processed. ($ts)\n";
+			print STDERR "\t$report fraction complete, $lineID lines processed. ($ts)\n";
 			$report += $report_increment;
 		}
 	}
@@ -99,7 +98,7 @@ close M1; close M2;
 
 if (defined $opt{'V'}) {
 	$ts = localtime(time);
-	print LOG "$ts Matching complete - reporting best hits and matching matrix.\n";
+	print STDERR "$ts Matching complete - reporting best hits and matching matrix.\n";
 	$report_increment = 0.1; $report = $report_increment;
 }
 
@@ -123,7 +122,7 @@ for ($m1 = 0; $m1 < @H1; $m1++) {
 	if (defined $opt{'V'}) {
 		if (($m1/@H1)>=$report) {
 			$ts = localtime(time);
-			print LOG "\t$report fraction complete, $m1 cellIDs from Matrix 1 processed. ($ts)\n";
+			print STDERR "\t$report fraction complete, $m1 cellIDs from Matrix 1 processed. ($ts)\n";
 			$report += $report_increment;
 		}
 	}
@@ -133,8 +132,7 @@ close D; close A; close R;
 
 if (defined $opt{'V'}) {
 	$ts = localtime(time);
-	print LOG "$ts Complete!\n";
-	close LOG;
+	print STDERR "$ts Complete!\n";
 }
 
 }
