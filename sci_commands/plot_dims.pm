@@ -24,7 +24,7 @@ $panel_pass_color = "black";
 $width = 5;
 $height = 4;
 
-getopts("O:A:a:C:c:R:x:y:T:V:M:XS:s:G:p:f:Bb:k:w:h:", \%opt);
+getopts("O:A:a:C:c:R:x:y:T:V:M:XS:s:G:p:f:Bb:k:w:h:m:", \%opt);
 
 $die2 = "
 scitools plot-dims [options] [dimensions file(s), comma sep]
@@ -72,6 +72,9 @@ To plot multiple values specified in a matrix file:
                   Will create a folder as -O option and produce
                   a plot for each row of the matrix. Overrides -V.
                   Only includes rows with at least one non-zero value.
+To plot Monocle output branch points:
+	-m 	[STR] 	Monocle branchpoints.txt file to be plotted underneath 
+				the point plots. Generated through cds_monocle command call.
 
 Other options:
    -R   [STR]   Rscript call (def = $Rscript)
@@ -223,8 +226,16 @@ fail<-subset(IN,V5==\"FAIL\")
 pass<-subset(IN,V5==\"PASS\")";
 }
 
+if (defined $opt{'m'}){
+print R "
+branch<-read.table(\"$opt{'m'}\",header=T)";
+}
 print R "
 PLT<-ggplot() +";
+if (defined $opt{'m'}){
+print R "
+geom_segment(aes(x=branch$source_prin_graph_dim_1,y=branch$source_prin_graph_dim_2,xend=branch$target_prin_graph_dim_1,yend=branch$target_prin_graph_dim_2)) +";
+}
 
 if (!defined $opt{'c'} && !defined $opt{'C'} && !defined $opt{'A'} && !defined $opt{'V'}) { # no special mode specified
 	print R "

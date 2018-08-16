@@ -88,11 +88,9 @@ print R "
 #3D Plotting
 message(\"Generating 3D Plots\")
 cds <- learnGraph(cds, max_components = 3, RGE_method = \"$opt{'L'}\", partition_component = T,verbose = T)
+cds <- clusterCells(cds,verbose = T,cores=10)
 #Writing out full CDS file
 saveRDS(cds,file=\"$opt{'O'}/monocle.CDS.rds\")
-
-
-
 
 #Save branch point coordinates
 dp_mst <- minSpanningTree(cds)
@@ -118,18 +116,36 @@ plot_3d_cell_trajectory(cds,color_by=paste(colnames(pData(cds))[1]),webGL_filena
 print R "
 message(\"Generating Plots\")
 cds <- learnGraph(cds, max_components = 2, RGE_method = \"$opt{'L'}\", partition_component = T,verbose = T)
+cds <- clusterCells(cds,verbose = T,cores=10)
 #Writing out full CDS file
 saveRDS(cds,file=\"$opt{'O'}/monocle.CDS.rds\")
 
+#Save branch point coordinates
+dp_mst <- minSpanningTree(cds)
+reduced_dim_coords <- reducedDimK(cds)
+ica_space_df <- data.frame(Matrix::t(reduced_dim_coords[1:2,]))
+colnames(ica_space_df) <- c(\"prin_graph_dim_1\", \"prin_graph_dim_2\")
+ica_space_df\$sample_name <- row.names(ica_space_df)
+ica_space_df\$sample_state <- row.names(ica_space_df)
+edge_list <- as.data.frame(get.edgelist(dp_mst))
+colnames(edge_list) <- c(\"source\", \"target\")
+edge_df <- merge(ica_space_df, edge_list, by.x = \"sample_name\",by.y = \"source\", all = TRUE)
+edge_df <- plyr::rename(edge_df, c(prin_graph_dim_1 = \"source_prin_graph_dim_1\",prin_graph_dim_2 = \"source_prin_graph_dim_2\"))
+edge_df <- merge(edge_df, ica_space_df[, c(\"sample_name\",\"prin_graph_dim_1\", \"prin_graph_dim_2\")],by.x = \"target\", by.y = \"sample_name\", all = TRUE)
+edge_df <- plyr::rename(edge_df, c(prin_graph_dim_1 = \"target_prin_graph_dim_1\",prin_graph_dim_2 = \"target_prin_graph_dim_2\"))
+write.table(as.matrix(edge_df),file=\"$opt{'O'}/monocle3_branchpoints.txt\",col.names=TRUE,row.names=FALSE,sep=\"\\t\",quote=FALSE)
+
 p<-plot_cell_trajectory(cds, color_by = paste(colnames(pData(cds))[1]),backbone_color=\"#000000\")
-ggsave(plot=p,filename=paste0(\"$opt{'O'}/monocle3_\",paste(colnames(pData(cds))[1]),\".timepoint_plot.png\"),width=5,height=4,dpi=900)
-ggsave(plot=p,filename=\"$opt{'O'}.monocle3.timepoint_plot.pdf\",width=5,height=4);
+ggsave(plot=p,filename=paste0(\"$opt{'O'}/monocle3_\",paste(colnames(pData(cds))[1]),\".plot.png\"),width=5,height=4,dpi=900)
+ggsave(plot=p,filename=paste0(\"$opt{'O'}/monocle3_\",paste(colnames(pData(cds))[1]),\".plot.png\"),width=5,height=4)
 
-p<-plot_cell_trajectory(cds, color_by = \"State\",backbone_color=\"#000000\")
-ggsave(plot=p,filename=\"$opt{'O'}/monocle3_state_plot.png\",width=5,height=4,dpi=900)
-ggsave(plot=p,filename=\"$opt{'O'}/monocle3_state_plot.pdf\",width=5,height=4);
+p<-plot_cell_trajectory(cds,cell_size=0.1,color_by = \"Cluster\",backbone_color=\"#000000\",show_state_name=T,alpha=0.3)
+ggsave(plot=p,filename=\"$opt{'O'}/monocle3.pathway.plot.png\",width=5,height=4,dpi=900)
+ggsave(plot=p,filename=\"$opt{'O'}/monocle3.pathway.plot.pdf\",width=5,height=4)
 
-p<-plot_cell_trajectory(cds, color_by = \"Pseudotime\",backbone_color=\"#000000\")
+p<-plot_cell_trajectory(cds,cell_size=0.1,color_by = paste(colnames(pData(cds))[1]),backbone_color=\"#000000\",show_state_name=T,alpha=0.3)
+ggsave(plot=p,filename=\"$opt{'O'}/monocle3.pathway_plot.png\",width=5,height=4,dpi=900)
+ggsave(plot=p,filename=\"$opt{'O'}/monocle3.pathway_plot.pdf\",width=5,height=4)
 ";
 }
 
@@ -143,11 +159,8 @@ write.table(as.matrix(diff_access),file=\"$opt{'O'}/monocle3_diffaccess.txt\",co
 #Overwrite monocle.CDS file with final analysis
 saveRDS(cds,file=\"$opt{'O'}/monocle.CDS.rds\")
 
-pData(cds)\$Pseudotime <- pData(cds)[colnames(),]\$Pseudotime
-pData(cds)\$State <- pData(cds)[colnames(cds),]\$State
-
 # writing out pseudotime etc so you can recreate everything
-write.table(as.matrix(pData(cds)),file=\"$opt{'O'}/monocle3_cells.txt\",col.names=TRUE,row.names=FALSE,sep=\"\\t\",quote=FALSE)
+write.table(as.matrix(pData(cds)),file=\"$opt{'O'}/monocle3_cells.txt\",col.names=TRUE,row.names=TRUE,sep=\"\\t\",quote=FALSE)
 write.table(as.matrix(Biobase::exprs(cds)),file=\"$opt{'O'}/monocle3_aggragated_cells_count.txt\",col.names=TRUE,row.names=TRUE,sep=\"\\t\",quote=FALSE)
 write.table(as.matrix(fData(cds)),file=\"$opt{'O'}/monocle3_features.txt\",col.names=TRUE,row.names=FALSE,sep=\"\\t\",quote=FALSE)
 

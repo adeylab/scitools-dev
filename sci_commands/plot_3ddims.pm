@@ -183,7 +183,7 @@ if ($ARGV[0] =~ /rds$/){
         dir=\"$opt{'O'}\"
         if(dir==\".\"){dir=getwd()}
 
-        data_df<-read.table(file=\"$ARGV[0]\",header=F)
+        data_df<-read.table(file=\"$ARGV[0]\",header=F,row.names=1)
         cell_alpha=$opt{'a'}
         cell_size=$opt{'p'}
         backbone_segment_color=\"#000000\"
