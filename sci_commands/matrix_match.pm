@@ -87,7 +87,7 @@ while ($l1 = <M1>) {
 	@P1 = split(/\t/, $l1); @P2 = split(/\t/, $l2);
 	$siteID1 = shift(@P1); $siteID2 = shift(@P2);
 	$lineID++; $check = rand(1);
-	if (!defined $opt{'M'} || (defined $opt{'M'} && $lineID <= $opt{'M'}) || (defined $opt{'f'} && $check <= $opt{'f'})) {
+	if ((!defined $opt{'M'} && !defined $opt{'f'}) || (defined $opt{'M'} && !defined $opt{'f'} && $lineID <= $opt{'M'}) || (defined $opt{'f'} && $check <= $opt{'f'})) {
 		if ($siteID1 ne $siteID2) {
 			die "ERROR: Rows must be identical between the two matrixes! $siteID1 ne $siteID2! (line $lineID)\n";
 		}
