@@ -97,14 +97,14 @@ message(\"Running Cicero\")
 ";
 
 if ($opt{'G'}=="human.hg38.genome") {
-print R, "
+print R "
 
 human.hg38.genome<-read.table(\"/home/groups/oroaklab/refs/hg38/hg38.bedtools.genome\",header=F)
 conns <- run_cicero(cds, human.hg38.genome)
 
 ";
 } else {
-print R, "
+print R "
 
 data(\"$opt{'G'}\")
 conns <- run_cicero(cds, $opt{'G'})
@@ -112,7 +112,7 @@ conns <- run_cicero(cds, $opt{'G'})
 ";
 }
 
-print R, "
+print R "
 message(\"Sample Cicero Output:\")
 head(conns)
 
