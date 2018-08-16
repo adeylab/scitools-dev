@@ -234,7 +234,7 @@ print R "
 PLT<-ggplot() +";
 if (defined $opt{'m'}){
 print R "
-geom_segment(aes(x=branch$source_prin_graph_dim_1,y=branch$source_prin_graph_dim_2,xend=branch$target_prin_graph_dim_1,yend=branch$target_prin_graph_dim_2)) +";
+geom_segment(aes(x=branch\$source_prin_graph_dim_1,y=branch\$source_prin_graph_dim_2,xend=branch\$target_prin_graph_dim_1,yend=branch\$target_prin_graph_dim_2)) +";
 }
 
 if (!defined $opt{'c'} && !defined $opt{'C'} && !defined $opt{'A'} && !defined $opt{'V'}) { # no special mode specified
