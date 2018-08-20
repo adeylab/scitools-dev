@@ -309,7 +309,9 @@ sub load_descriptions {
 	$COMMAND_DESCRIPTOR{"plot_factors"} = "Generates factor vs reconstruction error plot";
 	$COMMAND_DESCRIPTOR{"atac_deviation"} = "Deviation and variability for a feature set";
 	$COMMAND_DESCRIPTOR{"cds_monocle"} = "Monocle3 Call for branch analysis on sci-ATAC-seq data";
+	$COMMAND_DESCRIPTOR{"cds_cicero"} = "Cicero Call for CCAN analysis on sci-ATAC-seq data";
 	$COMMAND_DESCRIPTOR{"matrix_make_cds"} = "Convert scitools files into CDS format for Monocle3";
+	$COMMAND_DESCRIPTOR{"dims_moran"} = "Spectral Statistics for ChromVar enrichment across clustered cells";
 
 	
 	$COMMAND_DESCRIPTOR{"matrix_bicluster"} = "Bicluster and plot a heatmap";
