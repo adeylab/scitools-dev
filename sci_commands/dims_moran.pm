@@ -64,24 +64,27 @@ w<-knn2nb(knn,row.names=row.names(knn\$x))
 wm<-nb2mat(w,style=\'W\',zero.policy=FALSE)
 
 #SUBET spatial weight matrix
-warning(\"Using opt{'c'} cores for Moran's Test.\")
+warning(\"Using $opt{'c'} cores for Moran's Test.\")
 
 m_test_list<-mclapply(1:nrow(scores_mat),FUN=function(x){
-dat_temp<-t(na.omit(t(scores_mat[x,])))
+out<-tryCatch({
+	dat_temp<-t(na.omit(t(scores_mat[x,])))
 wm_temp<-wm[row.names(wm) \%in\% colnames(dat_temp),row.names(wm) \%in\% colnames(dat_temp)]
 dat_temp<-dat_temp[colnames(dat_temp) \%in\% row.names(wm_temp)]
 rwm <- mat2listw(wm_temp, style=\'W\')
 #Use monte-carlo approach for significance
 m_test<-moran.mc(dat_temp, rwm, nsim=$opt{'n'},zero.policy=TRUE,na.action=na.omit)
-return(c(row.names(scores_mat)[x],m_test\$statistic, m_test\$parameter, m_test\$p.value))
+out<-c(row.names(scores_mat)[x],\"PASS\",m_test\$statistic, m_test\$parameter, m_test\$p.value)
+}, error=function(e) {out<-c(row.names(scores_mat)[x],\"FAIL\",\"NA\",\"NA\",\"NA\")})
+return(out)
 },mc.cores=$opt{'c'})
 
 warning(\"Moran's Test complete. Formatting and writing out data table.\")
 
 m_test_list_2<-as.data.frame(do.call(rbind,lapply(m_test_list, function(x) unlist(x))))
-colnames(m_test_list_2)<-c(\"feature\",\"I_value\",\"observed_rank\",\"montecarlo_pvalue\")
+colnames(m_test_list_2)<-c(\"feature\",\"PASS/FAIL\",\"I_value\",\"observed_rank\",\"montecarlo_pvalue\")
 m_test_list_2<-m_test_list_2[order(m_test_list_2\$montecarlo_pvalue),]
-write.table(m_test_list_2,\"opt{'O'}.moran.matrix\",sep=\"\\t\",col.names=T,row.names=F)
+write.table(m_test_list_2,\"$opt{'O'}.moran.matrix\",sep=\"\\t\",col.names=T,row.names=F,quote=F)
 ";
 close R;
 system("$Rscript $opt{'O'}.moran_test.r");
@@ -90,5 +93,6 @@ if (!defined $opt{'X'}) {
 }
 }
 1;
+
 
 
