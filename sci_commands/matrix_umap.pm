@@ -50,8 +50,8 @@ import umap
 ";
 if ($ARGV[0] =~ /\.dims/) {
 print OUT "
-ori_matrix=numpy.loadtxt(\"$ARGV[0]\",skiprows=1,usecols=range(1,$matrix_colNum))
-data_matrix=ori_matrix.transpose()\n";
+data_matrix=numpy.loadtxt(\"$ARGV[0]\",skiprows=1,usecols=range(1,$matrix_colNum))
+#data_matrix=ori_matrix.transpose()\n";
 } else {
 print OUT "data_matrix=numpy.loadtxt(\"$ARGV[0]\",skiprows=1,usecols=range(1,$matrix_colNum))\n";
 }
