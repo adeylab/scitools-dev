@@ -199,3 +199,7 @@ atac_deviation("$dev_opts $ARGV[0] $opt{'O'}.classify/gene_set.txt");
 
 
 }
+
+}
+
+1;
