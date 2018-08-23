@@ -86,6 +86,7 @@ while ($l = <IN>) {
 		print LOG "\t\t\t\tLoading $classID\n";
 	} else {
 		($type,$name,$dir) = split(/\t/, $l);
+		print STDERR "DEBUG: $type tab $name tab $dir\n";
 		if ($type =~ /^g/i) { # gene
 			$CLASS_geneCT{$classID}++;
 			if ($dir =~ /^u/i) { # up
