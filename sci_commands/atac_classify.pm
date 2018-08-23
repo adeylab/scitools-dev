@@ -74,6 +74,7 @@ print LOG "$ts\tatac-classify called\n\t\t\t\t$args\n\t\t\t\tReading in specific
 open IN, "$ARGV[1]";
 while ($l = <IN>) {
 	chomp $l;
+	print STDERR "DEBUG: line is $l...\n";
 	if ($l =~ /^>/) {
 		$classID = $l;
 		$classID =~ s/^>//;
