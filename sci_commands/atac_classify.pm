@@ -74,7 +74,6 @@ print LOG "$ts\tatac-classify called\n\t\t\t\t$args\n\t\t\t\tReading in specific
 open IN, "$ARGV[1]";
 while ($l = <IN>) {
 	chomp $l;
-	print STDERR "DEBUG: line is $l...\n";
 	if ($l =~ /^>/) {
 		$classID = $l;
 		$classID =~ s/^>//;
@@ -87,14 +86,12 @@ while ($l = <IN>) {
 		print LOG "\t\t\t\tLoading $classID\n";
 	} else {
 		($type,$name,$dir) = split(/\t/, $l);
-		print STDERR "DEBUG: $type tab $name tab $dir\n";
 		if ($type =~ /^g/i) { # gene
 			$CLASS_geneCT{$classID}++;
 			if ($dir =~ /^u/i) { # up
 				$CLASS_GENE_UP{$classID}{$name} = 1;
 				$CLASS_gene_up_list{$classID} .= "$name\n";
 				$CLASS_gene_upCT{$classID}++;
-				print STDERR "DEBUG: Adding to $classID the gene $name, which is up.\n";
 			} elsif ($dir =~ /^d/i) { # down
 				$CLASS_GENE_DN{$classID}{$name} = 1;
 				$CLASS_gene_dn_list{$classID} .= "$name\n";
@@ -161,7 +158,7 @@ if ($tfCT>0) {
 		}
 		if (defined $opt{'X'}) {$dev_opts .= " -X"};
 		print LOG "\t\t\t\tatac-deviation $dev_opts $ARGV[0] $opt{'O'}.classify/motif_set.bed\n";
-		atac_deviation("$dev_opts $ARGV[0] $opt{'O'}.classify/motif_set.bed");
+		\&atac_deviation("$dev_opts $ARGV[0] $opt{'O'}.classify/motif_set.bed");
 	} else {
 		print LOG "\t\t\t\tNo specified motifs were found! - skipping motif portion of the analysis.\n";
 	}
@@ -195,7 +192,7 @@ if (defined $opt{'C'}) {
 }
 if (defined $opt{'X'}) {$dev_opts .= " -X"};
 print LOG "\t\t\t\tatac-deviation $dev_opts $ARGV[0] $opt{'O'}.classify/gene_set.txt\n";
-atac_deviation("$dev_opts $ARGV[0] $opt{'O'}.classify/gene_set.txt");
+\&atac_deviation("$dev_opts $ARGV[0] $opt{'O'}.classify/gene_set.txt");
 
 
 
