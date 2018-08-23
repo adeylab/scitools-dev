@@ -11,7 +11,7 @@ require "sci_commands/atac_deviation.pm";
 import "sci_commands::atac_deviation", "atac_deviation";
 
 @ARGV = @_;
-$args = join("\t", @ARGV);
+$args = join(" ", @ARGV);
 
 # Defaults:
 $permCT = 100;

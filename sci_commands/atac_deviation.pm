@@ -8,7 +8,7 @@ use Exporter "import";
 sub atac_deviation {
 
 @ARGV = @_;
-$args = join("\t", @ARGV);
+$args = join(" ", @ARGV);
 
 # Defaults:
 $permCT = 100;
@@ -440,6 +440,8 @@ foreach $TF (sort {$TF_variability{$b}<=>$TF_variability{$a}} keys %TF_variabili
 }
 close SRT;
 
+}
+
 sub shuffle {
 	
 	@initial = @_;
@@ -450,8 +452,6 @@ sub shuffle {
 	}
 	return @initial;
 	
-}
-
 }
 
 1;
