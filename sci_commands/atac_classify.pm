@@ -69,7 +69,7 @@ system("mkdir $opt{'O'}.classify");
 
 open LOG, ">$opt{'O'}.classify/cell_classifier.log";
 $ts = localtime(time);
-print LOG "$ts\tatac-classify called\n\t\t\t\t$args\n\t\t\t\tReading in specification file ... ";
+print LOG "$ts\tatac-classify called\n\t\t\t\t$args\n\t\t\t\tReading in specification file ...\n";
 
 open IN, "$ARGV[1]";
 while ($l = <IN>) {
@@ -83,6 +83,7 @@ while ($l = <IN>) {
 		$CLASS_gene_upCT{$classID} = 0;
 		$CLASS_gene_dnCT{$classID} = 0;
 		$classCT++;
+		print LOG "\t\t\t\tLoading $classID\n";
 	} else {
 		($type,$name,$dir) = split(/\t/, $l);
 		if ($type =~ /^g/i) { # gene
@@ -117,7 +118,7 @@ while ($l = <IN>) {
 } close IN;
 
 $ts = localtime(time);
-print LOG "$classCT total classes.\n";
+print LOG "\t\t\t\t$classCT total classes.\n";
 
 if ($tfCT>0) {
 	print LOG "$ts\tBuilding TF set bed file for $tfCT motifs.\n";
@@ -168,7 +169,7 @@ print LOG "$ts\tBuilding gene sets.\n";
 
 open OUT, ">$opt{'O'}.classify/gene_set.txt";
 $gene_setCT = 0;
-foreach $classID (keys %CLASS_gene_up_list) {
+foreach $classID (keys %CLASS_gene_upCT) {
 	if ($CLASS_gene_upCT{$classID}>0) {
 		print OUT "\>$classID\_up\n$CLASS_gene_up_list{$classID}";
 		$gene_setCT++;
