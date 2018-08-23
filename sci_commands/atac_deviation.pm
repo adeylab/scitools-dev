@@ -56,6 +56,7 @@ if (!defined $opt{'G'} && $ARGV[1] !~ /\.bed$/) {
 	die "ERROR: if a bed file is not provided, a gene list is assumes and -G must be specified.\n";
 }
 if (defined $opt{'c'}) {$corr_cutoff = $opt{'c'}};
+if (defined $opt{'b'}) {$bedtools = $opt{'b'}};
 
 system("mkdir $opt{'O'}.dev");
 
