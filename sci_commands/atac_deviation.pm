@@ -77,14 +77,16 @@ while ($l = <IN>) {
 	$siteID = shift(@P);
 	if ($siteID !~ /[XYMG]/) {
 		($chr,$start,$end) = split(/[:-_]/, $siteID);
-		print OUT "$chr\t$start\t$end\t$siteID\n";
-		$siteCT++;
-		$SITEID_totalCT{$siteID} = 0;
-		for ($i = 0; $i < @H; $i++) {
-			$SITEID_totalCT{$siteID}+=$P[$i];
-			$CELLID_totalCT{$H[$i]}+=$P[$i];
-			$CELLID_SITEID_ct{$H[$i]}{$siteID} = $P[$i];
-			$sum_all_sites_all_cells+=$P[$i];
+		if (($end-$start)>0) {
+			print OUT "$chr\t$start\t$end\t$siteID\n";
+			$siteCT++;
+			$SITEID_totalCT{$siteID} = 0;
+			for ($i = 0; $i < @H; $i++) {
+				$SITEID_totalCT{$siteID}+=$P[$i];
+				$CELLID_totalCT{$H[$i]}+=$P[$i];
+				$CELLID_SITEID_ct{$H[$i]}{$siteID} = $P[$i];
+				$sum_all_sites_all_cells+=$P[$i];
+			}
 		}
 	}
 } close IN; close OUT;
@@ -211,34 +213,36 @@ if (!defined $opt{'I'}) {
 			if ($l !~ /^Peak/) {
 				($id,$peak1,$peak2,$pcor,$corr) = split(/\t/, $l);
 				$peak1 =~ s/[-:]/_/g; $peak2 =~ s/[-:]/_/g;
-				if ($corr >= $corr_cutoff) {
-					if (defined $SITEID_TFct{$peak1}) {
-						foreach $TF (keys %{$SITEID_TF_ct{$peak1}}) {
-							if (!defined $SITEID_TFct{$peak2}) {
-								$SITEID_TF_ct{$peak2}{$TF} = 1;
-								$SITEID_TFct{$peak2} = 1;
-								$TF_siteCT{$TF}++;
-								$cicero_adds++;
-							} elsif (!defined $SITEID_TF_ct{$peak2}{$TF}) {
-								$SITEID_TF_ct{$peak2}{$TF} = 1;
-								$SITEID_TFct{$peak2}++;
-								$TF_siteCT{$TF}++;
-								$cicero_adds++;
+				if (defined $SITEID_totalCT{$peak1} && defined $SITEID_totalCT{$peak2}) {
+					if ($corr >= $corr_cutoff) {
+						if (defined $SITEID_TFct{$peak1}) {
+							foreach $TF (keys %{$SITEID_TF_ct{$peak1}}) {
+								if (!defined $SITEID_TFct{$peak2}) {
+									$SITEID_TF_ct{$peak2}{$TF} = 1;
+									$SITEID_TFct{$peak2} = 1;
+									$TF_siteCT{$TF}++;
+									$cicero_adds++;
+								} elsif (!defined $SITEID_TF_ct{$peak2}{$TF}) {
+									$SITEID_TF_ct{$peak2}{$TF} = 1;
+									$SITEID_TFct{$peak2}++;
+									$TF_siteCT{$TF}++;
+									$cicero_adds++;
+								}
 							}
 						}
-					}
-					if (defined $SITEID_TFct{$peak2}) {
-						foreach $TF (keys %{$SITEID_TF_ct{$peak2}}) {
-							if (!defined $SITEID_TFct{$peak1}) {
-								$SITEID_TF_ct{$peak1}{$TF} = 1;
-								$SITEID_TFct{$peak1} = 1;
-								$TF_siteCT{$TF}++;
-								$cicero_adds++;
-							} elsif (!defined $SITEID_TF_ct{$peak1}{$TF}) {
-								$SITEID_TF_ct{$peak1}{$TF} = 1;
-								$SITEID_TFct{$peak1}++;
-								$TF_siteCT{$TF}++;
-								$cicero_adds++;
+						if (defined $SITEID_TFct{$peak2}) {
+							foreach $TF (keys %{$SITEID_TF_ct{$peak2}}) {
+								if (!defined $SITEID_TFct{$peak1}) {
+									$SITEID_TF_ct{$peak1}{$TF} = 1;
+									$SITEID_TFct{$peak1} = 1;
+									$TF_siteCT{$TF}++;
+									$cicero_adds++;
+								} elsif (!defined $SITEID_TF_ct{$peak1}{$TF}) {
+									$SITEID_TF_ct{$peak1}{$TF} = 1;
+									$SITEID_TFct{$peak1}++;
+									$TF_siteCT{$TF}++;
+									$cicero_adds++;
+								}
 							}
 						}
 					}
