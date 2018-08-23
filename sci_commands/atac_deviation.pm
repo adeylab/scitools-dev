@@ -136,7 +136,7 @@ sub process_gene {
 		$genes_found++;
 		@COORDS = split(/[:-_]/, $GENEID_coords{$geneID});
 		($chr,$start,$end) = ($COORDS[0],$COORDS[1],$COORDS[2]);
-		print STDERR "DEBUG: $gene is $chr $start $end from $GENEID_coords{$geneID}\n";
+		print STDERR "DEBUG: $gene is $chr $start $end from $GENEID_coords{$geneID}, strand is $GENEID_strand{$geneID}\n";
 		if ($GENEID_strand{$geneID} =~ /\+/) {
 			$TSS_pos = $start;
 		} else {
