@@ -16,7 +16,7 @@ $binCT = 100;
 $minTFCT = 10;
 $TSS_flanking = 20000;
 
-getopts("O:X:b:P:B:F:G:", \%opt);
+getopts("O:Xb:P:B:F:G:", \%opt);
 
 $die2 = "
 scitools atac-deviation [options] [counts matrix, may be unfiltered] [feature bed / gene list]
