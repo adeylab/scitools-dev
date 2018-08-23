@@ -67,15 +67,17 @@ while ($l = <IN>) {
 	chomp $l;
 	@P = split(/\t/, $l);
 	$siteID = shift(@P);
-	($chr,$start,$end) = split(/[:-_]/, $siteID);
-	print OUT "$chr\t$start\t$end\t$siteID\n";
-	$siteCT++;
-	$SITEID_totalCT{$siteID} = 0;
-	for ($i = 0; $i < @H; $i++) {
-		$SITEID_totalCT{$siteID}+=$P[$i];
-		$CELLID_totalCT{$H[$i]}+=$P[$i];
-		$CELLID_SITEID_ct{$H[$i]}{$siteID} = $P[$i];
-		$sum_all_sites_all_cells+=$P[$i];
+	if ($siteID !~ /[XYMG]/) {
+		($chr,$start,$end) = split(/[:-_]/, $siteID);
+		print OUT "$chr\t$start\t$end\t$siteID\n";
+		$siteCT++;
+		$SITEID_totalCT{$siteID} = 0;
+		for ($i = 0; $i < @H; $i++) {
+			$SITEID_totalCT{$siteID}+=$P[$i];
+			$CELLID_totalCT{$H[$i]}+=$P[$i];
+			$CELLID_SITEID_ct{$H[$i]}{$siteID} = $P[$i];
+			$sum_all_sites_all_cells+=$P[$i];
+		}
 	}
 } close IN; close OUT;
 
@@ -135,7 +137,6 @@ sub process_gene {
 	if (defined $GENEID_coords{$geneID}) {
 		$genes_found++;
 		($chr,$start,$end) = split(/[:-]/, $GENEID_coords{$geneID});
-		print STDERR "DEBUG: $gene is chr=$chr start=$start end=$end from $GENEID_coords{$geneID}, strand=$GENEID_strand{$geneID}\n";
 		if ($GENEID_strand{$geneID} =~ /\+/) {
 			$TSS_pos = $start;
 		} else {
