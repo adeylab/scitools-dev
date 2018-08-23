@@ -182,6 +182,8 @@ if (!defined $opt{'I'}) {
 	} else {
 		open IN, "$bedtools intersect -a $opt{'O'}.dev/peaks.bed -b $opt{'O'}.dev/genes_TSS_$TSS_flanking.bed -wa -wb |";
 	}
+	
+	$total_siteCT = 0;
 	while ($l = <IN>) {
 		chomp $l;
 		@P = split(/\t/, $l);
@@ -196,7 +198,10 @@ if (!defined $opt{'I'}) {
 		} else {
 			$SITEID_TFct{$P[3]}++;
 		}
+		$total_siteCT++;
 	} close IN;
+	
+	print LOG "\t\t\t\tTotal peaks in select regions = $total_siteCT\n";
 	
 	if (defined $opt{'C'}) {
 		print LOG "\t\t\t\tAdding peaks linked by Cicero file ($opt{'C'}), correlation threshold = $corr_cutoff\n";
