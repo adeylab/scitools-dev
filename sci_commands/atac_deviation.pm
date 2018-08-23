@@ -49,6 +49,9 @@ if (!defined $opt{'O'}) {
 if (defined $opt{'F'}) {$minTFCT = $opt{'F'}};
 if (defined $opt{'P'}) {$permCT = $opt{'P'}};
 if (defined $opt{'B'}) {$binCT = $opt{'B'}};
+if (!defined $opt{'G'} && $ARGV[1] !~ /\.bed$/) {
+	die "ERROR: if a bed file is not provided, a gene list is assumes and -G must be specified.\n";
+}
 
 system("mkdir $opt{'O'}.dev");
 
@@ -169,7 +172,11 @@ if (!defined $opt{'I'}) {
 		$TF_count{$TF}++;
 	} close IN;
 	
-	open IN, "$bedtools intersect -a $opt{'O'}.dev/peaks.bed -b $ARGV[1] -wa -wb |";
+	if ($ARGV[1] =~ /\.bed$/) {
+		open IN, "$bedtools intersect -a $opt{'O'}.dev/peaks.bed -b $ARGV[1] -wa -wb |";
+	} else {
+		open IN, "$bedtools intersect -a $opt{'O'}.dev/peaks.bed -b $opt{'O'}.dev/genes_TSS_$TSS_flanking.bed -wa -wb |";
+	}
 	while ($l = <IN>) {
 		chomp $l;
 		@P = split(/\t/, $l);
