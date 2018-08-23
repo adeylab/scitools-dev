@@ -121,7 +121,8 @@ if (defined $opt{'G'}) {
 		}
 	} close IN; close OUT;
 	if ($genes_found<1) {die "ERROR: Gene mode was specified but no genes provided could be found in the refgene file: $opt{'G'}\n"};
-	print LOG "\t\t\t\ttotal genes = $total_genes, found genes = $genes_found, missing genes = $genes_missing\n";
+	$missing_gene_list =~ s/,$//;
+	print LOG "\t\t\t\ttotal genes = $total_genes, found genes = $genes_found, missing genes = $genes_missing ($missing_gene_list)\n";
 }
 
 sub process_gene {
@@ -134,6 +135,7 @@ sub process_gene {
 	if (defined $GENEID_coords{$geneID}) {
 		$genes_found++;
 		($chr,$start,$end) = split(/[:-_]/, $GENEID_coords{$geneID});
+		print STDERR "DEBUG: $gene is $chr $start $end from $GENEID_coords{$geneID}\n";
 		if ($GENEID_strand{$geneID} =~ /\+/) {
 			$TSS_pos = $start;
 		} else {
@@ -144,6 +146,7 @@ sub process_gene {
 		print OUT "$chr\t$flank_start\t$flank_end\t$annot\n";
 	} else {
 		$genes_missing++;
+		$missing_gene_list .= "$gene,";
 	}
 }
 
