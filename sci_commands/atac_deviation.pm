@@ -15,8 +15,9 @@ $permCT = 100;
 $binCT = 100;
 $minTFCT = 10;
 $TSS_flanking = 20000;
+$corr_cutoff = 0.15;
 
-getopts("O:Xb:P:B:F:G:", \%opt);
+getopts("O:Xb:P:B:F:G:I:C:c:", \%opt);
 
 $die2 = "
 scitools atac-deviation [options] [counts matrix, may be unfiltered] [feature bed / gene list]
@@ -35,6 +36,8 @@ Options:
                  Gene list must be annotated, ie: geneName (tab) GeneSetName
                  OR fasta-like: >annotation, then subsequent lines as the
                     genes associated with it (can be comma-sep)
+   -C   [STR]   Cicero all-cons file. Will also use all linked sites.
+   -c   [FLT]   Cicero correlation cutoff (0-1, def = $corr_cutoff)
    -S   [INT]   Flanking size (out from TSS in bp, def = $TSS_flanking)
    -b   [STR]   Bedtools call (def = $bedtools)
    -X           Retain intermediate files (def = remove)
@@ -52,6 +55,7 @@ if (defined $opt{'B'}) {$binCT = $opt{'B'}};
 if (!defined $opt{'G'} && $ARGV[1] !~ /\.bed$/) {
 	die "ERROR: if a bed file is not provided, a gene list is assumes and -G must be specified.\n";
 }
+if (defined $opt{'c'}) {$corr_cutoff = $opt{'c'}};
 
 system("mkdir $opt{'O'}.dev");
 
@@ -192,6 +196,51 @@ if (!defined $opt{'I'}) {
 			$SITEID_TFct{$P[3]}++;
 		}
 	} close IN;
+	
+	if (defined $opt{'C'}) {
+		print LOG "\t\t\t\tAdding peaks linked by Cicero file ($opt{'C'}), correlation threshold = $corr_cutoff\n";
+		open IN, "$opt{'C'}";
+		while ($l = <IN>) {
+			chomp $l;
+			if ($l !~ /^Peak/) {
+				($id,$peak1,$peak2,$pcor,$corr) = split(/\t/, $l);
+				$peak1 =~ s/[-:]/_/g; $peak2 =~ s/[-:]/_/g;
+				if ($corr >= $corr_cutoff) {
+					if (defined $SITEID_TFct{$peak1}) {
+						foreach $TF (keys %{$SITEID_TF_ct{$peak1}}) {
+							if (!defined $SITEID_TFct{$peak2}) {
+								$SITEID_TF_ct{$peak2}{$TF} = 1;
+								$SITEID_TFct{$peak2} = 1;
+								$TF_siteCT{$TF}++;
+								$cicero_adds++;
+							} elsif (!defined $SITEID_TF_ct{$peak2}{$TF}) {
+								$SITEID_TF_ct{$peak2}{$TF} = 1;
+								$SITEID_TFct{$peak2}++;
+								$TF_siteCT{$TF}++;
+								$cicero_adds++;
+							}
+						}
+					}
+					if (defined $SITEID_TFct{$peak2}) {
+						foreach $TF (keys %{$SITEID_TF_ct{$peak2}}) {
+							if (!defined $SITEID_TFct{$peak1}) {
+								$SITEID_TF_ct{$peak1}{$TF} = 1;
+								$SITEID_TFct{$peak1} = 1;
+								$TF_siteCT{$TF}++;
+								$cicero_adds++;
+							} elsif (!defined $SITEID_TF_ct{$peak1}{$TF}) {
+								$SITEID_TF_ct{$peak1}{$TF} = 1;
+								$SITEID_TFct{$peak1}++;
+								$TF_siteCT{$TF}++;
+								$cicero_adds++;
+							}
+						}
+					}
+				}
+			}
+		} close IN;
+		print LOG "\t\t\t\tTotal peaks added by cicero links = $cicero_adds\n";
+	}
 
 	open OUT, ">$opt{'O'}.dev/site_intersects.txt";
 	foreach $siteID (keys %SITEID_TF_ct) {
@@ -390,8 +439,6 @@ foreach $TF (sort {$TF_variability{$b}<=>$TF_variability{$a}} keys %TF_variabili
 }
 close SRT;
 
-}
-
 sub shuffle {
 	
 	@initial = @_;
@@ -402,6 +449,8 @@ sub shuffle {
 	}
 	return @initial;
 	
+}
+
 }
 
 1;
