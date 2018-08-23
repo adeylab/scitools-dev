@@ -92,6 +92,7 @@ while ($l = <IN>) {
 				$CLASS_GENE_UP{$classID}{$name} = 1;
 				$CLASS_gene_up_list{$classID} .= "$name\n";
 				$CLASS_gene_upCT{$classID}++;
+				print STDERR "DEBUG: Adding to $classID the gene $name, which is up.\n";
 			} elsif ($dir =~ /^d/i) { # down
 				$CLASS_GENE_DN{$classID}{$name} = 1;
 				$CLASS_gene_dn_list{$classID} .= "$name\n";
