@@ -95,7 +95,7 @@ if (defined $opt{'G'}) {
 	}
 	read_refgene($opt{'G'});
 	
-	print LOG "\t\t\t\tMatching genes to coordinates and builing annotated bed.\n";
+	print LOG "\t\t\t\tMatching genes to coordinates and building annotated bed.\n";
 	open IN, "$ARGV[1]";
 	open OUT, ">$opt{'O'}.dev/genes_TSS_$TSS_flanking.bed";
 	$gene_spec_mode = 0;
@@ -121,9 +121,11 @@ if (defined $opt{'G'}) {
 		}
 	} close IN; close OUT;
 	if ($genes_found<1) {die "ERROR: Gene mode was specified but no genes provided could be found in the refgene file: $opt{'G'}\n"};
+	print LOG "\t\t\t\ttotal genes = $total_genes, found genes = $genes_found, missing genes = $genes_missing\n";
 }
 
 sub process_gene {
+	$total_genes++;
 	$gene = $_[0];
 	$annot = $_[1];
 	if (defined $GENENAME_geneID{$gene}) {
