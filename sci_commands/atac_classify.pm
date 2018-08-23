@@ -157,8 +157,10 @@ if ($tfCT>0) {
 			$dev_opts .= " -C $opt{'C'} -c $corr_cutoff";
 		}
 		if (defined $opt{'X'}) {$dev_opts .= " -X"};
-		print LOG "\t\t\t\tatac-deviation $dev_opts $ARGV[0] $opt{'O'}.classify/motif_set.bed\n";
-		\&atac_deviation("$dev_opts $ARGV[0] $opt{'O'}.classify/motif_set.bed");
+		$dev_opts .= " $ARGV[0] $opt{'O'}.classify/motif_set.bed";
+		@DEV_OPTS = split(/ /, $dev_opts);
+		print LOG "\t\t\t\tatac-deviation $dev_opts\n";
+		\&atac_deviation(@DEV_OPTS);
 	} else {
 		print LOG "\t\t\t\tNo specified motifs were found! - skipping motif portion of the analysis.\n";
 	}
@@ -191,8 +193,10 @@ if (defined $opt{'C'}) {
 	$dev_opts .= " -C $opt{'C'} -c $corr_cutoff";
 }
 if (defined $opt{'X'}) {$dev_opts .= " -X"};
-print LOG "\t\t\t\tatac-deviation $dev_opts $ARGV[0] $opt{'O'}.classify/gene_set.txt\n";
-\&atac_deviation("$dev_opts $ARGV[0] $opt{'O'}.classify/gene_set.txt");
+$dev_opts .= " $ARGV[0] $opt{'O'}.classify/gene_set.txt";
+@DEV_OPTS = split(/ /, $dev_opts);
+print LOG "\t\t\t\tatac-deviation $dev_opts\n";
+\&atac_deviation(@DEV_OPTS);
 
 
 
