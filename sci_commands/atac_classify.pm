@@ -105,7 +105,7 @@ while ($l = <IN>) {
 				$geneCT++;
 			}
 		} elsif ($type =~ /^m/i) { # motif
-			if (!defined $opt{'T'}) {die "ERROR: Motifs are specified but no motif bed file provided (-T)\n";
+			if (!defined $opt{'T'}) {die "ERROR: Motifs are specified but no motif bed file provided (-T)\n"};
 			$CLASS_tfCT{$classID}++;
 			if ($dir =~ /^u/i) { # up
 				$CLASS_TF_UP{$classID}{$name} = 1;
@@ -201,8 +201,6 @@ atac_deviation("$dev_opts $ARGV[0] $opt{'O'}.classify/gene_set.txt");
 
 
 
-
-}
 
 }
 
