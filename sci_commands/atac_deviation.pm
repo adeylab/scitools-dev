@@ -250,11 +250,16 @@ if (!defined $opt{'I'}) {
 
 	open OUT, ">$opt{'O'}.dev/site_intersects.txt";
 	foreach $siteID (keys %SITEID_TF_ct) {
-		$TF_list = "";
-		foreach $TF (sort keys %{$SITEID_TF_ct{$siteID}}) {
-			$TF_list .= "$TF,";
-		} $TF_list =~ s/,$//;
-		print OUT "$siteID\t$TF_list\n";
+		($chr,$start,$end) = split(/[:-_]/, $siteID);
+		if ($end-$start>0) {
+			$TF_list = "";
+			foreach $TF (sort keys %{$SITEID_TF_ct{$siteID}}) {
+				$TF_list .= "$TF,";
+			} $TF_list =~ s/,$//;
+			print OUT "$siteID\t$TF_list\n";
+		} else {
+			print LOG "\t\t\t\tWarning: $siteID excluded, end-start !> 0\n";
+		}
 	} close OUT;
 
 	open OUT, ">$opt{'O'}.dev/feature_peak_counts.txt";
@@ -273,7 +278,7 @@ $peaks_per_bin = $siteCT/$binCT;
 $ts = localtime(time);
 print LOG "$ts\tStratifying peaks into $binCT like-signal-bins, with $peaks_per_bin peaks per bin.\n";
 
-# OPTION 2: stratify by read DENSITY of peak, to account for the size of the peak and not purely counts
+# stratify by read DENSITY of peak, to account for the size of the peak and not purely counts
 foreach $siteID (keys %SITEID_totalCT) {
 	($chr,$start,$end) = split(/[:-_]/, $siteID);
 	$SITEID_density{$siteID} = $SITEID_totalCT{$siteID}/($end-$start);
