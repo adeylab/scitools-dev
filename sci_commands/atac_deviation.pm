@@ -17,7 +17,7 @@ $minTFCT = 10;
 $TSS_flanking = 20000;
 $corr_cutoff = 0.15;
 
-getopts("O:Xb:P:B:F:G:I:C:c:", \%opt);
+getopts("O:Xb:P:B:F:G:I:C:c:S:", \%opt);
 
 $die2 = "
 scitools atac-deviation [options] [counts matrix, may be unfiltered] [feature bed / gene list]
@@ -52,6 +52,7 @@ if (!defined $opt{'O'}) {
 if (defined $opt{'F'}) {$minTFCT = $opt{'F'}};
 if (defined $opt{'P'}) {$permCT = $opt{'P'}};
 if (defined $opt{'B'}) {$binCT = $opt{'B'}};
+if (defined $opt{'S'}) {$TSS_flanking = $opt{'S'}};
 if (!defined $opt{'G'} && $ARGV[1] !~ /\.bed$/) {
 	die "ERROR: if a bed file is not provided, a gene list is assumes and -G must be specified.\n";
 }
