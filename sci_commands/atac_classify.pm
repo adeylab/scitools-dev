@@ -33,7 +33,7 @@ future implementations will incorporate weights.
 
 Specification file has '>' lines that have the cell type name (no whitespace),
 subsequent lines have three tab-delimited columns:
-   [gene/g or motif/m]   [gene or motif name]   [up/u or down/dn/d]
+   [gene/g or motif/m] [gene or motif name] [up/u or down/dn/d] [weight (optional)]
 Motifs or gene names must match the names in the -G and -T files.
 
 Required Options:
@@ -82,6 +82,7 @@ while ($l = <IN>) {
 		$CLASS_gene_dn_list{$classID} = "";
 		$CLASS_gene_upCT{$classID} = 0;
 		$CLASS_gene_dnCT{$classID} = 0;
+		$CLASS_set{$classID} = 1;
 		$classCT++;
 		print LOG "\t\t\t\tLoading $classID\n";
 	} else {
@@ -105,9 +106,9 @@ while ($l = <IN>) {
 			if (!defined $opt{'T'}) {die "ERROR: Motifs are specified but no motif bed file provided (-T)\n"};
 			$CLASS_tfCT{$classID}++;
 			if ($dir =~ /^u/i) { # up
-				$CLASS_TF_UP{$classID}{$name} = 1;
+				$CLASS_tf_set{$classID}{$name} = 1;
 			} elsif ($dir =~ /^d/i) { # down
-				$CLASS_TF_DN{$classID}{$name} = 1;
+				$CLASS_tf_set{$classID}{$name} = -1;
 			}
 			if (!defined $TF_include{$name}) {
 				$TF_include{$name} = 1;
@@ -120,6 +121,7 @@ while ($l = <IN>) {
 $ts = localtime(time);
 print LOG "\t\t\t\t$classCT total classes.\n";
 
+$foundTFct = 0;
 if ($tfCT>0) {
 	print LOG "$ts\tBuilding TF set bed file for $tfCT motifs.\n";
 
@@ -135,7 +137,7 @@ if ($tfCT>0) {
 		}
 	} close IN; close OUT;
 	
-	$missingTFct = 0; $foundTFct = 0; $missing_TFs = "";
+	$missingTFct = 0; $missing_TFs = "";
 	foreach $name (keys %TF_include) {
 		if ($TF_include{$name} > 1) {
 			$foundTFct++;
@@ -171,7 +173,7 @@ print LOG "$ts\tBuilding gene sets.\n";
 
 open OUT, ">$opt{'O'}.classify/gene_set.txt";
 $gene_setCT = 0;
-foreach $classID (keys %CLASS_gene_upCT) {
+foreach $classID (keys %CLASS_set) {
 	if ($CLASS_gene_upCT{$classID}>0) {
 		print OUT "\>$classID\_up\n$CLASS_gene_up_list{$classID}";
 		$gene_setCT++;
@@ -188,7 +190,7 @@ if ($gene_setCT<1) {
 }
 
 print LOG "\t\t\t\tRunning deviation analysis for $gene_setCT gene sets.\n";
-$dev_opts = "-O $opt{'O'}.classify/motif_set -b $bedtools -P $permCT -B $binCT -F $minTFCT -G $opt{'G'} -S $TSS_flanking";
+$dev_opts = "-O $opt{'O'}.classify/gene_set -b $bedtools -P $permCT -B $binCT -F $minTFCT -G $opt{'G'} -S $TSS_flanking";
 if (defined $opt{'C'}) {
 	$dev_opts .= " -C $opt{'C'} -c $corr_cutoff";
 }
@@ -198,10 +200,66 @@ $dev_opts .= " $ARGV[0] $opt{'O'}.classify/gene_set.txt";
 print LOG "\t\t\t\tatac-deviation $dev_opts\n";
 \&atac_deviation(@DEV_OPTS);
 
+$ts = localtime(time);
+print LOG "$ts\tDeviation calculations complete. Generating unified scores.\n";
 
+# load in all deviations
+if ($foundTFct>0) {
+	open DEV, "$opt{'O'}.classify/motif_set.dev/deviations.txt";
+	$h = <DEV>; chomp $h; @H = split(/\t/, $h);
+	while ($l = <DEV>) {
+		chomp $l;
+		@P = split(/\t/, $l);
+		$motifID = shift(@P);
+		$MOTIFID_loaded{$motifID} = 1;
+		for ($i = 0; $i < @H; $i++) {
+			$CELLID_MOTIF_dev{$H[$i]}{$motifID} = $P[$i];
+		}
+	} close DEV;
+}
 
+open DEV, "$opt{'O'}.classify/gene_set.dev/deviations.txt";
+$h = <DEV>; chomp $h; @CELLIDS = split(/\t/, $h);
+while ($l = <DEV>) {
+	chomp $l;
+	@P = split(/\t/, $l);
+	$genesetID = shift(@P);
+	for ($i = 0; $i < @CELLIDS; $i++) {
+		$CELLID_GENESET_dev{$CELLIDS[$i]}{$genesetID} = $P[$i];
+	}
+} close DEV;
 
+open OUT, ">$opt{'O'}.classify/class_deviations.txt";
 
+print OUT "$CELLID[0]";
+for ($i = 1; $i < @CELLIDS; $i++) {
+	print OUT "\t$CELLIDS[$i]";
+} print OUT "\n";
+
+foreach $classID (keys %CLASS_set) {
+	$total_inputCT = $CLASS_geneCT{$classID}+$CLASS_tfCT{$classID};
+	print OUT "$classID";
+	for ($i = 0; $i < @CELLIDS; $i++) {
+		$cellID = $CELLIDS[$i];
+		$CLASSID_CELLID_score{$classID}{$cellID} = 0;
+		if (defined $CELLID_GENESET_dev{$cellID}{'$classID\_up'}) {
+			$CLASSID_CELLID_score{$classID}{$cellID} += ($CELLID_GENESET_dev{$cellID}{'$classID\_up'}*($CLASS_gene_upCT{$classID}/$total_inputCT));
+		}
+		if (defined $CELLID_GENESET_dev{$cellID}{'$classID\_dn'}) {
+			$CLASSID_CELLID_score{$classID}{$cellID} += (-1*($CELLID_GENESET_dev{$cellID}{'$classID\_up'}*($CLASS_gene_upCT{$classID}/$total_inputCT)));
+		}
+		if ($foundTFct>0) {
+			foreach $motifID (keys %MOTIFID_loaded) {
+				if (defined $CLASS_tf_set{$classID}{$motifID}) {
+					$CLASSID_CELLID_score{$classID}{$cellID} += ($CLASS_tf_set{$classID}{$motifID}*($CELLID_MOTIF_dev{$cellID}{$motifID}/$total_inputCT));
+				}
+			}
+		}
+		print OUT "\t$CLASSID_CELLID_score{$classID}{$cellID}";
+	}
+	print OUT "\n";
+}
+close OUT;
 
 }
 
