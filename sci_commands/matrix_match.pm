@@ -68,6 +68,7 @@ $h2 = <M2>; chomp $h2; @H2 = split(/\t/, $h2);
 for ($m1 = 0; $m1 < @H1; $m1++) {
 	for ($m2 = 0; $m2 < @H2; $m2++) {
 		$M1_M2_nonzero{$m1}{$m2} = 0;
+		$M1_M2_zero{$m1}{$m2} = 0;
 		$total_match_sites++;
 	}
 }
@@ -95,6 +96,8 @@ while ($l1 = <M1>) {
 			for ($m2 = 0; $m2 < @H2; $m2++) {
 				if ($P1[$m1] != 0 && $P2[$m2] != 0) {
 					$M1_M2_nonzero{$m1}{$m2}++;
+				} elsif ($P1[$m1] == 0 && $P2[$m2] == 0) {
+					$M1_M2_zero{$m1}{$m2}++;
 				}
 			}
 		}
