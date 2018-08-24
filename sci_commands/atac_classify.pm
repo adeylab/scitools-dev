@@ -242,10 +242,10 @@ foreach $classID (keys %CLASS_set) {
 	for ($i = 0; $i < @CELLIDS; $i++) {
 		$cellID = $CELLIDS[$i];
 		$CLASSID_CELLID_score{$classID}{$cellID} = 0;
-		if (defined $CELLID_GENESET_dev{$cellID}{'$classID\_up'}) {
+		if (defined $CELLID_GENESET_dev{$cellID}{$classID."_up"}) {
 			$CLASSID_CELLID_score{$classID}{$cellID} += ($CELLID_GENESET_dev{$cellID}{'$classID\_up'}*($CLASS_gene_upCT{$classID}/$total_inputCT));
 		}
-		if (defined $CELLID_GENESET_dev{$cellID}{'$classID\_dn'}) {
+		if (defined $CELLID_GENESET_dev{$cellID}{$classID."_dn"}) {
 			$CLASSID_CELLID_score{$classID}{$cellID} += (-1*($CELLID_GENESET_dev{$cellID}{'$classID\_up'}*($CLASS_gene_upCT{$classID}/$total_inputCT)));
 		}
 		if ($foundTFct>0) {
