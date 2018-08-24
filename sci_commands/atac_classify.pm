@@ -223,7 +223,7 @@ $h = <DEV>; chomp $h; @CELLIDS = split(/\t/, $h);
 while ($l = <DEV>) {
 	chomp $l;
 	@P = split(/\t/, $l);
-	$genesetID = shift(@P);
+	$genesetID = shift(@P); print STDERR "DEBUG: $genesetID is the ID being loaded....\n";
 	for ($i = 0; $i < @CELLIDS; $i++) {
 		$CELLID_GENESET_dev{$CELLIDS[$i]}{$genesetID} = $P[$i];
 	}
