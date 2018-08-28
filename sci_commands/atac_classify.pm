@@ -33,8 +33,10 @@ future implementations will incorporate weights.
 
 Specification file has '>' lines that have the cell type name (no whitespace),
 subsequent lines have three tab-delimited columns:
-   [gene/g or motif/m] [gene or motif name] [up/u or down/dn/d] [weight (optional)]
-Motifs or gene names must match the names in the -G and -T files.
+   col1 = gene/g, motif/m, or feature/f
+   col2 = gene or motif name (must match entries in -G or -G files,
+          or feature locus (chr_start_end or chr:start-end)
+   col3 = up/u or down/dn/d
 
 Required Options:
    -G   [STR]   Gene info (refGene.txt formats), Shortcut eg: hg38, hg19, mm10
@@ -48,6 +50,14 @@ Other Options:
    -C   [STR]   Cicero all-cons file. Will also use all linked sites for genes.
    -c   [FLT]   Cicero correlation cutoff (0-1, def = $corr_cutoff)
    -t           Also use cicero linked peaks for TF deviation (def = just motif sites)
+   -W   [STR]   Weighting of categories in the format [class_direction]=[weight],[etc...]
+                 Valid classes: gene_up/g_u, gene_down/g_d, morif_up/m_u, motif_down/m_d
+                                feature_up/f_u, or feature_down/f_d
+                 Weight is applied to the feature-count corrected value, e.g. if there
+                 are 10 genes up and 3 motifs up, the weight for a specific motif would be:
+                 [deviaiton of motif]/[10 gene entries + 3 motif entires = 13]*[weight = 1]
+				 and for the set of genes that are in the up direction:
+				 ([gene set up deviation]*[10 genes])/[13 total entries]*[weight = 1]
    -S   [INT]   Flanking size (out from TSS in bp, def = $TSS_flanking)
    -b   [STR]   Bedtools call (def = $bedtools)
    -X           Retain intermediate files (def = remove)
@@ -113,6 +123,13 @@ while ($l = <IN>) {
 			if (!defined $TF_include{$name}) {
 				$TF_include{$name} = 1;
 				$tfCT++;
+			}
+		} elsif ($type =~ /^f/i) { # feature
+			$CLASS_featureCT{$classID}++;
+			if ($dir =~ /^u/i) {
+				$CLASS_feature_upCT{$classID}++;
+			} elsif ($dir =~ /^d/i) {
+				$CLASS_feature_dnCT{$classID}++;
 			}
 		}
 	}
