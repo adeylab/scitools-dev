@@ -26,7 +26,7 @@ Options:
                   Annot=#hexColor,Annot2=#hexColor
                   
 Note: Requires monocle2 and cicero R packages so dependencies need to look for those
-      This works specifically with monocle2. Will be upgraded once monocle 3 is more stable
+      This works specifically with monocle2. Will be upgraded once monocle 3 is more stable. Test
 ";
 
 
@@ -223,6 +223,23 @@ if ($color_mapping !~ /none/i) {
 print R "
 #Overwrite monocle.CDS file with final analysis
 saveRDS(cds,file=\"$opt{'O'}/monocle.CDS.rds\")
+
+
+#Save branch point coordinates
+dp_mst <- minSpanningTree(cds)
+reduced_dim_coords <- reducedDimK(cds)
+ica_space_df <- data.frame(Matrix::t(reduced_dim_coords[1:2,]))
+colnames(ica_space_df) <- c(\"prin_graph_dim_1\", \"prin_graph_dim_2\")
+ica_space_df\$sample_name <- row.names(ica_space_df)
+ica_space_df\$sample_state <- row.names(ica_space_df)
+edge_list <- as.data.frame(get.edgelist(dp_mst))
+colnames(edge_list) <- c(\"source\", \"target\")
+edge_df <- merge(ica_space_df, edge_list, by.x = \"sample_name\",by.y = \"source\", all = TRUE)
+edge_df <- plyr::rename(edge_df, c(prin_graph_dim_1 = \"source_prin_graph_dim_1\",prin_graph_dim_2 = \"source_prin_graph_dim_2\"))
+edge_df <- merge(edge_df, ica_space_df[, c(\"sample_name\",\"prin_graph_dim_1\", \"prin_graph_dim_2\")],by.x = \"target\", by.y = \"sample_name\", all = TRUE)
+edge_df <- plyr::rename(edge_df, c(prin_graph_dim_1 = \"target_prin_graph_dim_1\",prin_graph_dim_2 = \"target_prin_graph_dim_2\"))
+write.table(as.matrix(edge_df),file=\"$opt{'O'}/monocle_branchpoints.txt\",col.names=TRUE,row.names=FALSE,sep=\"\\t\",quote=FALSE)
+
 
 ggsave(plot=p,filename=\"$opt{'O'}.timepoint_plot.png\",width=5,height=4,dpi=900)
 ggsave(plot=p,filename=\"$opt{'O'}.timepoint_plot.pdf\",width=5,height=4);
