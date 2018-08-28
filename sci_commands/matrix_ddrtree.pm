@@ -167,6 +167,10 @@ feature_data <- new(\"AnnotatedDataFrame\", data = cds_site_data)
 sample_data <- new(\"AnnotatedDataFrame\", data = cds_cell_data)
 dimensions_data <- new(\"AnnotatedDataFrame\", data = cds_dims_data)
 input_cds <- newCellDataSet(as.matrix(cds_counts_matrix), phenoData = sample_data, featureData = feature_data)
+input_cds\@expressionFamily <- binomialff()
+input_cds\@expressionFamily\@vfamily <- \"binomialff\"
+
+
 
 set.seed(2017)
 ";
@@ -188,17 +192,16 @@ reducedDimA(agg_cds)<-dimA
 
 
 #instead of this we can potentially add in the aggregate group kmers. Ok for now
-agg_cds <- clusterCells(agg_cds, verbose = F)
+agg_cds <- clusterCells(agg_cds, verbose = F,cores=10)
 
-clustering_DA_sites <- differentialGeneTest(agg_cds, #Takes a few minutes
-                                             fullModelFormulaStr = '~Cluster')
+clustering_DA_sites <- differentialGeneTest(agg_cds,fullModelFormulaStr = '~Cluster')
 
 #might not need to use this
 # This takes a few minutes to run
 #diff_timepoint <- differentialGeneTest(agg_cds,
 #                  fullModelFormulaStr=\"~timepoint + num_genes_expressed\")
 
-ordering_sites <- row.names(clustering_DA_sites)[order(clustering_DA_sites\$qval)][1:1000]
+ordering_sites <- row.names(clustering_DA_sites)[order(clustering_DA_sites\$qval)][1:10000]
 
 agg_cds <- setOrderingFilter(agg_cds, ordering_sites)
 
