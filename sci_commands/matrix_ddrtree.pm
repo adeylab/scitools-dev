@@ -221,7 +221,8 @@ if ($color_mapping !~ /none/i) {
 
 
 print R "
-
+#Overwrite monocle.CDS file with final analysis
+saveRDS(cds,file=\"$opt{'O'}/monocle.CDS.rds\")
 
 ggsave(plot=p,filename=\"$opt{'O'}.timepoint_plot.png\",width=5,height=4,dpi=900)
 ggsave(plot=p,filename=\"$opt{'O'}.timepoint_plot.pdf\",width=5,height=4);
