@@ -209,7 +209,14 @@ agg_cds <- reduceDimension(agg_cds, max_components = 2,
           residualModelFormulaStr=\"~num_genes_expressed\",
           reduction_method = \'DDRTree\')
 agg_cds <- orderCells(agg_cds)
-p<-plot_cell_trajectory(agg_cds, color_by = \"timepoint\")
+
+
+
+
+
+p<-plot_cell_trajectory(agg_cds, color_by = \"State\")
+
+
 
 ";
 
@@ -221,8 +228,15 @@ if ($color_mapping !~ /none/i) {
 
 
 print R "
+
+ggsave(plot=p,filename=\"$opt{'O'}.state_plot.png\",width=5,height=4,dpi=900)
+ggsave(plot=p,filename=\"$opt{'O'}.state_plot.pdf\",width=5,height=4);
+
+
+
+cds<-agg_cds
 #Overwrite monocle.CDS file with final analysis
-saveRDS(cds,file=\"$opt{'O'}/monocle.CDS.rds\")
+saveRDS(cds,file=\"monocle.CDS.rds\")
 
 
 #Save branch point coordinates
@@ -240,15 +254,12 @@ edge_df <- merge(edge_df, ica_space_df[, c(\"sample_name\",\"prin_graph_dim_1\",
 edge_df <- plyr::rename(edge_df, c(prin_graph_dim_1 = \"target_prin_graph_dim_1\",prin_graph_dim_2 = \"target_prin_graph_dim_2\"))
 write.table(as.matrix(edge_df),file=\"$opt{'O'}/monocle_branchpoints.txt\",col.names=TRUE,row.names=FALSE,sep=\"\\t\",quote=FALSE)
 
-
+p<-plot_cell_trajectory(agg_cds, color_by = \"timepoint\")
 ggsave(plot=p,filename=\"$opt{'O'}.timepoint_plot.png\",width=5,height=4,dpi=900)
 ggsave(plot=p,filename=\"$opt{'O'}.timepoint_plot.pdf\",width=5,height=4);
 
 
 
-p<-plot_cell_trajectory(agg_cds, color_by = \"State\")
-ggsave(plot=p,filename=\"$opt{'O'}.state_plot.png\",width=5,height=4,dpi=900)
-ggsave(plot=p,filename=\"$opt{'O'}.state_plot.pdf\",width=5,height=4);
 
 #add stuff here if you want to reroot agg_cds <- orderCells(agg_cds, root_state = \"D\")
 
