@@ -26,7 +26,7 @@ Options:
                   Annot=#hexColor,Annot2=#hexColor
                   
 Note: Requires monocle2 and cicero R packages so dependencies need to look for those
-      This works specifically with monocle2. Will be upgraded once monocle 3 is more stable
+      This works specifically with monocle2. Will be upgraded once monocle 3 is more stable. Test
 ";
 
 
@@ -167,6 +167,10 @@ feature_data <- new(\"AnnotatedDataFrame\", data = cds_site_data)
 sample_data <- new(\"AnnotatedDataFrame\", data = cds_cell_data)
 dimensions_data <- new(\"AnnotatedDataFrame\", data = cds_dims_data)
 input_cds <- newCellDataSet(as.matrix(cds_counts_matrix), phenoData = sample_data, featureData = feature_data)
+input_cds\@expressionFamily <- binomialff()
+input_cds\@expressionFamily\@vfamily <- \"binomialff\"
+
+
 
 set.seed(2017)
 ";
@@ -188,17 +192,16 @@ reducedDimA(agg_cds)<-dimA
 
 
 #instead of this we can potentially add in the aggregate group kmers. Ok for now
-agg_cds <- clusterCells(agg_cds, verbose = F)
+agg_cds <- clusterCells(agg_cds, verbose = F,cores=10)
 
-clustering_DA_sites <- differentialGeneTest(agg_cds, #Takes a few minutes
-                                             fullModelFormulaStr = '~Cluster')
+clustering_DA_sites <- differentialGeneTest(agg_cds,fullModelFormulaStr = '~Cluster')
 
 #might not need to use this
 # This takes a few minutes to run
 #diff_timepoint <- differentialGeneTest(agg_cds,
 #                  fullModelFormulaStr=\"~timepoint + num_genes_expressed\")
 
-ordering_sites <- row.names(clustering_DA_sites)[order(clustering_DA_sites\$qval)][1:1000]
+ordering_sites <- row.names(clustering_DA_sites)[order(clustering_DA_sites\$qval)][1:10000]
 
 agg_cds <- setOrderingFilter(agg_cds, ordering_sites)
 
@@ -206,7 +209,14 @@ agg_cds <- reduceDimension(agg_cds, max_components = 2,
           residualModelFormulaStr=\"~num_genes_expressed\",
           reduction_method = \'DDRTree\')
 agg_cds <- orderCells(agg_cds)
+
+
+
+
+
 p<-plot_cell_trajectory(agg_cds, color_by = \"timepoint\")
+
+
 
 ";
 
@@ -219,15 +229,40 @@ if ($color_mapping !~ /none/i) {
 
 print R "
 
+ggsave(plot=p,filename=\"$opt{'O'}.annot_plot.png\",width=5,height=4,dpi=900)
+ggsave(plot=p,filename=\"$opt{'O'}.annot_plot.pdf\",width=5,height=4);
 
+p<-plot_cell_trajectory(agg_cds, color_by = \"State\")
+ggsave(plot=p,filename=\"$opt{'O'}.state_plot.png\",width=5,height=4,dpi=900)
+ggsave(plot=p,filename=\"$opt{'O'}.state_plot.pdf\",width=5,height=4);
+
+
+cds<-agg_cds
+#Overwrite monocle.CDS file with final analysis
+saveRDS(cds,file=\"monocle.CDS.rds\")
+
+
+#Save branch point coordinates
+dp_mst <- minSpanningTree(cds)
+reduced_dim_coords <- reducedDimK(cds)
+ica_space_df <- data.frame(Matrix::t(reduced_dim_coords[1:2,]))
+colnames(ica_space_df) <- c(\"prin_graph_dim_1\", \"prin_graph_dim_2\")
+ica_space_df\$sample_name <- row.names(ica_space_df)
+ica_space_df\$sample_state <- row.names(ica_space_df)
+#edge_list <- as.data.frame(get.edgelist(dp_mst))
+#colnames(edge_list) <- c(\"source\", \"target\")
+#edge_df <- merge(ica_space_df, edge_list, by.x = \"sample_name\",by.y = \"source\", all = TRUE)
+#edge_df <- plyr::rename(edge_df, c(prin_graph_dim_1 = \"source_prin_graph_dim_1\",prin_graph_dim_2 = \"source_prin_graph_dim_2\"))
+#edge_df <- merge(edge_df, ica_space_df[, c(\"sample_name\",\"prin_graph_dim_1\", \"prin_graph_dim_2\")],by.x = \"target\", by.y = \"sample_name\", all = TRUE)
+#edge_df <- plyr::rename(edge_df, c(prin_graph_dim_1 = \"target_prin_graph_dim_1\",prin_graph_dim_2 = \"target_prin_graph_dim_2\"))
+#write.table(as.matrix(edge_df),file=\"$opt{'O'}/monocle_branchpoints.txt\",col.names=TRUE,row.names=FALSE,sep=\"\\t\",quote=FALSE)
+
+p<-plot_cell_trajectory(agg_cds, color_by = \"timepoint\")
 ggsave(plot=p,filename=\"$opt{'O'}.timepoint_plot.png\",width=5,height=4,dpi=900)
 ggsave(plot=p,filename=\"$opt{'O'}.timepoint_plot.pdf\",width=5,height=4);
 
 
 
-p<-plot_cell_trajectory(agg_cds, color_by = \"State\")
-ggsave(plot=p,filename=\"$opt{'O'}.state_plot.png\",width=5,height=4,dpi=900)
-ggsave(plot=p,filename=\"$opt{'O'}.state_plot.pdf\",width=5,height=4);
 
 #add stuff here if you want to reroot agg_cds <- orderCells(agg_cds, root_state = \"D\")
 
