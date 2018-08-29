@@ -214,7 +214,7 @@ agg_cds <- orderCells(agg_cds)
 
 
 
-p<-plot_cell_trajectory(agg_cds, color_by = \"State\")
+p<-plot_cell_trajectory(agg_cds, color_by = \"timepoint\")
 
 
 
@@ -229,9 +229,12 @@ if ($color_mapping !~ /none/i) {
 
 print R "
 
+ggsave(plot=p,filename=\"$opt{'O'}.annot_plot.png\",width=5,height=4,dpi=900)
+ggsave(plot=p,filename=\"$opt{'O'}.annot_plot.pdf\",width=5,height=4);
+
+p<-plot_cell_trajectory(agg_cds, color_by = \"State\")
 ggsave(plot=p,filename=\"$opt{'O'}.state_plot.png\",width=5,height=4,dpi=900)
 ggsave(plot=p,filename=\"$opt{'O'}.state_plot.pdf\",width=5,height=4);
-
 
 
 cds<-agg_cds
