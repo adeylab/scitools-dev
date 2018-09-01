@@ -73,7 +73,7 @@ To plot multiple values specified in a matrix file:
                   a plot for each row of the matrix. Overrides -V.
                   Only includes rows with at least one non-zero value.
 To plot Monocle output branch points:
-	-m 	[STR] 	Monocle branchpoints.txt file to be plotted underneath 
+   -m 	[STR] 	Monocle branchpoints.txt file to be plotted underneath 
 				the point plots. Generated through cds_monocle command call.
 
 Other options:
@@ -125,6 +125,7 @@ if (defined $opt{'M'}) {
 	if (defined $opt{'b'}) {$common_opts .= "-b $opt{'b'} "};
 	if (defined $opt{'w'}) {$common_opts .= "-w $opt{'w'} "};
 	if (defined $opt{'h'}) {$common_opts .= "-h $opt{'h'} "};
+	if (defined $opt{'m'}) {$common_opts .= "-m $opt{'m'} "};
 	if (defined $opt{'X'}) {$common_opts .= "-X "};
 	if (defined $opt{'B'}) {$common_opts .= "-B "};
 	$common_opts =~ s/\s$//;
