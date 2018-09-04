@@ -285,7 +285,7 @@ plot_cell_trajectory2<-function (cds, x = 1, y = 2, color_by = \"State\", show_t
     if (cds\@dim_reduce_type == \"ICA\") {
         reduced_dim_coords <- reducedDimS(cds)
     }
-    else if (cds@dim_reduce_type %in% c(\"simplePPT\", \"DDRTree\")) {
+    else if (cds@dim_reduce_type \%in\% c(\"simplePPT\", \"DDRTree\")) {
         reduced_dim_coords <- reducedDimK(cds)
     }
     else {
@@ -294,8 +294,8 @@ plot_cell_trajectory2<-function (cds, x = 1, y = 2, color_by = \"State\", show_t
     ica_space_df <- data.frame(Matrix::t(reduced_dim_coords[c(x, 
         y), ]))
     colnames(ica_space_df) <- c(\"prin_graph_dim_1\", \"prin_graph_dim_2\")
-    ica_space_df$sample_name <- row.names(ica_space_df)
-    ica_space_df$sample_state <- row.names(ica_space_df)
+    ica_space_df\$sample_name <- row.names(ica_space_df)
+    ica_space_df\$sample_state <- row.names(ica_space_df)
     dp_mst <- minSpanningTree(cds)
     if (is.null(dp_mst)) {
         stop(\"You must first call orderCells() before using this function\")
@@ -314,7 +314,7 @@ plot_cell_trajectory2<-function (cds, x = 1, y = 2, color_by = \"State\", show_t
     S_matrix <- reducedDimS(cds)
     data_df <- data.frame(t(S_matrix[c(x, y), ]))
     data_df <- cbind(data_df, sample_state)
-    colnames(data_df) <- c(\"data_dim_1", \"data_dim_2\")
+    colnames(data_df) <- c(\"data_dim_1\", \"data_dim_2\")
     data_df$sample_name <- row.names(data_df)
     data_df <- merge(data_df, lib_info_with_pseudo, by.x = \"sample_name\", 
         by.y = \"row.names\")
@@ -323,18 +323,18 @@ plot_cell_trajectory2<-function (cds, x = 1, y = 2, color_by = \"State\", show_t
         matrix(c(cos(theta), sin(theta), -sin(theta), cos(theta)), 
             nrow = 2)
     }
-    tmp <- return_rotation_mat(theta) %*% t(as.matrix(data_df[, 
+    tmp <- return_rotation_mat(theta) \%\*\% t(as.matrix(data_df[, 
         c(2, 3)]))
     data_df$data_dim_1 <- tmp[1, ]
     data_df$data_dim_2 <- tmp[2, ]
-    tmp <- return_rotation_mat(theta = theta) %*% t(as.matrix(edge_df[, 
+    tmp <- return_rotation_mat(theta = theta) \%\*\% t(as.matrix(edge_df[, 
         c(\"source_prin_graph_dim_1\", \"source_prin_graph_dim_2\")]))
-    edge_df$source_prin_graph_dim_1 <- tmp[1, ]
-    edge_df$source_prin_graph_dim_2 <- tmp[2, ]
-    tmp <- return_rotation_mat(theta) %*% t(as.matrix(edge_df[, 
+    edge_df\$source_prin_graph_dim_1 <- tmp[1, ]
+    edge_df\$source_prin_graph_dim_2 <- tmp[2, ]
+    tmp <- return_rotation_mat(theta) \%\*\% t(as.matrix(edge_df[, 
         c(\"target_prin_graph_dim_1\", \"target_prin_graph_dim_2\")]))
-    edge_df$target_prin_graph_dim_1 <- tmp[1, ]
-    edge_df$target_prin_graph_dim_2 <- tmp[2, ]
+    edge_df\$target_prin_graph_dim_1 <- tmp[1, ]
+    edge_df\$target_prin_graph_dim_2 <- tmp[2, ]
     markers_exprs <- NULL
     if (is.null(markers) == FALSE) {
         markers_fData <- subset(fData(cds), gene_short_name %in% 
@@ -408,7 +408,7 @@ plot_cell_trajectory2<-function (cds, x = 1, y = 2, color_by = \"State\", show_t
     }
     if (show_branch_points && cds\@dim_reduce_type == \"DDRTree\") {
         mst_branch_nodes <- cds\@auxOrderingData[[cds@dim_reduce_type]]\$branch_points
-        branch_point_df <- subset(edge_df, sample_name %in% mst_branch_nodes)[, 
+        branch_point_df <- subset(edge_df, sample_name \%in\% mst_branch_nodes)[, 
             c(\"sample_name\", \"source_prin_graph_dim_1\", \"source_prin_graph_dim_2\")]
         branch_point_df\$branch_point_idx <- match(branch_point_df\$sample_name, 
             mst_branch_nodes)
