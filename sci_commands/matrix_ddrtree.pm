@@ -345,8 +345,8 @@ plot_cell_trajectory2<-function (cds, x = 1, y = 2, color_by = \"State\", show_t
             colnames(markers_exprs)[1:2] <- c(\"feature_id\", \"cell_id\")
             markers_exprs <- merge(markers_exprs, markers_fData, 
                 by.x = \"feature_id\", by.y = \"row.names\")
-            markers_exprs$feature_label <- as.character(markers_exprs$gene_short_name)
-            markers_exprs$feature_label[is.na(markers_exprs$feature_label)] <- markers_exprs$Var1
+            markers_exprs\$feature_label <- as.character(markers_exprs\$gene_short_name)
+            markers_exprs\$feature_label[is.na(markers_exprs\$feature_label)] <- markers_exprs\$Var1
         }
     }
     if (is.null(markers_exprs) == FALSE && nrow(markers_exprs) > 
@@ -406,13 +406,13 @@ plot_cell_trajectory2<-function (cds, x = 1, y = 2, color_by = \"State\", show_t
                 size = I(cell_size), na.rm = TRUE)
         }
     }
-    if (show_branch_points && cds@dim_reduce_type == \"DDRTree\") {
-        mst_branch_nodes <- cds@auxOrderingData[[cds@dim_reduce_type]]$branch_points
+    if (show_branch_points && cds\@dim_reduce_type == \"DDRTree\") {
+        mst_branch_nodes <- cds\@auxOrderingData[[cds@dim_reduce_type]]\$branch_points
         branch_point_df <- subset(edge_df, sample_name %in% mst_branch_nodes)[, 
             c(\"sample_name\", \"source_prin_graph_dim_1\", \"source_prin_graph_dim_2\")]
-        branch_point_df$branch_point_idx <- match(branch_point_df$sample_name, 
+        branch_point_df\$branch_point_idx <- match(branch_point_df\$sample_name, 
             mst_branch_nodes)
-        branch_point_df <- branch_point_df[!duplicated(branch_point_df$branch_point_idx), 
+        branch_point_df <- branch_point_df[!duplicated(branch_point_df\$branch_point_idx), 
             ]
         g <- g + geom_point(aes_string(x = \"source_prin_graph_dim_1\", 
             y = \"source_prin_graph_dim_2\"), size = 5, na.rm = TRUE, 
@@ -432,6 +432,7 @@ plot_cell_trajectory2<-function (cds, x = 1, y = 2, color_by = \"State\", show_t
         theme(panel.background = element_rect(fill = \"white\"))
     g
     write.table(data_df,file=\"save.dims.txt\",col.names=T,row.names=F,quote=F,sep=\"\\t\")
+    write.table(branch_point_df,file=\"save.bp.txt\",col.names=T,row.names=F,quote=F,sep=\"\\t\")
 }
 
 
@@ -446,7 +447,8 @@ ggsave(plot=p,filename=\"$opt{'O'}.lambda_plot.pdf\",width=5,height=4);
 
 pData(input_cds)\$Pseudotime <- pData(agg_cds)[colnames(input_cds),]\$Pseudotime
 pData(input_cds)\$State <- pData(agg_cds)[colnames(input_cds),]\$State
-
+#write out
+plot_cell_trajectory2(agg_cds)
 
 # writing out pseudotime etc so you can recreate everything
 write.table(as.matrix(pData(agg_cds)),file=\"./$opt{'O'}_ddrt_aggragated_cells.txt\",col.names=TRUE,row.names=TRUE,sep=\"\\t\",quote=FALSE)
