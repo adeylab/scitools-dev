@@ -408,12 +408,9 @@ plot_cell_trajectory2<-function (cds, x = 1, y = 2, color_by = \"State\", show_t
     }
     if (show_branch_points && cds\@dim_reduce_type == \"DDRTree\") {
         mst_branch_nodes <- cds\@auxOrderingData[[cds@dim_reduce_type]]\$branch_points
-        branch_point_df <- subset(edge_df, sample_name \%in\% mst_branch_nodes)[, 
-            c(\"sample_name\", \"source_prin_graph_dim_1\", \"source_prin_graph_dim_2\")]
-        branch_point_df\$branch_point_idx <- match(branch_point_df\$sample_name, 
-            mst_branch_nodes)
-        branch_point_df <- branch_point_df[!duplicated(branch_point_df\$branch_point_idx), 
-            ]
+        branch_point_df <- subset(edge_df, sample_name \%in\% mst_branch_nodes)[,c(\"sample_name\", \"source_prin_graph_dim_1\", \"source_prin_graph_dim_2\")]
+        branch_point_df\$branch_point_idx <- match(branch_point_df\$sample_name,mst_branch_nodes)
+        branch_point_df <- branch_point_df[!duplicated(branch_point_df\$branch_point_idx),]
         g <- g + geom_point(aes_string(x = \"source_prin_graph_dim_1\", 
             y = \"source_prin_graph_dim_2\"), size = 5, na.rm = TRUE, 
             data = branch_point_df) + geom_text(aes_string(x = \"source_prin_graph_dim_1\", 
@@ -455,6 +452,9 @@ write.table(as.matrix(pData(agg_cds)),file=\"./$opt{'O'}_ddrt_aggragated_cells.t
 write.table(as.matrix(Biobase::exprs(agg_cds)),file=\"./$opt{'O'}_ddrt_aggragated_cells_norm_count.txt\",col.names=TRUE,row.names=TRUE,sep=\"\\t\",quote=FALSE)
 write.table(as.matrix(fData(agg_cds)),file=\"./$opt{'O'}_ddrt_aggragated_features.txt\",col.names=TRUE,row.names=FALSE,sep=\"\\t\",quote=FALSE)
 ";
+
+
+
 
 
 
