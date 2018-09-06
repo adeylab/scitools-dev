@@ -34,9 +34,13 @@ while ($l = <IN>) {
 	$rowID = shift(@P);
 	print OUT "$rowID";
 	for ($i = 0; $i < @P; $i++) {
-		$tf = ($P[$i]/$MATRIX_CellID_signal{$MATRIX_COLNAMES[$i]});
-		$idf = (log(1+($matrix_colNum/($MATRIX_feature_signal{$rowID}+1))));
-		$score = sprintf("%.6f", $tf*$idf);
+		if ($P[$i]>0) {
+			$tf = ($P[$i]/$MATRIX_CellID_signal{$MATRIX_COLNAMES[$i]});
+			$idf = (log(1+($matrix_colNum/($MATRIX_feature_signal{$rowID}+1))));
+			$score = sprintf("%.6f", $tf*$idf);
+		} else {
+			$score = "0";
+		}
 		print OUT "\t$score";
 	}
 	print OUT "\n";
