@@ -65,26 +65,23 @@ row.names(IN)<-sub(\"_\",\"-\",sub(\"_\",\":\",row.names(IN)))
 cisTopicObject <- createcisTopicObject(IN,min.cells=$opt{'r'},min.regions=$opt{'c'}, keepCountsMatrix=FALSE)
 
 ";
-close R;
 
 if (!defined $opt{'T'}) {
 print R "
 #Run Multiple models with different topic numbers. Optimal topic number is generally slightly bigger than the potential cell states in the data set
-cisTopicObject <- runModels(cisTopicObject, topic=c(15, 20, 25, 30, 50, 65), seed=2018, nCores=$opt{'n'}, burnin = 250, iterations = 500)
+cisTopicObject <- runModels(cisTopicObject, topic=c(15, 20, 25, 30, 50, 65, 100), seed=2018, nCores=$opt{'n'}, burnin = 250, iterations = 300)
 
 #Future update:Plot model log likelihood (P(D|T)) at the last iteration
+pdf(file=\"$opt{'O'}.cistopic.modelselection.pdf\")
 cisTopicObject <- selectModel(cisTopicObject)
 cisTopicObject <- logLikelihoodByIter(cisTopicObject)
+dev.off()
 ";
-close R;
-}
-
-if (defined $opt{'T'}) {
+} else {
 print R "
-cisTopicObject <- runModels(cisTopicObject, topic=$opt{'T'}, seed=2018, nCores=$opt{'n'}, burnin = 250, iterations = 500)
+cisTopicObject <- runModels(cisTopicObject, topic=$opt{'T'}, seed=2018, nCores=$opt{'n'}, burnin = 250, iterations = 300)
 cisTopicObject <- selectModel(cisTopicObject)
 ";
-close R;
 }
 
 print R "
@@ -94,7 +91,7 @@ tModelmat<-as.data.frame(t(modelMat))
 Modeldf<-as.data.frame(modelMat)
 rownames(tModelmat)<-cisTopicObject@cell.names
 colnames(Modeldf)<-cisTopicObject@cell.names
-row.names(Modeldf)<-paste0(\"Dim_\",row.names(Modeldf))
+row.names(Modeldf)<-paste0(\"Topic_\",row.names(Modeldf))
 write.table(Modeldf,file=\"$opt{'O'}.cistopic.matrix\",col.names=T,row.names=T,quote=F,sep=\"\\t\")
 ";
 close R;
