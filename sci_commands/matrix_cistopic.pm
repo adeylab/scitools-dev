@@ -38,6 +38,9 @@ Options:
    -c   [INT]   Number of nonZero sites per column (cell) to retain (def = 1)
    -r   [INT]   Number of nonZero sites per row (peak) to retain (def = 1)
    -n 	[INT] 	Number of cores for parallel processing. (def=1)
+   -T    [INT]    User defined number of Topics to use. 
+                  If unspecified: will generate 15, 20, 25, 30, 50, and 65 Topics, 
+                  and use log-liklihood estimators to select the best.
    -D   [INT]   Max dimensions to compute (def = $dims)
    -X           Retain intermediate files (def = delete)
    -R   [STR]   Rscript call (def = $Rscript)
