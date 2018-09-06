@@ -10,7 +10,7 @@ sub matrix_cistopic {
 $dims = 50;
 
 @ARGV = @_;
-getopts("O:XR:D:", \%opt);
+getopts("O:c:r:n:T:XR:", \%opt);
 
 $die2 = "
 scitools matrix-cistopic [options] [input matrix]
@@ -23,6 +23,9 @@ scitools matrix-cistopic [options] [input matrix]
 cisTopic serves as an alternative textmining algorithm to TFIDF-LSI processing.
 It is to be run on a sciATAC counts matrix. For more information see:
 https://github.com/aertslab/cisTopic/
+
+Outputs a matrix file similar to matrix-irlba function call. To be processed through
+[matrix_tsne|matrix_umap|matrix_PCA|matrix_SWNE]
 
 cisTopic consists of 4 main steps: 
 (1) generation of a binary accessibility matrix as input for LDA; 
@@ -48,38 +51,49 @@ if (!defined $opt{'O'}) {$opt{'O'} = $ARGV[0]; $opt{'O'} =~ s/\.matrix$//};
 if (!defined $opt{'c'}) {$opt{'c'} = 1};
 if (!defined $opt{'r'}) {$opt{'r'} = 1};
 if (!defined $opt{'n'}) {$opt{'n'} = 1};
+if (!defined $opt{'T'}) {$opt{'T'} = 50}
 
 if (defined $opt{'R'}) {$Rscript = $opt{'R'}};
 
 open R, ">$opt{'O'}.cistopic.r";
 print R "
 library(cisTopic)
-library(Rtsne)
 IN<-as.matrix(read.table(\"$ARGV[0]\"))
 row.names(IN)<-sub(\"_\",\"-\",sub(\"_\",\":\",row.names(IN)))
 
 #Set up filtered binarized counts matrix
 cisTopicObject <- createcisTopicObject(IN,min.cells=$opt{'r'},min.regions=$opt{'c'}, keepCountsMatrix=FALSE)
 
-#Run Multiple models with different topic numbers. Optimal topic number is generally slightly bigger than the potential cell states in the data set
-cisTopicObject <- runModels(cisTopicObject, topic=c(2, 5, 10, 15, 20, 25, 30), seed=2018, nCores=$opt{'n'}, burnin = 250, iterations = 500)
+";
+close R;
 
-#Plot and select model based on the highest log likelihood (P(D|T)) at the last iteration
+if (!defined $opt{'T'}) {
+print R "
+#Run Multiple models with different topic numbers. Optimal topic number is generally slightly bigger than the potential cell states in the data set
+cisTopicObject <- runModels(cisTopicObject, topic=c(15, 20, 25, 30, 50, 65), seed=2018, nCores=$opt{'n'}, burnin = 250, iterations = 500)
+
+#Future update:Plot model log likelihood (P(D|T)) at the last iteration
 cisTopicObject <- selectModel(cisTopicObject)
 cisTopicObject <- logLikelihoodByIter(cisTopicObject)
+";
+close R;
+}
 
-#Run Native tSNE
-cisTopicObject<-runtSNE(cisTopicObject,seed=2018)
-write.table(cisTopicObject@dr,file=\"$opt{'O'}.cistopic.tsne.dims\",col.names=T,row.names=T,quote=F,sep=\"\\t\")
+if (defined $opt{'T'}) {
+print R "
+cisTopicObject <- runModels(cisTopicObject, topic=$opt{'T'}, seed=2018, nCores=$opt{'n'}, burnin = 250, iterations = 500)
+cisTopicObject <- selectModel(cisTopicObject)
+";
+close R;
+}
 
-
+print R "
 #Print out cisTopic Matrix#
 modelMat <- scale(cisTopicObject@selected.model$document_expects, center = TRUE, scale = TRUE)
 tModelmat<-as.data.frame(t(modelMat))
 Modeldf<-as.data.frame(modelMat)
 rownames(tModelmat)<-cisTopicObject@cell.names
 colnames(Modeldf)<-cisTopicObject@cell.names
-write.table(tModelmat,file=\"$opt{'O'}.cistopic.dim\",col.names=T,row.names=T,quote=F,sep=\"\\t\")
 row.names(Modeldf)<-paste0(\"Dim_\",row.names(Modeldf))
 write.table(Modeldf,file=\"$opt{'O'}.cistopic.matrix\",col.names=T,row.names=T,quote=F,sep=\"\\t\")
 ";
