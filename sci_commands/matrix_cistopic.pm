@@ -7,8 +7,6 @@ use Exporter "import";
 
 sub matrix_cistopic {
 
-$dims = 50;
-
 @ARGV = @_;
 getopts("O:c:r:n:T:XR:", \%opt);
 
@@ -54,7 +52,6 @@ if (!defined $opt{'O'}) {$opt{'O'} = $ARGV[0]; $opt{'O'} =~ s/\.matrix$//};
 if (!defined $opt{'c'}) {$opt{'c'} = 1};
 if (!defined $opt{'r'}) {$opt{'r'} = 1};
 if (!defined $opt{'n'}) {$opt{'n'} = 1};
-if (!defined $opt{'T'}) {$opt{'T'} = 50}
 
 if (defined $opt{'R'}) {$Rscript = $opt{'R'}};
 
