@@ -86,11 +86,11 @@ cisTopicObject <- selectModel(cisTopicObject)
 
 print R "
 #Print out cisTopic Matrix#
-modelMat <- scale(cisTopicObject@selected.model$document_expects, center = TRUE, scale = TRUE)
+modelMat <- scale(cisTopicObject\@selected.model\$document_expects, center = TRUE, scale = TRUE)
 tModelmat<-as.data.frame(t(modelMat))
 Modeldf<-as.data.frame(modelMat)
-rownames(tModelmat)<-cisTopicObject@cell.names
-colnames(Modeldf)<-cisTopicObject@cell.names
+rownames(tModelmat)<-cisTopicObject\@cell.names
+colnames(Modeldf)<-cisTopicObject\@cell.names
 row.names(Modeldf)<-paste0(\"Topic_\",row.names(Modeldf))
 write.table(Modeldf,file=\"$opt{'O'}.cistopic.matrix\",col.names=T,row.names=T,quote=F,sep=\"\\t\")
 ";
