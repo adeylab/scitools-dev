@@ -143,6 +143,7 @@ open R, ">$opt{'O'}.ddrt.r";
 print R "
 library(monocle)
 library(cicero)
+library(igraph)
 # reading in matrix, annotation, and dimension data
 cds_cell_data <- read.delim(\"./cds_cell_data.txt\")
 cds_dims_data <- read.delim(\"./cds_dims_data.txt\")
@@ -275,7 +276,7 @@ plot_cell_trajectory2<-function (cds, x = 1, y = 2, color_by = \"State\", show_t
 {
     gene_short_name <- NA
     sample_name <- NA
-    sample_state <- pData(cds)$State
+    sample_state <- pData(cds)\$State
     data_dim_1 <- NA
     data_dim_2 <- NA
     lib_info_with_pseudo <- pData(cds)
@@ -285,7 +286,7 @@ plot_cell_trajectory2<-function (cds, x = 1, y = 2, color_by = \"State\", show_t
     if (cds\@dim_reduce_type == \"ICA\") {
         reduced_dim_coords <- reducedDimS(cds)
     }
-    else if (cds@dim_reduce_type \%in\% c(\"simplePPT\", \"DDRTree\")) {
+    else if (cds\@dim_reduce_type \%in\% c(\"simplePPT\", \"DDRTree\")) {
         reduced_dim_coords <- reducedDimK(cds)
     }
     else {
@@ -315,7 +316,7 @@ plot_cell_trajectory2<-function (cds, x = 1, y = 2, color_by = \"State\", show_t
     data_df <- data.frame(t(S_matrix[c(x, y), ]))
     data_df <- cbind(data_df, sample_state)
     colnames(data_df) <- c(\"data_dim_1\", \"data_dim_2\")
-    data_df$sample_name <- row.names(data_df)
+    data_df\$sample_name <- row.names(data_df)
     data_df <- merge(data_df, lib_info_with_pseudo, by.x = \"sample_name\", 
         by.y = \"row.names\")
     return_rotation_mat <- function(theta) {
@@ -325,8 +326,8 @@ plot_cell_trajectory2<-function (cds, x = 1, y = 2, color_by = \"State\", show_t
     }
     tmp <- return_rotation_mat(theta) \%\*\% t(as.matrix(data_df[, 
         c(2, 3)]))
-    data_df$data_dim_1 <- tmp[1, ]
-    data_df$data_dim_2 <- tmp[2, ]
+    data_df\$data_dim_1 <- tmp[1, ]
+    data_df\$data_dim_2 <- tmp[2, ]
     tmp <- return_rotation_mat(theta = theta) \%\*\% t(as.matrix(edge_df[, 
         c(\"source_prin_graph_dim_1\", \"source_prin_graph_dim_2\")]))
     edge_df\$source_prin_graph_dim_1 <- tmp[1, ]
@@ -407,7 +408,7 @@ plot_cell_trajectory2<-function (cds, x = 1, y = 2, color_by = \"State\", show_t
         }
     }
     if (show_branch_points && cds\@dim_reduce_type == \"DDRTree\") {
-        mst_branch_nodes <- cds\@auxOrderingData[[cds@dim_reduce_type]]\$branch_points
+        mst_branch_nodes <- cds\@auxOrderingData[[cds\@dim_reduce_type]]\$branch_points
         branch_point_df <- subset(edge_df, sample_name \%in\% mst_branch_nodes)[,c(\"sample_name\", \"source_prin_graph_dim_1\", \"source_prin_graph_dim_2\")]
         branch_point_df\$branch_point_idx <- match(branch_point_df\$sample_name,mst_branch_nodes)
         branch_point_df <- branch_point_df[!duplicated(branch_point_df\$branch_point_idx),]
@@ -430,6 +431,9 @@ plot_cell_trajectory2<-function (cds, x = 1, y = 2, color_by = \"State\", show_t
     g
     write.table(data_df,file=\"save.dims.txt\",col.names=T,row.names=F,quote=F,sep=\"\\t\")
     write.table(branch_point_df,file=\"save.bp.txt\",col.names=T,row.names=F,quote=F,sep=\"\\t\")
+    write.table(edge_df,file=\"save.edgelist.txt\",col.names=T,row.names=F,quote=F,sep=\"\\t\")
+    writoutdims<-data.frame(annot=data_df\$sample_name,data_dim1=data_df\$data_dim1,data_dim2=data_df\$data_dim2)
+    write.table(writoutdims,file=\"ddrtee.dims\",col.names=F,row.names=F,quote=F,sep=\"\\t\")
 }
 
 
