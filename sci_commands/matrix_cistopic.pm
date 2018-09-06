@@ -45,9 +45,9 @@ Note: Requires cisTopic R package
 
 if (!defined $ARGV[0]) {die $die2};
 if (!defined $opt{'O'}) {$opt{'O'} = $ARGV[0]; $opt{'O'} =~ s/\.matrix$//};
-if (!defined $opt{'c'}) {$opt{'c'} = 1;
-if (!defined $opt{'r'}) {$opt{'r'} = 1;
-if (!defined $opt{'n'}) {$opt{'n'} = 1;
+if (!defined $opt{'c'}) {$opt{'c'} = 1};
+if (!defined $opt{'r'}) {$opt{'r'} = 1};
+if (!defined $opt{'n'}) {$opt{'n'} = 1};
 
 if (defined $opt{'R'}) {$Rscript = $opt{'R'}};
 
@@ -66,7 +66,7 @@ cisTopicObject <- runModels(cisTopicObject, topic=c(2, 5, 10, 15, 20, 25, 30), s
 
 #Plot and select model based on the highest log likelihood (P(D|T)) at the last iteration
 cisTopicObject <- selectModel(cisTopicObject)
-logLikelihoodByIter(cisTopicObject)
+cisTopicObject <- logLikelihoodByIter(cisTopicObject)
 
 #Run Native tSNE
 cisTopicObject<-runtSNE(cisTopicObject,seed=2018)
