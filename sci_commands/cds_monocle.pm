@@ -10,7 +10,7 @@ sub cds_monocle {
 @ARGV = @_;
 # Defaults
 
-getopts("O:R:XP:D:L:", \%opt);
+getopts("O:R:XP:D:L:Ti:", \%opt);
 
 $die2 = "
 scitools cds_monocle [options] [directory containing cds files]
@@ -24,18 +24,29 @@ WIP: Current version performs re-clustering using the monocle pipeline, will adj
 Options:
    -O   [STR]   Output Directory (default is [current working directory]/monocle_output)
    -R   [STR]   Rscript call (def = $Rscript)
-   -D 	[2|3] 	Dimensions to be used for final plotting (2D or 3D plotting)
-   				Default: 2 Dimensions
-   -P 	[INT]	Number of components to be used for dimensionality reduction by PCA to denoise.
-   				Default: 50 components 
-   -L 	[STR] 	RGE method for branch analysis in monocle3. Must member of the following list:
+   -I   [FLAG]   Use internal clustering within Monocle call. If not specified, 
+                  Monocle runs with the user-supplied cds_dims_data file.
+                  If -I not flagged, option -i is REQUIRED.
+            -P 	[INT]	   Only if I is specified. 
+                           Number of components to be used for dimensionality reduction by PCA to denoise.
+               				Default: 50 components
+   -i    [STR]    If -I is not flagged, option -i is REQUIRED.
+                  IRLBA dims file or cisTopic Matrix file for weighting.
+   -d    [STR]    If -I is not flagged, option -d is REQUIRED.
+                  Dimensionality Reduction style of dims file (Accepts [umap|tsne])
+   -D    [2|3]    Dimensions to be used for final plotting (2D or 3D plotting)
+                  Default: 2 Dimensions
+   -L    [STR] RGE method for branch analysis in monocle3. Must member of the following list:
    				[SimplePPT,L1graph,DDRTree] Default=SimplePPT
-   -X           Retain intermediate files (Default = delete)
+   -X          Retain intermediate files (Default = delete)
                   
 ";
 
 
 if (!defined $ARGV[0]) {die $die2};
+if (!defined $opt{'T'} && !defined $opt{'i'}) {die $die2};
+if (defined $opt{'i'} && !defined $opt{'d'}) {die $die2};
+if (defined $opt{'d'} && $opt{'d'} !~ /tsne|umap/) {die $die2};
 if (!defined $opt{'O'}) {$opt{'O'} = "$ARGV[0]/monocle_output"};
 if (!defined $opt{'D'}) {$opt{'D'} = 2};
 if (!defined $opt{'P'}) {$opt{'P'} = 50};
@@ -67,7 +78,6 @@ sample_data <- new(\"AnnotatedDataFrame\", data = cds_cell_data)
 # To be added with dims data update
 #dimensions_data <- new(\"AnnotatedDataFrame\", data = cds_dims_data)
 
-message(\"No dims file given, using Monocle3 for dimensionality reduction\")
 cds <- suppressWarnings(newCellDataSet(as.matrix(cds_counts_matrix), phenoData = sample_data, featureData = feature_data))
 set.seed(2017)
 pData(cds)\$cells <- NULL 
@@ -75,6 +85,11 @@ cds <- detectGenes(cds)
 cds <- estimateSizeFactors(cds)
 cds <- estimateDispersions(cds)
 
+";
+
+if (defined $opt{'T'}) {
+print R "
+message(\"No dims file given, using Monocle3 for dimensionality reduction\")
 cds<-preprocessCDS(cds,num_dim=$opt{'P'},use_tf_idf=TRUE,verbose=T)
 message(\"Writing out PCA components data frame\")
 write.table(as.data.frame(cds\@normalized_data_projection), file=\"$opt{'O'}/$opt{'P'}_pca.dims\",quote=F,sep=\"\\t\",row.names=T,col.names=T)
@@ -82,13 +97,63 @@ write.table(as.data.frame(cds\@normalized_data_projection), file=\"$opt{'O'}/$op
 cds <- reduceDimension(cds, max_components = $opt{'D'},reduction_method = \'UMAP\',metric=\"cosine\",verbose = T)
 write.table(as.data.frame(t(reducedDimS(cds))), file=\"$opt{'O'}/trajectory_$opt{'D'}D.dims\",quote=F,sep=\"\\t\",row.names=T,col.names=F)
 cds <- partitionCells(cds)
+
 ";
+} else {
+print R "
+FM <- exprs(cds)
+cds\@auxOrderingData\$normalize_expr_data <- FM
+irlba_pca_res<-t(read.table(\"$opt{'i'}\",header=T,row.names=1))
+irlba_pca_res = irlba_pca_res[match(rownames(irlba_pca_res),colnames(cds)),]
+num_dim<-ncol(irlba_pca_res)
+cds\@normalized_data_projection <- as.matrix(irlba_pca_res)
+";
+
+if ($opt{'d'} !~ /umap/) {
+print R "
+dim_no<-ncol(cds_dims_data)
+S <- t(cds_dims_data)
+Y <- S
+W <- as.matrix(t(irlba_pca_res))
+A <- S
+colnames(A) <- colnames(cds)
+colnames(S) <- colnames(cds)
+colnames(Y) <- colnames(cds)
+reducedDimA(cds) <- A
+cds\@reducedDimW<- W
+cds\@reducedDimS <- as.matrix(Y)
+cds\@reducedDimK <- S
+cds\@dim_reduce_type <- \"UMAP\"
+pData(cds)\$umap_1 = reducedDimA(cds)[1, ]
+pData(cds)\$umap_2 = reducedDimA(cds)[2, ]
+if(dim_no==3){
+pData(cds)\$umap_3 = reducedDimA(cds)[3, ]
+}
+";
+} 
+
+if ($opt{'d'} !~ /tsne/) {
+print R "
+dim_no<-ncol(cds_dims_data)
+reducedDimA(cds) <- t(cds_dims_data)
+cds\@auxClusteringData[[\"tSNE\"]]\$pca_components_used <- num_dim
+cds\@dim_reduce_type <- \"tSNE\"
+pData(cds)\$tsne_1 = reducedDimA(cds)[1, ]
+pData(cds)\$tsne_2 = reducedDimA(cds)[2, ]
+if(dim_no==3){
+pData(cds)\$tsne_3 = reducedDimA(cds)[3, ]
+}
+";
+
+}
+}
+
 if ($opt{'D'}==3) {
 print R "
 #3D Plotting
 message(\"Generating 3D Plots\")
-cds <- learnGraph(cds, max_components = 3, RGE_method = \"$opt{'L'}\", partition_component = T,verbose = T)
 cds <- clusterCells(cds,verbose = T,cores=10)
+cds <- learnGraph(cds, max_components = 3, RGE_method = \"$opt{'L'}\", partition_component = T,verbose = T)
 #Writing out full CDS file
 saveRDS(cds,file=\"$opt{'O'}/monocle.CDS.rds\")
 
@@ -115,8 +180,8 @@ plot_3d_cell_trajectory(cds,color_by=paste(colnames(pData(cds))[1]),webGL_filena
 } else {
 print R "
 message(\"Generating Plots\")
-cds <- learnGraph(cds, max_components = 2, RGE_method = \"$opt{'L'}\", partition_component = T,verbose = T)
 cds <- clusterCells(cds,verbose = T,cores=10)
+cds <- learnGraph(cds, max_components = 2, RGE_method = \"$opt{'L'}\", partition_component = T,verbose = T)
 #Writing out full CDS file
 saveRDS(cds,file=\"$opt{'O'}/monocle.CDS.rds\")
 
@@ -134,10 +199,6 @@ edge_df <- plyr::rename(edge_df, c(prin_graph_dim_1 = \"source_prin_graph_dim_1\
 edge_df <- merge(edge_df, ica_space_df[, c(\"sample_name\",\"prin_graph_dim_1\", \"prin_graph_dim_2\")],by.x = \"target\", by.y = \"sample_name\", all = TRUE)
 edge_df <- plyr::rename(edge_df, c(prin_graph_dim_1 = \"target_prin_graph_dim_1\",prin_graph_dim_2 = \"target_prin_graph_dim_2\"))
 write.table(as.matrix(edge_df),file=\"$opt{'O'}/monocle3_branchpoints.txt\",col.names=TRUE,row.names=FALSE,sep=\"\\t\",quote=FALSE)
-
-p<-plot_cell_trajectory(cds, color_by = paste(colnames(pData(cds))[1]),backbone_color=\"#000000\")
-ggsave(plot=p,filename=paste0(\"$opt{'O'}/monocle3_\",paste(colnames(pData(cds))[1]),\".plot.png\"),width=5,height=4,dpi=900)
-ggsave(plot=p,filename=paste0(\"$opt{'O'}/monocle3_\",paste(colnames(pData(cds))[1]),\".plot.png\"),width=5,height=4)
 
 p<-plot_cell_trajectory(cds,cell_size=0.1,color_by = \"Cluster\",backbone_color=\"#000000\",show_state_name=T,alpha=0.3)
 ggsave(plot=p,filename=\"$opt{'O'}/monocle3.pathway.plot.png\",width=5,height=4,dpi=900)
