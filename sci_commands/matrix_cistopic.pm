@@ -70,11 +70,12 @@ if (!defined $opt{'T'}) {
 print R "
 #Run Multiple models with different topic numbers. Optimal topic number is generally slightly bigger than the potential cell states in the data set
 cisTopicObject <- runModels(cisTopicObject, topic=c(15, 20, 25, 30, 50, 65, 100), seed=2018, nCores=$opt{'n'}, burnin = 250, iterations = 300)
+saveRDS(cisTopicObject,\"$opt{'O'}.cistopicObject.rds\")
 
 #Future update:Plot model log likelihood (P(D|T)) at the last iteration
 pdf(file=\"$opt{'O'}.cistopic.modelselection.pdf\")
 cisTopicObject <- selectModel(cisTopicObject)
-cisTopicObject <- logLikelihoodByIter(cisTopicObject)
+logLikelihoodByIter(cisTopicObject)
 dev.off()
 ";
 } else {
