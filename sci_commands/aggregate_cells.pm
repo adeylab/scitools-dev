@@ -57,8 +57,6 @@ Plotting Options (def is input dims file coordinates - only for dims files):
 
 ";
 
-#die "ERROR: This function is under development and cannot be used in its current form!\n";
-
 if (!defined $ARGV[0]) {die $die2};
 if (defined $opt{'a'} && !defined $opt{'A'}) {die "\nMust provide an annotaiton file (-A) if specifying annotations to plot (-a)!\n$die2"};
 if (defined $opt{'C'} && defined $opt{'c'}) {die "\nSpecify either a color string (-c) or a color coding file (-C), not both!\n$die2"};
