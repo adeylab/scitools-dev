@@ -10,7 +10,7 @@ sub cds_monocle {
 @ARGV = @_;
 # Defaults
 
-getopts("O:R:XP:D:L:Ti:", \%opt);
+getopts("O:R:XP:D:L:Ti:d:", \%opt);
 
 $die2 = "
 scitools cds_monocle [options] [directory containing cds files]
@@ -18,7 +18,6 @@ scitools cds_monocle [options] [directory containing cds files]
 
 Prior to running, ensure you have ran scitools matrix-makecds. That function will convert matrix files into the CDS format that Monocle3 requires.
 Runs the current version of Monocle3 within a directory containing files for CDS format input. 
-WIP: Current version performs re-clustering using the monocle pipeline, will adjust to read in scitools generated dims file in the future.
 
 
 Options:
