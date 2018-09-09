@@ -61,21 +61,19 @@ message(\"Loading Monocle3\")
 # reading in matrix, annotation, and dimension data
 
 cds_cell_data <- read.delim(\"$ARGV[0]/cds_cell_data.txt\")
-cds_dims_data <- read.delim(\"$ARGV[0]/cds_dims_data.txt\")
+cds_dims_data <- read.table(\"$ARGV[0]/cds_dims_data.txt\",header=F,row.names=1)
 cds_site_data <- read.delim(\"$ARGV[0]/cds_site_data.txt\")
 cds_counts_matrix <- read.table(\"$ARGV[0]/cds_counts_matrix.txt\")
 message(\"Read in CDS Files.\")
 
-# To be added with dims data update
-#rownames(cds_cell_data)==rownames(cds_dims_data)
-#cds_cell_data<-cbind(cds_cell_data,cds_dims_data)
+rownames(cds_cell_data)==rownames(cds_dims_data)
+cds_cell_data<-cbind(cds_cell_data,cds_dims_data)
 
 # generating cell data set
 feature_data <- new(\"AnnotatedDataFrame\", data = cds_site_data)
 sample_data <- new(\"AnnotatedDataFrame\", data = cds_cell_data)
 
-# To be added with dims data update
-#dimensions_data <- new(\"AnnotatedDataFrame\", data = cds_dims_data)
+dimensions_data <- new(\"AnnotatedDataFrame\", data = cds_dims_data)
 
 cds <- suppressWarnings(newCellDataSet(as.matrix(cds_counts_matrix), phenoData = sample_data, featureData = feature_data))
 set.seed(2017)
@@ -106,6 +104,7 @@ irlba_pca_res<-t(read.table(\"$opt{'i'}\",header=T,row.names=1))
 irlba_pca_res = irlba_pca_res[match(rownames(irlba_pca_res),colnames(cds)),]
 num_dim<-ncol(irlba_pca_res)
 cds\@normalized_data_projection <- as.matrix(irlba_pca_res)
+
 ";
 
 if ($opt{'d'} =~ /umap/) {
@@ -152,6 +151,7 @@ print R "
 #3D Plotting
 message(\"Generating 3D Plots\")
 cds <- clusterCells(cds,verbose = T,cores=10)
+cds <- suppressWarnings(partitionCells(cds))
 cds <- learnGraph(cds, max_components = 3, RGE_method = \"$opt{'L'}\", partition_component = T,verbose = T)
 #Writing out full CDS file
 saveRDS(cds,file=\"$opt{'O'}/monocle.CDS.rds\")
@@ -180,6 +180,7 @@ plot_3d_cell_trajectory(cds,color_by=paste(colnames(pData(cds))[1]),webGL_filena
 print R "
 message(\"Generating Plots\")
 cds <- clusterCells(cds,verbose = T,cores=10)
+cds <- suppressWarnings(partitionCells(cds))
 cds <- learnGraph(cds, max_components = 2, RGE_method = \"$opt{'L'}\", partition_component = T,verbose = T)
 #Writing out full CDS file
 saveRDS(cds,file=\"$opt{'O'}/monocle.CDS.rds\")
@@ -200,12 +201,17 @@ edge_df <- plyr::rename(edge_df, c(prin_graph_dim_1 = \"target_prin_graph_dim_1\
 write.table(as.matrix(edge_df),file=\"$opt{'O'}/monocle3_branchpoints.txt\",col.names=TRUE,row.names=FALSE,sep=\"\\t\",quote=FALSE)
 
 p<-plot_cell_trajectory(cds,cell_size=0.1,color_by = \"Cluster\",backbone_color=\"#000000\",show_state_name=T,alpha=0.3)
-ggsave(plot=p,filename=\"$opt{'O'}/monocle3.pathway.plot.png\",width=5,height=4,dpi=900)
-ggsave(plot=p,filename=\"$opt{'O'}/monocle3.pathway.plot.pdf\",width=5,height=4)
+ggsave(plot=p,filename=\"$opt{'O'}/monocle3.cluster.plot.png\",width=5,height=4,dpi=900)
+ggsave(plot=p,filename=\"$opt{'O'}/monocle3.cluster.plot.pdf\",width=5,height=4)
 
 p<-plot_cell_trajectory(cds,cell_size=0.1,color_by = paste(colnames(pData(cds))[1]),backbone_color=\"#000000\",show_state_name=T,alpha=0.3)
-ggsave(plot=p,filename=\"$opt{'O'}/monocle3.pathway_plot.png\",width=5,height=4,dpi=900)
-ggsave(plot=p,filename=\"$opt{'O'}/monocle3.pathway_plot.pdf\",width=5,height=4)
+ggsave(plot=p,filename=\"$opt{'O'}/monocle3.annot.plot.png\",width=5,height=4,dpi=900)
+ggsave(plot=p,filename=\"$opt{'O'}/monocle3.annot.plot.pdf\",width=5,height=4)
+
+p<-ggplot(edge_df,aes(x=source_prin_graph_dim_1,y=source_prin_graph_dim_2,xend=target_prin_graph_dim_1,yend=target_prin_graph_dim_2))+geom_segment()+geom_text(color=\"red\",label=sample_name,size=2,check_overlap=TRUE)
+ggsave(plot=p,filename=\"$opt{'O'}/monocle3.branchname.plot.png\",width=5,height=4,dpi=900)
+ggsave(plot=p,filename=\"$opt{'O'}/monocle3.branchname.plot.pdf\",width=5,height=4)
+
 ";
 }
 
@@ -219,7 +225,7 @@ write.table(as.matrix(diff_access),file=\"$opt{'O'}/monocle3_diffaccess.txt\",co
 #Overwrite monocle.CDS file with final analysis
 saveRDS(cds,file=\"$opt{'O'}/monocle.CDS.rds\")
 
-# writing out pseudotime etc so you can recreate everything
+# writing out final data frames
 write.table(as.matrix(pData(cds)),file=\"$opt{'O'}/monocle3_cells.txt\",col.names=TRUE,row.names=TRUE,sep=\"\\t\",quote=FALSE)
 write.table(as.matrix(Biobase::exprs(cds)),file=\"$opt{'O'}/monocle3_aggragated_cells_count.txt\",col.names=TRUE,row.names=TRUE,sep=\"\\t\",quote=FALSE)
 write.table(as.matrix(fData(cds)),file=\"$opt{'O'}/monocle3_features.txt\",col.names=TRUE,row.names=FALSE,sep=\"\\t\",quote=FALSE)
