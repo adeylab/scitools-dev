@@ -61,7 +61,7 @@ message(\"Loading Monocle3\")
 # reading in matrix, annotation, and dimension data
 
 cds_cell_data <- read.delim(\"$ARGV[0]/cds_cell_data.txt\")
-#cds_dims_data <- read.delim(\"$ARGV[0]/cds_dims_data.txt\")
+cds_dims_data <- read.delim(\"$ARGV[0]/cds_dims_data.txt\")
 cds_site_data <- read.delim(\"$ARGV[0]/cds_site_data.txt\")
 cds_counts_matrix <- read.table(\"$ARGV[0]/cds_counts_matrix.txt\")
 message(\"Read in CDS Files.\")
