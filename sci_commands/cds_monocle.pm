@@ -208,7 +208,7 @@ p<-plot_cell_trajectory(cds,cell_size=0.1,color_by = paste(colnames(pData(cds))[
 ggsave(plot=p,filename=\"$opt{'O'}/monocle3.annot.plot.png\",width=5,height=4,dpi=900)
 ggsave(plot=p,filename=\"$opt{'O'}/monocle3.annot.plot.pdf\",width=5,height=4)
 
-p<-ggplot(edge_df,aes(x=source_prin_graph_dim_1,y=source_prin_graph_dim_2,xend=target_prin_graph_dim_1,yend=target_prin_graph_dim_2))+geom_segment()+geom_text(color=\"red\",label=sample_name,size=2,check_overlap=TRUE)
+p<-ggplot(edge_df,aes(x=source_prin_graph_dim_1,y=source_prin_graph_dim_2,xend=target_prin_graph_dim_1,yend=target_prin_graph_dim_2))+geom_segment()+geom_text(color=\"red\",label=edge_df\$sample_name,size=2,check_overlap=TRUE)
 ggsave(plot=p,filename=\"$opt{'O'}/monocle3.branchname.plot.png\",width=5,height=4,dpi=900)
 ggsave(plot=p,filename=\"$opt{'O'}/monocle3.branchname.plot.pdf\",width=5,height=4)
 
