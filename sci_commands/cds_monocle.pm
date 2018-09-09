@@ -108,7 +108,7 @@ num_dim<-ncol(irlba_pca_res)
 cds\@normalized_data_projection <- as.matrix(irlba_pca_res)
 ";
 
-if ($opt{'d'} !~ /umap/) {
+if ($opt{'d'} =~ /umap/) {
 print R "
 dim_no<-ncol(cds_dims_data)
 S <- t(cds_dims_data)
@@ -131,7 +131,7 @@ pData(cds)\$umap_3 = reducedDimA(cds)[3, ]
 ";
 } 
 
-if ($opt{'d'} !~ /tsne/) {
+if ($opt{'d'} =~ /tsne/) {
 print R "
 dim_no<-ncol(cds_dims_data)
 reducedDimA(cds) <- t(cds_dims_data)
