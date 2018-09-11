@@ -37,6 +37,7 @@ Options:
 if (defined $opt{'R'}) {
 
 if (!defined $opt{'O'}) {$opt{'O'} = $ARGV[1]; $opt{'O'} =~ s/\.matrix$//};
+if (!defined $ARGV[1]) {die $die2}
 
 open R, ">$opt{'O'}.matrix_aggregate.r";
 print R "
@@ -56,6 +57,11 @@ row.names(centroid_df)<-row.names(counts)
 
 write.table(centroid_df,\"$opt{'O'}.aggregate.matrix\",col.names=T,row.names=T,sep=\"\\t\",quote=F)
 ";
+
+
+close R;
+system("$Rscript $opt{'O'}.matrix_aggregate.r");
+
 } else {
 #name output 
 if (!defined $opt{'O'}) {$opt{'O'} = $ARGV[1]; $opt{'O'} =~ s/\.matrix$//};
