@@ -29,9 +29,34 @@ Options:
    -m           Instead aggregate by the annotations and print a mean
                   and standard deviation for the aggregates
                   (overrides -b)
+   -R 	[FLAG] 	Print and run an R script alternate version for large matrices.
+   				Development Note: R script alternative currently doesn't accept any options.
    
 ";
 
+if (defined $opt{'R'}) {
+
+if (!defined $opt{'O'}) {$opt{'O'} = $ARGV[1]; $opt{'O'} =~ s/\.matrix$//};
+
+open R, ">$opt{'O'}.matrix_aggregate.r";
+print R "
+
+counts<-read.table(\"$ARGV[0]\")
+centroids<-read.table(\"$ARGV[1]\")
+
+centroid_df<-matrix(rowSums(counts[colnames(counts)\%in\%centroids[centroids\$V2==unique(centroids\$V2)[1],]\$V1]))
+
+for (i in unique(centroids\$V2)[2:length(unique(centroids\$V2))]){
+x<-rowSums(counts[colnames(counts)\%in\%centroids[centroids\$V2==i,]\$V1])
+centroid_df<-cbind(centroid_df,matrix(x))}
+
+centroid_df<-as.data.frame(centroid_df)
+colnames(centroid_df)<-unique(centroids\$V2)
+row.names(centroid_df)<-row.names(counts)
+
+write.table(centroid_df,\"$opt{'O'}.aggregate.matrix\",col.names=T,row.names=T,sep=\"\\t\",quote=F)
+";
+} else {
 #name output 
 if (!defined $opt{'O'}) {$opt{'O'} = $ARGV[1]; $opt{'O'} =~ s/\.matrix$//};
 
@@ -217,6 +242,6 @@ Total rows retained in output: $included_rows\n";
 close LOG;
 
 exit;
-
+}
 }
 1;
