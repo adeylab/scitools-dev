@@ -9,7 +9,7 @@ sub matrix_aggregate {
 
 @ARGV = @_;
 use Getopt::Std; %opt = ();
-getopts("O:r:c:a:bm", \%opt);
+getopts("O:r:c:a:bmR", \%opt);
 
 $die2 = "
 scitools matrix-aggregate [options] [counts matrix] [annotation file]
