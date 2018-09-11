@@ -326,7 +326,20 @@ print R "
 	xlab(\"Annot\") +
 	ylab(\"Feature value\") 
 ggsave(plot=Violin,filename=\"$opt{'O'}.violin.png\",width=7,height=3,dpi=900)
-ggsave(plot=Violin,filename=\"$opt{'O'}.violin.pdf\",width=7,height=3)";
+ggsave(plot=Violin,filename=\"$opt{'O'}.violin.pdf\",width=7,height=3)
+
+#add anova here 
+
+fit <- aov(V2 ~ V5, data=IN)
+F<-summary(fit)[[1]][[\"F value\"]][1]
+P<-summary(fit)[[1]][[\"Pr(>F)\"]][1]
+output<-c(\"$feature_polished\",F,P)
+write(output,file=\"$opt{'O'}.Annova_sum.txt\",append=TRUE,ncolumns=2,sep = \"\\t\")
+
+#individual comparisons with 
+comp<-TukeyHSD(fit)
+write.table(comp,\"$opt{'O'}.TukeyHSD.txt\",quote=F,sep=\"\\t\",row.names=T,col.names=T)";
+
 }
 } else { # Panel plotting mode
 
