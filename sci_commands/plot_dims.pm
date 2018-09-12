@@ -139,7 +139,7 @@ if (defined $opt{'M'}) {
 				print VALS "$cellID\t$CELLID_FEATURE_value{$cellID}{$feature}\n";
 			}
 		} close VALS;
-		system("$scitools -V $opt{'O'}.$matrix_out/$feature_polished.values -G $opt{'G'} $ARGV[0]");
+		system("$scitools plot-dims -V $opt{'O'}.$matrix_out/$feature_polished.values -G $opt{'G'} $ARGV[0]");
 		if (!defined $opt{'X'}) {system("rm -f $opt{'O'}.$matrix_out/$feature_polished.values")};
 	}
 	
