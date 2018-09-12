@@ -139,7 +139,7 @@ if (defined $opt{'M'}) {
 				print VALS "$cellID\t$CELLID_FEATURE_value{$cellID}{$feature}\n";
 			}
 		} close VALS;
-		system("$scitools plot-dims $common_opts -O $opt{'O'}.$matrix_out/$feature_polished -V $opt{'O'}.$matrix_out/$feature_polished.values -G $opt{'G'} $ARGV[0]");
+		system("$scitools -V $opt{'O'}.$matrix_out/$feature_polished.values -G $opt{'G'} $ARGV[0]");
 		if (!defined $opt{'X'}) {system("rm -f $opt{'O'}.$matrix_out/$feature_polished.values")};
 	}
 	
@@ -322,6 +322,7 @@ if ($color_mapping !~ /none/i) {
 	scale_fill_manual(values = c($color_mapping)) +";
 }
 print R "
+
 	guides(fill=FALSE,colour=FALSE) +
 	xlab(\"Annot\") +
 	ylab(\"Feature value\") 
@@ -330,15 +331,23 @@ ggsave(plot=Violin,filename=\"$opt{'O'}.violin.pdf\",width=7,height=3)
 
 #add anova here 
 
+folder<-strsplit(\"$opt{'O'}\", \"\/\")[[1]]
+feature<-strsplit(\"$opt{'O'}\", \"\/\")[[1]]
+
+
+
+
+
 fit <- aov(V2 ~ V5, data=IN)
 F<-summary(fit)[[1]][[\"F value\"]][1]
 P<-summary(fit)[[1]][[\"Pr(>F)\"]][1]
-output<-c(\"$feature_polished\",F,P)
-write(output,file=\"$opt{'O'}.Annova_sum.txt\",append=TRUE,ncolumns=2,sep = \"\\t\")
 
-#individual comparisons with 
+output<-c(feature[2],F,P)
+write(output,file=paste0(folder[1],\"/Annova_sum.txt\"),append=TRUE,ncolumns=3,sep = \"\\t\")
+
+#individual comparisons with TukeyHSD
 comp<-TukeyHSD(fit)
-write.table(comp,\"$opt{'O'}.TukeyHSD.txt\",quote=F,sep=\"\\t\",row.names=T,col.names=T)";
+write.table(as.matrix(comp\$V5),file=\"./$opt{'O'}.TukeyHSD.txt\",quote=FALSE,sep=\"\\t\",row.names=T,col.names=T)";
 
 }
 } else { # Panel plotting mode
