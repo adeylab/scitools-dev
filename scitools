@@ -229,6 +229,7 @@ sub load_aliases {
 	foreach $alias ("cds_monocle","monocle_cds") {$COMMAND_ALIAS{$alias} = "cds_monocle"};
 	foreach $alias ("matrix_makeCDS","matrix_make_cds","matrix2cds","matrix_makecds","makecds","make-cds","cds-make") {$COMMAND_ALIAS{$alias} = "matrix_make_cds"};
 	foreach $alias ("matrix_cistopic","cistopic","cistopic_matrix","matrix-cistopic") {$COMMAND_ALIAS{$alias} = "matrix_cistopic"};
+	foreach $alias ("da_homermotifs","da_homer_motifs","da-homer-motifs","da-homermotifs","homer_da","homermotifs_da") {$COMMAND_ALIAS{$alias} = "da_homermotifs"};
 
 }
 
@@ -318,8 +319,8 @@ sub load_descriptions {
 	$COMMAND_DESCRIPTOR{"cds_cicero"} = "Cicero Call for CCAN analysis on sci-ATAC-seq data";
 	$COMMAND_DESCRIPTOR{"matrix_make_cds"} = "Convert scitools files into CDS format for Monocle3";
 	$COMMAND_DESCRIPTOR{"dims_moran"} = "Spectral Statistics for ChromVar enrichment across clustered cells";
-
-	
 	$COMMAND_DESCRIPTOR{"matrix_bicluster"} = "Bicluster and plot a heatmap";
-	
+	$COMMAND_DESCRIPTOR{"matrix_cistopic"} = "cisTopic on matrix";
+	$COMMAND_DESCRIPTOR{"da_homermotifs"} = "Analyze Diff Accessible Peaks with HOMER";
+
 }
