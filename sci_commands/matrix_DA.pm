@@ -134,14 +134,12 @@ for $contrast (sort keys %contrast_hash)
 print "Analyzing : ". $contrast."\n";        
 open R, ">$opt{'O'}.$name_out/Diff_acc_$contrast.r";
 print R "
-#library(\"reshape2\")
 library(\"ggplot2\")
 library(\"DESeq2\")
 library(\"BiocParallel\")
-#library(calibrate)
 library(qvalue)
 register(MulticoreParam(30)) 
-counts_mat<-as.matrix(read.delim(\"$ARGV[0]\"))
+counts_mat<-as.matrix(read.delim(\"$opt{'O'}.matrix\"))
 counts_mat<-na.omit(counts_mat)
 coldata<-read.table(file = \"$opt{'O'}.$name_out/Diff_acc_$contrast.annot\",sep = \"\\t\",row.names = 1)
 colnames(coldata)<-c(\"condition\")
@@ -154,17 +152,17 @@ dds <- DESeqDataSetFromMatrix(countData = counts_mat,
 dds\$condition <- relevel(dds\$condition, ref = \"$contrast\")
 dds <- DESeq(dds,parallel = TRUE)
 res <- results(dds)
-write.table(as.matrix(res),file = \"$opt{'O'}.$name_out/Differential_acc_$contrast.txt\", col.names = TRUE, row.names = TRUE, sep = \"\t\", quote = FALSE)
+write.table(as.matrix(res),file = \"$opt{'O'}.$name_out/Differential_acc_$contrast.txt\", col.names = TRUE, row.names = TRUE, sep = \"\\t\", quote = FALSE)
 
 res <- lfcShrink(dds, coef=2)
-write.table(as.matrix(res),file = \"$opt{'O'}.$name_out/Differential_acc_$contrast\_shrunk.txt\", col.names = TRUE, row.names = TRUE, sep = \"\t\", quote = FALSE)
+write.table(as.matrix(res),file = \"$opt{'O'}.$name_out/Differential_acc_$contrast\_shrunk.txt\", col.names = TRUE, row.names = TRUE, sep = \"\\t\", quote = FALSE)
 
 
 shrunk_corr<-data.frame(log2FoldChange=res\$log2FoldChange,pvalue=res\$pvalue,padj=res\$padj)
 row.names(shrunk_corr)<-row.names(res)
 qval<-qvalue(shrunk_corr\$pvalue,fdr.level=0.01)
 shrunk_corr\$qval<-qval\$qvalues
-#write.table(as.matrix(shrunk_corr),file = \"Diff_acc_shrunk_$contrast\_combined.txt\", col.names = TRUE, row.names = TRUE, sep = \"\t\", quote = FALSE)
+#write.table(as.matrix(shrunk_corr),file = \"Diff_acc_shrunk_$contrast\_combined.txt\", col.names = TRUE, row.names = TRUE, sep = \"\\t\", quote = FALSE)
 df<-shrunk_corr
 
 
@@ -174,10 +172,10 @@ output<-data.frame(\"annotation\"=row.names(b),\"pval\"=df\$pvalue,\"pval_adjust
 output\$threshold = as.factor(output\$log2fold > 1 & output\$qval < 0.05)
 
 
-write.table(as.matrix(output),file = \"$opt{'O'}.$name_out/Differential_acc_$contrast\_shrunk_q001.txt\", col.names = TRUE, row.names = FALSE, sep = \"\t\", quote = FALSE)
+write.table(as.matrix(output),file = \"$opt{'O'}.$name_out/Differential_acc_$contrast\_shrunk_q001.txt\", col.names = TRUE, row.names = FALSE, sep = \"\\t\", quote = FALSE)
 
 ##Construct the plot object
-g <- ggplot(data=output, aes(x=log2fold, y=-log10(pval), colour=threshold)) +
+g <- ggplot(data=output, aes(x=log2fold, y=-log10(output$pval), colour=threshold)) +
   geom_point(alpha=0.4, size=1.75) +
   xlab(\"log2 fold change\") + ylab(\"-log10 p-value\")+theme_bw()
 ggsave(plot = g,filename = \"$opt{'O'}.$name_out/plots/Differential_acc_$contrast\_shrunk_qval_001_threshold_plotpval.png\")
@@ -199,7 +197,7 @@ df<-as.data.frame(res)
 output<-data.frame(\"annotation\"=row.names(b),\"pval\"=df\$pvalue,\"pval_adjust\"=df\$padj,\"log2fold\"= df\$log2FoldChange,\"qval\"= df\$qval)
 
 output\$threshold = as.factor(output\$log2fold > 1 & output\$qval < 0.05)
-write.table(as.matrix(output),file = \"$opt{'O'}.$name_out/Differential_acc_$contrast\_shrunk_q02.txt\", col.names = TRUE, row.names = FALSE, sep = \"\t\", quote = FALSE)
+write.table(as.matrix(output),file = \"$opt{'O'}.$name_out/Differential_acc_$contrast\_shrunk_q02.txt\", col.names = TRUE, row.names = FALSE, sep = \"\\t\", quote = FALSE)
 
          
 ";
