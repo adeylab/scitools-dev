@@ -48,9 +48,9 @@ open R, ">$opt{'O'}.homer.motifs.r";
 print R "
 dat<-read.table(\"$ARGV[0]\")
 full_peaks<-row.names(dat)
-dat\$chr<-strsplit(full_peaks,\"_\")[[1]][1]
-dat\$start<-strsplit(full_peaks,\"_\")[[1]][2]
-dat\$end<-strsplit(full_peaks,\"_\")[[1]][3]
+dat\$chr<-sapply(strsplit(full_peaks,\"_\"),\"[\",1)
+dat\$start<-sapply(strsplit(full_peaks,\"_\"),\"[\",2)
+dat\$end<-sapply(strsplit(full_peaks,\"_\"),\"[\",3)
 dat_full_peaks<-cbind(dat\$chr,dat\$start,dat\$end)
 write.table(dat_full_peaks,\"$opt{'O'}.full_peaks.bed\",quote=F,sep=\"\\t\",col.names=F,row.names=F)
 
@@ -72,7 +72,7 @@ dat<-dat[dat\$log2FoldChange>=$opt{'L'},]
 if (defined $opt{'P'}) {
 print R "
 message(\"Filtering Peaks to $opt{'P'}\% most significant.\")
-dat<-head(sort(dat\$padj),n=floor($opt{'P'}/100)*nrow(dat))
+dat<-head(dat[order(dat\$padj),],n=floor(($opt{'P'}/100)*nrow(dat)))
 dat_sig_peaks<-cbind(dat\$chr,dat\$start,dat\$end)
 write.table(dat_sig_peaks,\"$opt{'O'}.significant_peaks.bed\",quote=F,sep=\"\\t\",col.names=F,row.names=F)
 ";
@@ -105,3 +105,4 @@ if (!defined $opt{'X'}) {
 }
 }
 1;
+
