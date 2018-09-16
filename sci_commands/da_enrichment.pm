@@ -49,7 +49,7 @@ if (!defined $opt{'n'}) {$opt{'n'} = 1};
 if (!defined $opt{'O'}) {$opt{'O'} = $ARGV[0]; $opt{'O'} =~ s/\.matrix$//};
 if (!defined $opt{'P'} && !defined $opt{'p'} && !defined $opt{'l'}) {$opt{'P'} = 5};
 if (defined $opt{'P'}) {undef $opt{'p'}; undef $opt{'l'}};
-open R, ">$opt{'O'}.homer.motifs.r";
+open R, ">$opt{'O'}.da.enrichment.r";
 
 print R "
 dat<-read.table(\"$ARGV[0]\")
@@ -110,23 +110,23 @@ full_peaks<-makeGRangesFromDataFrame(dat_full_peaks,ignore.strand=TRUE)
 
 locResults = runLOLA(userSets=sig_peaks,userUniverse=full_peaks,regionDB=regionDB,cores=$opt{'n'})
 
-writeCombinedEnrichment(locResults, outFolder= \"$opt{'O'}.LOLA_Results\", includeSplits=TRUE)
+writeCombinedEnrichment(locResults, outFolder= \"$opt{'O'}.Enrichment_Results\", includeSplits=TRUE)
 
 ";
 };
 
 close R;
 
-system("$Rscript $opt{'O'}.homer.motifs.r");
+system("$Rscript $opt{'O'}.da.enrichment.r");
 
-system("/home/groups/oroaklab/src/homer/bin/findMotifsGenome.pl $opt{'O'}.significant_peaks.bed $opt{'g'} . -size 500 -bg $opt{'O'}.full_peaks.bed");
+system("/home/groups/oroaklab/src/homer/bin/findMotifsGenome.pl $opt{'O'}.significant_peaks.bed $opt{'g'} $opt{'O'}.Enrichment_Results -size 500 -bg $opt{'O'}.full_peaks.bed");
 
 if (!defined $opt{'X'}) {
-    system("rm -f $opt{'O'}.homer.motifs.r");
+    system("rm -f $opt{'O'}.da.enrichment.r");
     system("rm -f $opt{'O'}.full_peaks.bed");
     system("rm -f $opt{'O'}.significant_peaks.bed");
 
-}
+} 
 }
 1;
 
