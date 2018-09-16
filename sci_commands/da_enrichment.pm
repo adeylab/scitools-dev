@@ -10,7 +10,7 @@ sub da_enrichment {
 @ARGV = @_;
 # Defaults
 
-getopts("O:R:Xg:l:L:P:p:n:", \%opt);
+getopts("O:R:Xg:l:LP:p:n:", \%opt);
 
 $die2 = "
 scitools da_enrichment [options] [Input differential accessibility File]
