@@ -13,7 +13,7 @@ $range_default = "1-15";
 $xdim = 1;
 $ydim = 2;
 
-getopts("O:XR:K:D:s:P:x:y:p", \%opt);
+getopts("O:XR:S:K:D:s:P:x:y:p", \%opt);
 
 $die2 = "
 scitools dims-kmeans [options] [input dims]
@@ -22,7 +22,8 @@ scitools dims-kmeans [options] [input dims]
 Performs kmeans clustering on a dims file
 
 Options:
-   -K   [INT]   K-value (number of clusters, Required)
+   -K   [INT]   K-value (number of clusters, Required) if \"S\" defined script does silhouette analysis with the K value as max k value 
+   -S           When defined script does silhouette analysis
    -O   [STR]   Output prefix (default is [input].Kmeans_K[K].annot)
    -D   [RNG]   Range of dimensions to include (range format)
                 (e.g. 1-5,6,8; def = $range_default)
@@ -54,6 +55,45 @@ if (@DL < $RANGE_VALUES[@RANGE_VALUES-1]) {
 	die "ERROR: The dimension ranges (max = $RANGE_VALUES[@RANGE_VALUES-1]) specified are beyond the number of dimensions in $ARGV[0] (".@DL.")!\n";
 }
 
+if (defined $opt{'S'})
+{
+#if silhouette analysis
+open R, ">$opt{'O'}.silhouette_maxK$opt{'K'}.r";
+print R "
+library(\"cluster\")
+df<-read.table(\"$ARGV[0]\",row.names=1)[,$range_R_set]
+
+silhouette_score <- function(k){
+  km <- kmeans(df, centers = k, nstart=50)
+  ss <- silhouette(km$cluster, dist(df))
+  mean(ss[, 3])
+}
+k <- 2:$opt{'K'}
+avg_sil <- sapply(k, silhouette_score)
+png(
+  \"$opt{'O'}.silhouette_maxK$opt{'K'}.png\",
+  width     = 3.25,
+  height    = 3.25,
+  units     = \"in\",
+  res       = 1200,
+  pointsize = 4
+)
+par(
+  mar      = c(5, 5, 2, 2),
+  xaxs     = \"i\",
+  yaxs     = \"i\",
+  cex.axis = 2,
+  cex.lab  = 2
+)
+plot(k, type=\'b\', avg_sil, xlab=\'Number of clusters\', ylab=\'Average Silhouette Scores\', frame=FALSE)
+dev.off()
+"; close R;
+
+system("$opt{'O'}.silhouette_maxK$opt{'K'}.r");
+if (!defined $opt{'X'}) {
+  system("rm -f $opt{'O'}.silhouette_maxK$opt{'K'}.r");}
+}
+else{
 open R, ">$opt{'O'}.Kmeans_K$opt{'K'}.r";
 print R "
 D<-read.table(\"$ARGV[0]\",row.names=1)[,$range_R_set]
@@ -73,6 +113,6 @@ if (defined $opt{'P'}) {
 if (!defined $opt{'X'}) {
 	system("rm -f $opt{'O'}.Kmeans_K$opt{'K'}.r");
 }
-
+}
 }
 1;
