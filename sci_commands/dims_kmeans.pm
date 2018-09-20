@@ -13,7 +13,7 @@ $range_default = "1-15";
 $xdim = 1;
 $ydim = 2;
 
-getopts("O:XR:S:K:D:s:P:x:y:p", \%opt);
+getopts("O:S:XR:K:D:s:P:x:y:p", \%opt);
 
 $die2 = "
 scitools dims-kmeans [options] [input dims]
@@ -23,7 +23,7 @@ Performs kmeans clustering on a dims file
 
 Options:
    -K   [INT]   K-value (number of clusters, Required) if \"S\" defined script does silhouette analysis with the K value as max k value 
-   -S           When defined script does silhouette analysis
+   -S           When defined (give it a value) script does silhouette analysis
    -O   [STR]   Output prefix (default is [input].Kmeans_K[K].annot)
    -D   [RNG]   Range of dimensions to include (range format)
                 (e.g. 1-5,6,8; def = $range_default)
@@ -57,6 +57,7 @@ if (@DL < $RANGE_VALUES[@RANGE_VALUES-1]) {
 
 if (defined $opt{'S'})
 {
+  print "Silhouette analysis\n";
 #if silhouette analysis
 open R, ">$opt{'O'}.silhouette_maxK$opt{'K'}.r";
 print R "
@@ -65,7 +66,7 @@ df<-read.table(\"$ARGV[0]\",row.names=1)[,$range_R_set]
 
 silhouette_score <- function(k){
   km <- kmeans(df, centers = k, nstart=50)
-  ss <- silhouette(km$cluster, dist(df))
+  ss <- silhouette(km\$cluster, dist(df))
   mean(ss[, 3])
 }
 k <- 2:$opt{'K'}
@@ -89,11 +90,11 @@ plot(k, type=\'b\', avg_sil, xlab=\'Number of clusters\', ylab=\'Average Silhoue
 dev.off()
 "; close R;
 
-system("$opt{'O'}.silhouette_maxK$opt{'K'}.r");
+system("$Rscript $opt{'O'}.silhouette_maxK$opt{'K'}.r");
 if (!defined $opt{'X'}) {
   system("rm -f $opt{'O'}.silhouette_maxK$opt{'K'}.r");}
-}
-else{
+} else {
+print "Kmeans analysis\n";
 open R, ">$opt{'O'}.Kmeans_K$opt{'K'}.r";
 print R "
 D<-read.table(\"$ARGV[0]\",row.names=1)[,$range_R_set]
