@@ -28,6 +28,7 @@ Options:
                   human.hg38.genome,human.hg19.genome,human.hg38.genome,mouse.mm10.genome
                   Default: human.hg38.genome
    -P 	 [INT] 	Distance (in bp) between Peaks for aggregation. (Default: 10000) 
+   -p             If defined plot all all CCANS
    -k 	 [INT] 	Number of cells to aggregate per bin. (Default: 50) 	
    -X           Retain intermediate files (Default = delete)
                   
@@ -123,8 +124,8 @@ message(\"Sample CCANs Output:\")
 head(CCAN_assigns)
 
 saveRDS(cds,\"$opt{'O'}/cicero.CDS.rds\")
-write.table(as.data.frame(conns), file=\"$opt{'O'}/cicero.output.txt\",quote=F,sep=\"\\t\",row.names=T,col.names=T)
-write.table(as.data.frame(CCAN_assigns), file=\"$opt{'O'}/cicero.CCANS.txt\",quote=F,sep=\"\\t\",row.names=T,col.names=T)
+write.table(as.data.frame(conns), file=\"$opt{'O'}/cicero.output.txt\",quote=F,sep=\"\\t\",row.names=F,col.names=T)
+write.table(as.data.frame(CCAN_assigns), file=\"$opt{'O'}/cicero.CCANS.txt\",quote=F,sep=\"\\t\",row.names=F,col.names=F)
 ";
 
 close R;
