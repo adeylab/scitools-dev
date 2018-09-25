@@ -284,7 +284,7 @@ foreach $winID (sort keys %INCLUDE) {
       }
 
 close R;
-system("$ARGV[0]/plot_scriptID_$timeID.r");
+system("Rscript $ARGV[0]/plot_scriptID_$timeID.r");
 if (!defined $opt{'X'}) {
     system("rm -f $ARGV[0]/plot_scriptID_$timeID.r");
     system("rm -f $opt{'O'}/*.tmp");
