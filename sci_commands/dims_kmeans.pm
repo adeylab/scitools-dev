@@ -13,17 +13,18 @@ $range_default = "1-15";
 $xdim = 1;
 $ydim = 2;
 
-getopts("O:S:XR:K:D:s:P:x:y:p", \%opt);
+getopts("O:SXR:K:D:s:P:x:y:p", \%opt);
 
 $die2 = "
 scitools dims-kmeans [options] [input dims]
    or    kmeans
 
-Performs kmeans clustering on a dims file
+Performs kmeans clustering on a dims file or matrix file.
+If using a matrix file, use the -t flag.
 
 Options:
    -K   [INT]   K-value (number of clusters, Required) if \"S\" defined script does silhouette analysis with the K value as max k value 
-   -S           When defined (give it a value) script does silhouette analysis
+   -S           If Flagged, script does silhouette analysis
    -O   [STR]   Output prefix (default is [input].Kmeans_K[K].annot)
    -D   [RNG]   Range of dimensions to include (range format)
                 (e.g. 1-5,6,8; def = $range_default)
@@ -36,7 +37,8 @@ Options:
    -x   [INT]   X-dimension to plot (def = $xdim)
    -y   [INT]   Y-dimension to plot (def = $ydim)
    -s   [STR]   scitools call (def = $scitools)
-
+   -t           Transpose matrix before DBSCAN
+                (flag if [input dims] is a cistopic or irlba matrix)
 ";
 
 if (!defined $ARGV[0] | !defined $opt{'K'}) {die $die2};
@@ -48,12 +50,20 @@ if (!defined $opt{'D'}) {$opt{'D'} = $range_default};
 if (defined $opt{'p'} && !defined $opt{'P'}) {$opt{'P'} = $ARGV[0]};
 read_ranges($opt{'D'});
 
+if (defined !$opt{'t'}) {
 open IN, "$ARGV[0]";
 $dim_line = <IN>; close IN;
 chomp $dim_line; @DL = split(/\t/, $dim_line);
 if (@DL < $RANGE_VALUES[@RANGE_VALUES-1]) {
-	die "ERROR: The dimension ranges (max = $RANGE_VALUES[@RANGE_VALUES-1]) specified are beyond the number of dimensions in $ARGV[0] (".@DL.")!\n";
-}
+        die "ERROR: The dimension ranges (max = $RANGE_VALUES[@RANGE_VALUES-1]) specified are beyond the number of dimensions in $ARGV[0] (".@DL.")!\n";
+}; 
+} else {
+$dim_line=`wc -l < $ARGV[0]`;
+chomp $dim_line;
+if ($dim_line < $RANGE_VALUES[@RANGE_VALUES-1]) {
+  die "ERROR: The dimension ranges (max = $RANGE_VALUES[@RANGE_VALUES-1]) specified are beyond the number of dimensions in $ARGV[0] ($dim_line)!\n";
+};
+};
 
 if (defined $opt{'S'})
 {
