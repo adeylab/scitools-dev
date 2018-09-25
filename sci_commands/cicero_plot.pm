@@ -139,9 +139,11 @@ if ($bed == 0) {
       chomp $l;
       @P = split(/\t/, $l);
       if (defined $GENE_chr{$P[8]}) {
-         $GENE_chr{$P[8]} = $P[1];
+         if (!defined $GENE_start{$P[8]}) {$GENE_start{$P[8]} = $P[2];$GENE_end{$P[8]} = $P[3]} else {
          if ($P[2] < $GENE_start{$P[8]}) {$GENE_start{$P[8]} = $P[2]};
          if ($P[3] > $GENE_end{$P[8]}) {$GENE_end{$P[8]} = $P[3]};
+         }
+         $GENE_chr{$P[8]} = $P[1];
          $included++;
       }
    } close IN;
@@ -153,10 +155,13 @@ if ($bed == 0) {
       if ($GENE_chr{$gene} eq "null") {
          print STDERR "WARNING: Cannot find $gene in $gene_annot file!\n";
       } else {
-         $winID = "$GENE_chr{$gene}\_$GENE_start{$gene}\_$GENE_end{$gene}";
-         $WINID_start{$winID} -= $flank;
-         if ($WINID_start{$winID} < 1) {$WINID_start{$winID} = 1};
-         $WINID_end{$winID} += $flank;
+         $tempstart=$GENE_start{$gene} - $flank;
+         if ($tempstart < 1) {$tempstart = 1};
+          $tempend=$GENE_end{$gene} + $flank;
+         $winID = "$GENE_chr{$gene}\_$tempstart\_$tempend";
+         $WINID_chr{$winID}=$GENE_chr{$gene};
+         $WINID_start{$winID} = $tempstart;
+         $WINID_end{$winID} = $tempend;
          $WINID_gene{$winID}=$gene;
       }
    }
@@ -216,7 +221,7 @@ while ($l = <INT>) {
 $total = 0; $passing = 0;
 foreach $winID (keys %WINID_chr) {
    $total++;
-   if (defined $INCLUDE{$winID}) {
+   if ((defined $INCLUDE{$winID}) ) {
       $passing++;
    }
 }
