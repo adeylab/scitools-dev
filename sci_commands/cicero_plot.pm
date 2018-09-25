@@ -13,8 +13,7 @@ sub cicero_plot {
 getopts("O:R:X:G:f:c:", \%opt);
 
 $die2 = "
-scitools cicero-plot [options] [directory containing cds files]
-   or    
+scitools cicero-plot [options] [directory containing cds files][bed or CCAN file or list of windows or list of genes]
 
 Prior to running, ensure you have ran scitools matrix-makecds and cds_cicero. 
 

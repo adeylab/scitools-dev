@@ -28,7 +28,7 @@ Options:
                   human.hg38.genome,human.hg19.genome,human.hg38.genome,mouse.mm10.genome
                   Default: human.hg38.genome
    -P 	 [INT] 	Distance (in bp) between Peaks for aggregation. (Default: 10000) 
-   -p             If defined plot all all CCANS
+   -p     [INT]   Give CCAN values to print seperatefd by commas (e.g.: 1,2,3,4), if given value \"ALL\" all will be printed out      
    -k 	 [INT] 	Number of cells to aggregate per bin. (Default: 50) 	
    -X           Retain intermediate files (Default = delete)
                   
@@ -130,8 +130,34 @@ write.table(as.data.frame(CCAN_assigns), file=\"$opt{'O'}/cicero.CCANS.txt\",quo
 
 close R;
 system("$Rscript $opt{'O'}/cicero.r");
+
+if (defined $opt{'p'}) {
+  if($opt{'p'} eq "ALL")
+  {
+   open IN, "$opt{'O'}/cicero.CCANS.txt";
+   while ($l = <IN>) {
+      chomp $l;
+      @P = split(/\t/, $l);
+      $CCAN_include{$P[1]}++;
+  } close IN; } else {
+   chomp $opt{'p'};
+   @P = split(/,/, $opt{'p'});
+   foreach $CCAN (@P){
+      $CCAN_include{$CCAN}++;
+   }
+  }
+  if ($opt{'G'} eq "human.hg38.genome"){$plot_genome="hg38"}elsif($opt{'G'} eq "human.hg19.genome"){$plot_genome="hg19"}elsif($opt{'G'} eq "mouse.mm10.genome"){$plot_genome="mm10"};
+   foreach $CCAN_incl (sort keys %CCAN_include)
+   {
+      system("awk \'{if($2==$CCAN_incl){print}}\' $opt{'O'}/cicero.CCANS.txt > $opt{'O'}/cicero.CCANS_$CCAN_incl.tmp");
+      system("scitools cicero_plot -G $plot_genome $opt{'O'} $opt{'O'}/cicero.CCANS_$CCAN_incl.tmp");
+   }
+
+}
+
 if (!defined $opt{'X'}) {
     system("rm -f $opt{'O'}/cicero.r");
+    system("rm -f $opt{'O'}/*.tmp");
 }
 }
 1;
