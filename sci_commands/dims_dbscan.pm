@@ -38,7 +38,7 @@ Options:
    -x   [INT]   X-dimension to plot (def = $xdim)
    -y   [INT]   Y-dimension to plot (def = $ydim)
    -s   [STR]   scitools call (def = $scitools)
-   -t           Transpose matrix before DBSCAN 
+   -t           Transpose matrix before DBSCAN
                 (flag if [input dims] is a cistopic or irlba matrix)
 
 Requires the dbscan R package.
@@ -61,24 +61,30 @@ open IN, "$ARGV[0]";
 $dim_line = <IN>; close IN;
 chomp $dim_line; @DL = split(/\t/, $dim_line);
 if (@DL < $RANGE_VALUES[@RANGE_VALUES-1]) {
-	die "ERROR: The dimension ranges (max = $RANGE_VALUES[@RANGE_VALUES-1]) specified are beyond the number of dimensions in $ARGV[0] (".@DL.")!\n";
+        die "ERROR: The dimension ranges (max = $RANGE_VALUES[@RANGE_VALUES-1]) specified are beyond the number of dimensions in $ARGV[0] (".@DL.")!\n";
+}; 
 } else {
-open IN, "$ARGV[0]";
-$dim_line++ while <IN>; close IN;
+$dim_line=`wc -l < $ARGV[0]`;
+chomp $dim_line;
 if ($dim_line < $RANGE_VALUES[@RANGE_VALUES-1]) {
-  die "ERROR: The dimension ranges (max = $RANGE_VALUES[@RANGE_VALUES-1]) specified are beyond the number of dimensions in $ARGV[0] ("$dim_line")!\n";
+  die "ERROR: The dimension ranges (max = $RANGE_VALUES[@RANGE_VALUES-1]) specified are beyond the number of dimensions in $ARGV[0] ($dim_line)!\n";
+};
 };
 
 open R, ">$opt{'O'}.dbscan.r";
+
+if (defined $opt{'t'}) {
+print R "
+library(dbscan)
+DIMS<-as.matrix(read.table(\"$ARGV[0]\",row.names=1)[$range_R_set,])
+DIMS<-as.data.frame(t(DIMS))
+";
+} else {
 print R "
 library(dbscan)
 DIMS<-as.matrix(read.table(\"$ARGV[0]\",row.names=1)[,$range_R_set])
 ";
-if (defined $opt{'t'}) {
-print R "
-DIMS<-as.data.frame(t(DIMS))
-";
-}
+};
 
 print R "
 DIST<-dist(DIMS)
@@ -92,12 +98,12 @@ write.table(ANN,file=\"$opt{'O'}.dbscan.annot\",col.names=FALSE,row.names=TRUE,s
 system("$Rscript $opt{'O'}.dbscan.r");
 
 if (defined $opt{'P'}) {
-	print STDERR "PLOTTING: $scitools plot-dims -O $opt{'O'}.dbscan -A $opt{'O'}.dbscan.annot -x $xdim -y $ydim $opt{'P'}\n";
-	system("$scitools plot-dims -O $opt{'O'}.dbscan -A $opt{'O'}.dbscan.annot -x $xdim -y $ydim $opt{'P'}");
+        print STDERR "PLOTTING: $scitools plot-dims -O $opt{'O'}.dbscan -A $opt{'O'}.dbscan.annot -x $xdim -y $ydim $opt{'P'}\n";
+        system("$scitools plot-dims -O $opt{'O'}.dbscan -A $opt{'O'}.dbscan.annot -x $xdim -y $ydim $opt{'P'}");
 }
 
 if (!defined $opt{'X'}) {
-	system("rm -f $opt{'O'}.dbscan.r");
+        system("rm -f $opt{'O'}.dbscan.r");
 }
 
 }
