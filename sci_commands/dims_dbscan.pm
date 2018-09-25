@@ -15,7 +15,7 @@ $ydim = 2;
 $epsilon = 2;
 $minPts = 10;
 
-getopts("O:XR:D:s:P:x:y:e:m:p", \%opt);
+getopts("O:XR:D:s:P:x:y:e:m:pt", \%opt);
 
 $die2 = "
 scitools dims-dbscan [options] [input dims]
@@ -38,6 +38,8 @@ Options:
    -x   [INT]   X-dimension to plot (def = $xdim)
    -y   [INT]   Y-dimension to plot (def = $ydim)
    -s   [STR]   scitools call (def = $scitools)
+   -t           Transpose matrix before DBSCAN 
+                (flag if [input dims] is a cistopic or irlba matrix)
 
 Requires the dbscan R package.
 
@@ -65,6 +67,14 @@ open R, ">$opt{'O'}.dbscan.r";
 print R "
 library(dbscan)
 DIMS<-as.matrix(read.table(\"$ARGV[0]\",row.names=1)[,$range_R_set])
+";
+if (defined $opt{'t'}) {
+print R "
+DIMS<-as.data.frame(t(DIMS))
+";
+}
+
+print R "
 DIST<-dist(DIMS)
 DBS<-dbscan(DIST,$epsilon,minPts = $minPts)
 ANN<-as.matrix(DBS\$cluster)
