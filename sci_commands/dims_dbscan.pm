@@ -56,12 +56,18 @@ if (!defined $opt{'D'}) {$opt{'D'} = $range_default};
 if (defined $opt{'p'} && !defined $opt{'P'}) {$opt{'P'} = $ARGV[0]};
 read_ranges($opt{'D'});
 
+if (defined !$opt{'t'}) {
 open IN, "$ARGV[0]";
 $dim_line = <IN>; close IN;
 chomp $dim_line; @DL = split(/\t/, $dim_line);
 if (@DL < $RANGE_VALUES[@RANGE_VALUES-1]) {
 	die "ERROR: The dimension ranges (max = $RANGE_VALUES[@RANGE_VALUES-1]) specified are beyond the number of dimensions in $ARGV[0] (".@DL.")!\n";
-}
+} else {
+open IN, "$ARGV[0]";
+$dim_line++ while <IN>; close IN;
+if ($dim_line < $RANGE_VALUES[@RANGE_VALUES-1]) {
+  die "ERROR: The dimension ranges (max = $RANGE_VALUES[@RANGE_VALUES-1]) specified are beyond the number of dimensions in $ARGV[0] ("$dim_line")!\n";
+};
 
 open R, ">$opt{'O'}.dbscan.r";
 print R "
