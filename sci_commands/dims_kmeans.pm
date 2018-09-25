@@ -21,6 +21,9 @@ scitools dims-kmeans [options] [input dims]
 
 Performs kmeans clustering on a dims file or matrix file.
 If using a matrix file, use the -t flag.
+User may want to first run kmeans clustering with the -S flag.
+  This will generate a silhouette plot for a more empirical expected cluster count.
+They may then rerun this script without the -S flag, and the -K flag specified.
 
 Options:
    -K   [INT]   K-value (number of clusters, Required) if \"S\" defined script does silhouette analysis with the K value as max k value 
@@ -71,9 +74,20 @@ if (defined $opt{'S'})
 #if silhouette analysis
 open R, ">$opt{'O'}.silhouette_maxK$opt{'K'}.r";
 print R "
-library(\"cluster\")
-df<-read.table(\"$ARGV[0]\",row.names=1)[,$range_R_set]
+library(\"cluster\")";
 
+if (defined $opt{'t'}) {
+print R "
+df<-as.matrix(read.table(\"$ARGV[0]\",row.names=1)[$range_R_set,])
+df<-as.data.frame(t(df))
+";
+} else {
+print R "
+df<-as.matrix(read.table(\"$ARGV[0]\",row.names=1)[,$range_R_set])
+";
+};
+
+print R "
 silhouette_score <- function(k){
   km <- kmeans(df, centers = k, nstart=50)
   ss <- silhouette(km\$cluster, dist(df))
@@ -101,13 +115,25 @@ dev.off()
 "; close R;
 
 system("$Rscript $opt{'O'}.silhouette_maxK$opt{'K'}.r");
+
 if (!defined $opt{'X'}) {
   system("rm -f $opt{'O'}.silhouette_maxK$opt{'K'}.r");}
 } else {
 print "Kmeans analysis\n";
 open R, ">$opt{'O'}.Kmeans_K$opt{'K'}.r";
+
+if (defined $opt{'t'}) {
 print R "
-D<-read.table(\"$ARGV[0]\",row.names=1)[,$range_R_set]
+D<-as.matrix(read.table(\"$ARGV[0]\",row.names=1)[$range_R_set,])
+D<-as.data.frame(t(D))
+";
+} else {
+print R "
+D<-as.matrix(read.table(\"$ARGV[0]\",row.names=1)[,$range_R_set])
+";
+};
+
+print R "
 K<-kmeans(D,$opt{'K'})
 ANN<-as.matrix(K\$cluster)
 ANN[,1]<-sub(\"\^\", \"K\", ANN[,1])
