@@ -35,9 +35,7 @@ Options:
    -c    [NUM]   correlation cutoff  (Default: 0.15)
    -X            Retain intermediate files (Default = delete)
 
-Note: currently mm10 and hg19 only
-
-WARNING: gene symbols not working (need to revammp the sorting for it)
+Note: currently mm10 and hg19 only making hg38 soon
                   
 ";
 
@@ -55,7 +53,7 @@ $opt{'O'} =~ s/\/$//;
 if (!defined $opt{'G'}) {$opt{'G'} = "mm10"};
 if (!defined $opt{'f'}) {$flank = "500000"}else {$flank = $opt{'f'}};
 if (!defined $opt{'c'}) {$corr_cutoff = 0.15} else {$corr_cutoff = $opt{'c'}};
-if ($opt{'G'} eq "mm10") {$gene_annot = "/home/groups/oroaklab/refs/mm10/mm10.ensembl.cicero.annotations.txt"}elsif($opt{'G'} eq "hg19"){$gene_annot = "/home/groups/oroaklab/refs/hg19/hg19.ensembl.cicero.annotations.txt"}else{die $die2};
+if ($opt{'G'} eq "mm10") {$gene_annot = "/home/groups/oroaklab/refs/mm10/mm10.ensembl.cicero.annotations.txt"}elsif($opt{'G'} eq "hg19"){$gene_annot = "/home/groups/oroaklab/refs/hg19/hg19.ensembl.cicero.annotations.txt"}elsif($opt{'G'} eq "hg38"){$gene_annot = "/home/groups/oroaklab/refs/hg19/hg19.ensembl.cicero.annotations.txt"} else {die $die2};
 
 
 $bed = -1;

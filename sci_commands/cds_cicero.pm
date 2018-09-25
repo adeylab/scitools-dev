@@ -132,6 +132,8 @@ close R;
 system("$Rscript $opt{'O'}/cicero.r");
 
 if (defined $opt{'p'}) {
+
+   #this is the part that that does the plotting when defined
   if($opt{'p'} eq "ALL")
   {
    open IN, "$opt{'O'}/cicero.CCANS.txt";
