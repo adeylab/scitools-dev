@@ -13,7 +13,7 @@ $range_default = "1-15";
 $xdim = 1;
 $ydim = 2;
 
-getopts("O:SXR:K:D:s:P:x:y:p", \%opt);
+getopts("O:SXR:K:D:s:P:x:y:pt", \%opt);
 
 $die2 = "
 scitools dims-kmeans [options] [input dims]
