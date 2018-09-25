@@ -1,11 +1,11 @@
-package sci_commands::plot_cicero;
+package sci_commands::cicero_plot;
 
 use sci_utils::general;
 use Getopt::Std; %opt = ();
 use Exporter "import";
-@EXPORT = ("cicero_plot","plot_cicero");
+@EXPORT = ("cicero_plot");
 
-sub plot_cicero {
+sub cicero_plot {
 
 @ARGV = @_;
 # Defaults
@@ -13,8 +13,8 @@ sub plot_cicero {
 getopts("O:R:X:G:f:c:", \%opt);
 
 $die2 = "
-scitools plot-cicero [options] [directory containing cds files]
-   or    cicero-plot
+scitools cicero-plot [options] [directory containing cds files]
+   or    
 
 Prior to running, ensure you have ran scitools matrix-makecds and cds_cicero. 
 
@@ -56,13 +56,8 @@ $opt{'O'} =~ s/\/$//;
 if (!defined $opt{'G'}) {$opt{'G'} = "mm10"};
 if (!defined $opt{'f'}) {$flank = "500000"}else {$flank = $opt{'f'}};
 if (!defined $opt{'c'}) {$corr_cutoff = 0.15} else {$corr_cutoff = $opt{'c'}};
-if ($opt{'G'} eq "mm10") {$gene_annot = "/home/groups/oroaklab/refs/mm10/mm10.ensembl.cicero.annotations.txt"} elsif ($opt{"G"} eq "hg19"){$gene_annot = "/home/groups/oroaklab/refs/hg19/hg19.ensembl.cicero.annotations.txt"}else{die "cicero genome ref non existent\n" $die2};
+if ($opt{'G'} eq "mm10") {$gene_annot = "/home/groups/oroaklab/refs/mm10/mm10.ensembl.cicero.annotations.txt"}elsif($opt{'G'} eq "hg19"){$gene_annot = "/home/groups/oroaklab/refs/hg19/hg19.ensembl.cicero.annotations.txt"}else{die $die2};
 
-
-@CHROMS = ("chr1","chr2","chr3","chr4","chr5",
-           "chr6","chr7","chr8","chr9","chr10",
-           "chr11","chr12","chr13","chr14","chr15",
-           "chr16","chr17","chr18","chr19","chrX");
 
 $bed = -1;
 $ccan_file = -1;
@@ -132,6 +127,7 @@ if ($ccan_file > 0) {
       $WINID_chr{$winID} = $CCAN_chr{$ccan};
       $WINID_start{$winID} = $CCAN_start{$ccan};
       $WINID_end{$winID} = $CCAN_end{$ccan};
+      $WINID_CCAN{$winID}=$ccan;
 
    }
 }
@@ -151,7 +147,7 @@ if ($bed == 0) {
       }
    } close IN;
    
-   if ($included < 1) {die2 "\nFATAL ERROR: No gene symbols in provided list were found in $gene_annot file.\n"};
+   if ($included < 1) {die "\nFATAL ERROR: No gene symbols in provided list were found in $gene_annot file.\n"};
    
    #now define windows based on the provided gene list
    foreach $gene (keys %GENE_chr) {
@@ -162,6 +158,7 @@ if ($bed == 0) {
          $WINID_start{$winID} -= $flank;
          if ($WINID_start{$winID} < 1) {$WINID_start{$winID} = 1};
          $WINID_end{$winID} += $flank;
+         $WINID_gene{$winID}=$gene;
       }
    }
 }
@@ -192,8 +189,8 @@ open IN, "$ARGV[0]/cicero.output.txt";
       chomp $l;
       @P = split(/\t/, $l);
       if ($P[2] > $corr_cutoff) {
-         ($chr1,$start1,$end1) = split(/_/, $P[1]);
-         ($chr2,$start2,$end2) = split(/_/, $P[2]);
+         ($chr1,$start1,$end1) = split(/_/, $P[0]);
+         ($chr2,$start2,$end2) = split(/_/, $P[1]);
          if ($start1<$start2) {$start = $start1} else {$start = $start2};
          if ($end1>$end2) {$end = $end1} else {$end = $end2};
          if ($chr !~ /(Y|M|L|Un)/)
@@ -232,7 +229,7 @@ if ($passing > 0) {
 $timeID = time;
 $ts = localtime(time);
 
-open R, ">$opt{'O'}/plot_scriptID_$timeID.r";
+open R, ">$ARGV[0]/plot_scriptID_$timeID.r";
 print R "
 # $ts
 # Cicero plots using:
@@ -252,7 +249,9 @@ gene_annotations <- as.data.frame(read.table(\"$gene_annot\"))
   gene_annotations\$gene <- as.character(gene_annotations\$gene)
   gene_annotations\$transcript <- as.character(gene_annotations\$transcript)
   gene_annotations\$symbol <- as.character(gene_annotations\$symbol)
-
+# Loading cons file for chromosome $chr.
+cons <- read.table(\"$ARGV[0]/cicero.output.txt\",header=T)\n
+# Plotting window $winID
 
 
 
@@ -262,18 +261,33 @@ foreach $winID (sort keys %INCLUDE) {
    $chr = $WINID_chr{$winID};
    $start = $WINID_start{$winID};
    $end = $WINID_end{$winID};
-  
+      if (defined $WINID_gene{$winID})
+      {
       print R "
-# Loading cons file for chromosome $chr.
-cons <- read.table(\"$ARGV[0]/cicero.output.txt\",header=T)\n
-# Plotting window $winID
-pdf(\"$/$winID.pdf\",width=24,height=12)
-try(plot_connections(cons,\"$chr\", $start, $end, gene_model = gene_annotations, coaccess_cutoff = .15, connection_width = .5, collapseTranscripts = \"longest\" ))
-dev.off()\n";
+      pdf(\"$opt{'O'}/$WINID_gene{$winID}_$winID\_cutoff\_$corr_cutoff.pdf\",width=24,height=12)
+      try(plot_connections(cons,\"$chr\", $start, $end, gene_model = gene_annotations, coaccess_cutoff = .15, connection_width = .5, collapseTranscripts = \"longest\" ))
+      dev.off()\n";
 
 
-system("Rscript $ARGV[1]/plot_scriptID_$timeID.r");
-#system("rm -f $ARGV[1]/*.tmp");
+         } elsif (defined $WINID_CCAN{$winID}) {
+      print R "
+      pdf(\"$opt{'O'}/CCAN_$WINID_CCAN{$winID}_$winID\_cutoff\_$corr_cutoff.pdf\",width=24,height=12)
+      try(plot_connections(cons,\"$chr\", $start, $end, gene_model = gene_annotations, coaccess_cutoff = .15, connection_width = .5, collapseTranscripts = \"longest\" ))
+      dev.off()\n";
+         } else {
+
+      print R "
+      pdf(\"$opt{'O'}/$winID\_cutoff\_$corr_cutoff.pdf\",width=24,height=12)
+      try(plot_connections(cons,\"$chr\", $start, $end, gene_model = gene_annotations, coaccess_cutoff = .15, connection_width = .5, collapseTranscripts = \"longest\" ))
+      dev.off()\n";
+      }
+      }
+
+close R;
+system("$ARGV[0]/plot_scriptID_$timeID.r");
+if (!defined $opt{'X'}) {
+    system("rm -f $ARGV[0]/plot_scriptID_$timeID.r");
+    system("rm -f $opt{'O'}/*.tmp");
 }
 }
 }

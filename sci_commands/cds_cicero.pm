@@ -10,7 +10,7 @@ sub cds_cicero {
 @ARGV = @_;
 # Defaults
 
-getopts("O:R:XG:", \%opt);
+getopts("O:R:G:k:P:p:X:", \%opt);
 
 $die2 = "
 scitools cds-cicero [options] [directory containing cds files]
