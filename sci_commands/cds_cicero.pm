@@ -10,7 +10,7 @@ sub cds_cicero {
 @ARGV = @_;
 # Defaults
 
-getopts("O:R:XG:", \%opt);
+getopts("O:R:G:k:P:p:X:", \%opt);
 
 $die2 = "
 scitools cds-cicero [options] [directory containing cds files]
@@ -28,6 +28,7 @@ Options:
                   human.hg38.genome,human.hg19.genome,human.hg38.genome,mouse.mm10.genome
                   Default: human.hg38.genome
    -P 	 [INT] 	Distance (in bp) between Peaks for aggregation. (Default: 10000) 
+   -p     [INT]   Give CCAN values to print seperatefd by commas (e.g.: 1,2,3,4), if given value \"ALL\" all will be printed out      
    -k 	 [INT] 	Number of cells to aggregate per bin. (Default: 50) 	
    -X           Retain intermediate files (Default = delete)
                   
@@ -123,14 +124,42 @@ message(\"Sample CCANs Output:\")
 head(CCAN_assigns)
 
 saveRDS(cds,\"$opt{'O'}/cicero.CDS.rds\")
-write.table(as.data.frame(conns), file=\"$opt{'O'}/cicero.output.txt\",quote=F,sep=\"\\t\",row.names=T,col.names=T)
-write.table(as.data.frame(CCAN_assigns), file=\"$opt{'O'}/cicero.CCANS.txt\",quote=F,sep=\"\\t\",row.names=T,col.names=T)
+write.table(as.data.frame(conns), file=\"$opt{'O'}/cicero.output.txt\",quote=F,sep=\"\\t\",row.names=F,col.names=T)
+write.table(as.data.frame(CCAN_assigns), file=\"$opt{'O'}/cicero.CCANS.txt\",quote=F,sep=\"\\t\",row.names=F,col.names=F)
 ";
 
 close R;
 system("$Rscript $opt{'O'}/cicero.r");
+
+if (defined $opt{'p'}) {
+
+   #this is the part that that does the plotting when defined
+  if($opt{'p'} eq "ALL")
+  {
+   open IN, "$opt{'O'}/cicero.CCANS.txt";
+   while ($l = <IN>) {
+      chomp $l;
+      @P = split(/\t/, $l);
+      $CCAN_include{$P[1]}++;
+  } close IN; } else {
+   chomp $opt{'p'};
+   @P = split(/,/, $opt{'p'});
+   foreach $CCAN (@P){
+      $CCAN_include{$CCAN}++;
+   }
+  }
+  if ($opt{'G'} eq "human.hg38.genome"){$plot_genome="hg38"}elsif($opt{'G'} eq "human.hg19.genome"){$plot_genome="hg19"}elsif($opt{'G'} eq "mouse.mm10.genome"){$plot_genome="mm10"};
+   foreach $CCAN_incl (sort keys %CCAN_include)
+   {
+      system("awk \'{if($2==$CCAN_incl){print}}\' $opt{'O'}/cicero.CCANS.txt > $opt{'O'}/cicero.CCANS_$CCAN_incl.tmp");
+      system("scitools cicero_plot -G $plot_genome $opt{'O'} $opt{'O'}/cicero.CCANS_$CCAN_incl.tmp");
+   }
+
+}
+
 if (!defined $opt{'X'}) {
     system("rm -f $opt{'O'}/cicero.r");
+    system("rm -f $opt{'O'}/*.tmp");
 }
 }
 1;
