@@ -151,7 +151,7 @@ if (defined $opt{'p'}) {
   if ($opt{'G'} eq "human.hg38.genome"){$plot_genome="hg38"}elsif($opt{'G'} eq "human.hg19.genome"){$plot_genome="hg19"}elsif($opt{'G'} eq "mouse.mm10.genome"){$plot_genome="mm10"};
    foreach $CCAN_incl (sort keys %CCAN_include)
    {
-      system("awk \'{if($2==$CCAN_incl){print}}\' $opt{'O'}/cicero.CCANS.txt > $opt{'O'}/cicero.CCANS_$CCAN_incl.tmp");
+      system("awk \'{if(\$2==$CCAN_incl){print}}\' $opt{'O'}/cicero.CCANS.txt > $opt{'O'}/cicero.CCANS_$CCAN_incl.tmp");
       system("scitools cicero_plot -G $plot_genome $opt{'O'} $opt{'O'}/cicero.CCANS_$CCAN_incl.tmp");
    }
 
