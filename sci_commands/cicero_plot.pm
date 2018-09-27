@@ -30,12 +30,12 @@ ARGV1 = list of windows (bed)
 Options:
    -O    [STR]   Output Directory (default is [current working directory]/cicero_output)
    -R    [STR]   Rscript call (def = $Rscript)
-   -G    [STR]   Genome to be used. Must be of list: hg19,mm10 hg38 has to be made (Default: mm10)
+   -G    [STR]   Genome to be used. Must be of list: hg19,mm10 hg38 has to be made (Default: hg38)
    -f    [INT]   flacking regions around plotted gene regions provided. (Default: 500000)
    -c    [NUM]   correlation cutoff  (Default: 0.15)
    -X            Retain intermediate files (Default = delete)
 
-Note: currently mm10 and hg19 only making hg38 soon
+Note: currently mm10 and hg19, and hg38
                   
 ";
 
@@ -50,10 +50,10 @@ if (-e "$opt{'O'}") {
 }
 $ARGV[0] =~ s/\/$//;
 $opt{'O'} =~ s/\/$//;
-if (!defined $opt{'G'}) {$opt{'G'} = "mm10"};
+if (!defined $opt{'G'}) {$opt{'G'} = "hg38"};
 if (!defined $opt{'f'}) {$flank = "500000"}else {$flank = $opt{'f'}};
 if (!defined $opt{'c'}) {$corr_cutoff = 0.15} else {$corr_cutoff = $opt{'c'}};
-if ($opt{'G'} eq "mm10") {$gene_annot = "/home/groups/oroaklab/refs/mm10/mm10.ensembl.cicero.annotations.txt"}elsif($opt{'G'} eq "hg19"){$gene_annot = "/home/groups/oroaklab/refs/hg19/hg19.ensembl.cicero.annotations.txt"}elsif($opt{'G'} eq "hg38"){$gene_annot = "/home/groups/oroaklab/refs/hg19/hg19.ensembl.cicero.annotations.txt"} else {die $die2};
+if ($opt{'G'} eq "mm10") {$gene_annot = "/home/groups/oroaklab/refs/mm10/mm10.ensembl.cicero.annotations.txt"}elsif($opt{'G'} eq "hg19"){$gene_annot = "/home/groups/oroaklab/refs/hg19/hg19.ensembl.cicero.annotations.txt"}elsif($opt{'G'} eq "hg38"){$gene_annot = "/home/groups/oroaklab/refs/hg38/hg38.ensembl.cicero.annotations.txt"} else {die $die2};
 
 
 $bed = -1;
