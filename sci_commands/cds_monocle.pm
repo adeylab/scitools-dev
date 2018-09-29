@@ -156,7 +156,7 @@ cds <- learnGraph(cds, max_components = 3, RGE_method = \"$opt{'L'}\", partition
 #Writing out full CDS file
 saveRDS(cds,file=\"$opt{'O'}/monocle.CDS.rds\")
 
-#Save branch point coordinates
+#Save branch point coordinates, in two formats
 dp_mst <- minSpanningTree(cds)
 reduced_dim_coords <- reducedDimK(cds)
 ica_space_df <- data.frame(Matrix::t(reduced_dim_coords[1:3,]))
@@ -165,6 +165,20 @@ ica_space_df\$sample_name <- row.names(ica_space_df)
 ica_space_df\$sample_state <- row.names(ica_space_df)
 edge_list <- as.data.frame(get.edgelist(dp_mst))
 colnames(edge_list) <- c(\"source\", \"target\")
+
+out_edge_list=data.frame()
+i=1
+source<-as.character(edge_list[i,1])
+target<-as.character(edge_list[i,2])
+out_edge_list<-rbind(c(ica_space_df[ica_space_df\$sample_name==source,],\"line_segment\"=i),c(ica_space_df[ica_space_df\$sample_name==target,],\"line_segment\"=i))
+for (i in 2:nrow(edge_list)){
+source<-as.character(edge_list[i,1])
+target<-as.character(edge_list[i,2])
+out_edge_list<-rbind(out_edge_list,c(ica_space_df[ica_space_df\$sample_name==source,],\"line_segment\"=i),c(ica_space_df[ica_space_df\$sample_name==target,],\"line_segment\"=i))
+}
+write.table(out_edge_list,file=\"$opt{'O'}/monocle3_segmentvectors.txt\",col.names=TRUE,row.names=FALSE,sep=\"\\t\",quote=FALSE)
+
+
 edge_df <- merge(ica_space_df, edge_list, by.x = \"sample_name\",by.y = \"source\", all = TRUE)
 edge_df <- plyr::rename(edge_df, c(prin_graph_dim_1 = \"source_prin_graph_dim_1\",prin_graph_dim_2 = \"source_prin_graph_dim_2\", prin_graph_dim_3 = \"source_prin_graph_dim_3\"))
 edge_df <- merge(edge_df, ica_space_df[, c(\"sample_name\",\"prin_graph_dim_1\", \"prin_graph_dim_2\", \"prin_graph_dim_3\")],by.x = \"target\", by.y = \"sample_name\", all = TRUE)
