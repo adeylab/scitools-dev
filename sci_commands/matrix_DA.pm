@@ -10,7 +10,7 @@ sub matrix_DA {
 
 @ARGV = @_;
 use Getopt::Std; %opt = ();
-getopts("O:A:I:X", \%opt);
+getopts("O:A:I:T:X", \%opt);
 
 $die2 = "
 scitools matrix-da [options] [counts matrix] [aggr annotation file]
@@ -25,6 +25,7 @@ Options:
 		      IND1_2	IND1
 		      IND2_3	IND2
 		Warning: This will be used for comparisons instead of agg annot file
+   -T Type of test performed: negative binomial \"Wald\" or Likelihood ratio test (\"LRT\"). binomialff test will be added later default: \"Wald\" 
    -I	[STR]   If defined script compares an individual group to all others combined as opposed to comparing group by group (default) 	
    -X           Retain intermediate files (def = delete)
 
@@ -34,7 +35,7 @@ Options:
 #name output and create folder 
 if (!defined $ARGV[1]) {die $die2};
 if (!defined $opt{'O'}) {$opt{'O'} = $ARGV[0]; $opt{'O'} =~ s/\.matrix$//};
-
+if (!defined $opt{'T'}) {$opt{'T'} = "Wald"};
 
 $name_out = "DA_plots";
 	
@@ -150,14 +151,28 @@ dds <- DESeqDataSetFromMatrix(countData = counts_mat,
                               design = ~ condition)
 #what you compare against
 dds\$condition <- relevel(dds\$condition, ref = \"$contrast\")
+";
+if ($opt{'T'} eq "Wald")
+{
+print R "
 dds <- DESeq(dds,parallel = TRUE)
 res <- results(dds)
 write.table(as.matrix(res),file = \"$opt{'O'}.$name_out/Differential_acc_$contrast.txt\", col.names = TRUE, row.names = TRUE, sep = \"\\t\", quote = FALSE)
 
 res <- lfcShrink(dds, coef=2)
 write.table(as.matrix(res),file = \"$opt{'O'}.$name_out/Differential_acc_$contrast\_shrunk.txt\", col.names = TRUE, row.names = TRUE, sep = \"\\t\", quote = FALSE)
-
-
+";
+}
+elsif ($opt{'T'} eq "LRT")
+{
+print R "
+     # an alternate analysis: likelihood ratio test
+     ddsLRT <- DESeq(dds, test=\"LRT\", reduced= ~ 1)
+     res <- results(ddsLRT)
+     write.table(as.matrix(res),file = \"$opt{'O'}.$name_out/Differential_acc_$contrast_LRT.txt\", col.names = TRUE, row.names = TRUE, sep = \"\\t\", quote = FALSE)
+";
+}
+print R "
 shrunk_corr<-data.frame(log2FoldChange=res\$log2FoldChange,pvalue=res\$pvalue,padj=res\$padj)
 row.names(shrunk_corr)<-row.names(res)
 qval<-qvalue(shrunk_corr\$pvalue,fdr.level=0.01)
