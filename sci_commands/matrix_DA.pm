@@ -152,7 +152,7 @@ dds <- DESeqDataSetFromMatrix(countData = counts_mat,
 #what you compare against
 dds\$condition <- relevel(dds\$condition, ref = \"$contrast\")
 ";
-if ()
+if ($opt{'T'} eq "Wald")
 {
 print R "
 dds <- DESeq(dds,parallel = TRUE)
@@ -161,14 +161,18 @@ write.table(as.matrix(res),file = \"$opt{'O'}.$name_out/Differential_acc_$contra
 
 res <- lfcShrink(dds, coef=2)
 write.table(as.matrix(res),file = \"$opt{'O'}.$name_out/Differential_acc_$contrast\_shrunk.txt\", col.names = TRUE, row.names = TRUE, sep = \"\\t\", quote = FALSE)
+";
 }
-else
+elsif ($opt{'T'} eq "LRT")
 {
+print R "
      # an alternate analysis: likelihood ratio test
-     ddsLRT <- DESeq(dds, test="LRT", reduced= ~ 1)
-     resLRT <- results(ddsLRT)
+     ddsLRT <- DESeq(dds, test=\"LRT\", reduced= ~ 1)
+     res <- results(ddsLRT)
+     write.table(as.matrix(res),file = \"$opt{'O'}.$name_out/Differential_acc_$contrast_LRT.txt\", col.names = TRUE, row.names = TRUE, sep = \"\\t\", quote = FALSE)
+";
 }
-
+print R "
 shrunk_corr<-data.frame(log2FoldChange=res\$log2FoldChange,pvalue=res\$pvalue,padj=res\$padj)
 row.names(shrunk_corr)<-row.names(res)
 qval<-qvalue(shrunk_corr\$pvalue,fdr.level=0.01)
