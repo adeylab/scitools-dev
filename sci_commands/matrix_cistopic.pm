@@ -39,6 +39,8 @@ Options:
    -T    [INT]    User defined number of Topics to use. 
                   If unspecified: will generate 15, 20, 25, 30, 50, 65, 100 Topics, 
                   and use log-liklihood estimators to select the best.
+                  Specification can be a single number of a comma separated list.
+                  Will use a core for each number supplied (DO NOT EXCEED A LIST LENGTH OF 10)
    -X           Retain intermediate files (def = delete)
    -R   [STR]   Rscript call (def = $Rscript)
 
@@ -80,8 +82,11 @@ modelMat <- scale(cisTopicObject\@selected.model\$document_expects, center = TRU
 
 ";
 } else {
+@topic_list = split(/,/,$opt{'T'});
+foreach (@topic_list) {$_ = "'$_'";}
+$opt{'T'}=join(', ', @topic_list );
 print R "
-cisTopicObject <- runModels(cisTopicObject, topic=$opt{'T'}, seed=2018, nCores=$opt{'n'}, burnin = 250, iterations = 300)
+cisTopicObject <- runModels(cisTopicObject, topic=c($opt{'T'}), seed=2018, nCores=$opt{'n'}, burnin = 250, iterations = 300)
 modelMat<-scale(cisTopicObject@models$document_expects,center=TRUE,scale=TRUE)
 
 ";
