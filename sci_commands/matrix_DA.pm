@@ -301,8 +301,8 @@ cds <- detectGenes(cds)
 cds <- estimateSizeFactors(cds)
 cds <- estimateDispersions(cds)
 
-
-
+#now do the DA
+diff_timepoint <- differentialGeneTest(agg_cds,fullModelFormulaStr=\"~timepoint + num_genes_expressed\")
 
          
 ";
