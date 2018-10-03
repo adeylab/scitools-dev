@@ -82,9 +82,6 @@ modelMat <- scale(cisTopicObject\@selected.model\$document_expects, center = TRU
 
 ";
 } else {
-@topic_list = split(/,/,$opt{'T'});
-foreach (@topic_list) {$_ = "'$_'";}
-$opt{'T'}=join(', ', @topic_list );
 print R "
 cisTopicObject <- runModels(cisTopicObject, topic=c($opt{'T'}), seed=2018, nCores=$opt{'n'}, burnin = 250, iterations = 300)
 modelMat<-scale(cisTopicObject@models$document_expects,center=TRUE,scale=TRUE)
