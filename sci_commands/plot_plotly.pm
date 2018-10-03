@@ -197,36 +197,42 @@ print R "
 #make a plotly loop to go through files.
 #Generate 3D Plot
 if (\"z\" %in% colnames(dims)) {
-p<-plot_ly(type=\"scatter3d\",mode=\"markers\")
-p<- p %>% add_trace(p,data=dims,x = ~x, y = ~y, z = ~z,marker=list(size=1,opacity=0.7),color=~dims[,5],hovertext=~cellID)
+   #initiate 3d plot
+p<-plot_ly(type=\"scatter3d\")
+p<- p %>% add_trace(p,mode=\"markers\",data=dims,x = ~x, y = ~y, z = ~z,color=~dims[,5],size=10,opacity=0.7,hovertext=~cellID)
 for (i in 6:ncol(dims)) {
    if (sapply(dims[i],is.factor)) {
-      p<- p %>% add_trace(p,data=dims,x = ~x, y = ~y, z = ~z,marker=list(size=1,opacity=0.7),color=~dims[,i],hovertext=~cellID,visible=\"legendonly\")
+      p<- p %>% add_trace(mode=\"markers\",data=dims,x = ~x, y = ~y, z = ~z,color=~dims[,i],size=10,opacity=0.7,hovertext=~cellID,visible=\"legendonly\")
       } else {
-      p<- p %>% add_trace(p,data=dims,x = ~x, y = ~y, z = ~z,marker=list(size=1,opacity=0.7),color=~dims[,i],hovertext=~cellID,visible=\"legendonly\")
+      p<- p %>% add_trace(mode=\"markers\",data=dims,x = ~x, y = ~y, z = ~z,color=~dims[,i],size=10,opacity=0.7,hovertext=~cellID,visible=\"legendonly\")
       }
    }
 if (exists(\"b_file\")) {
-   p<- p %>% add_paths(p,data=b_file, split=~line_segment,x=~prin_graph_dim_1,y=~prin_graph_dim_2,z=~prin_graph_dim_3,line=list(width=3,color=\'rgb(0, 0, 0)\'),showlegend=FALSE)
+   p<- p %>% add_trace(p,data=b_file,mode=\"lines\",split=~line_segment,x=~prin_graph_dim_1,y=~prin_graph_dim_2,z=~prin_graph_dim_3,color=I(\"black\"),opacity=0.7,legendgroup=\"Trajectory\")
 }
+
 p<-p %>% layout(scene = list(xaxis = list(title = \'X\'),yaxis = list(title = \'Y\'), zaxis = list(title = \'Z\')))
 
 } else {
-#Generate 2D Plot
-p<-plot_ly(data=dims,x = ~x, y = ~y, marker=list(size=1,opacity=0.7),hovertext=~cellID)
-p<- p %>% add_trace(p,data=dims,x = ~x, y = ~y, marker=list(size=1,opacity=0.7),color=~dims[,4],hovertext=~cellID)
-for (i in 5:ncol(dims)) {
+   #initiate 2D plot
+p<-plot_ly(type=\"scatter\")
+p<- p %>% add_trace(p,mode=\"markers\",data=dims,x = ~x, y = ~y, color=~dims[,5],size=10,opacity=0.7,hovertext=~cellID)
+for (i in 6:ncol(dims)) {
    if (sapply(dims[i],is.factor)) {
-      p<- p %>% add_trace(p,data=dims,x = ~x, y = ~y, marker=list(size=1,opacity=0.7),color=~dims[,i],hovertext=~cellID,visible=\"legendonly\")
+      p<- p %>% add_trace(mode=\"markers\",data=dims,x = ~x, y = ~y, color=~dims[,i],size=10,opacity=0.7,hovertext=~cellID,visible=\"legendonly\")
       } else {
-      p<- p %>% add_trace(p,data=dims,x = ~x, y = ~y, marker=list(size=1,opacity=0.7),color=~dims[,i],hovertext=~cellID,visible=\"legendonly\")
+      p<- p %>% add_trace(mode=\"markers\",data=dims,x = ~x, y = ~y, color=~dims[,i],size=10,opacity=0.7,hovertext=~cellID,visible=\"legendonly\")
       }
    }
-if (is.data.frame(b_file)) {
-   p <- p %>% add_paths(p,data=b_file, split=~line_segment,x=~prin_graph_dim_1,y=~prin_graph_dim_2,line=list(width=3,color=\'rgb(0, 0, 0)\'),showlegend=FALSE)
+if (exists(\"b_file\")) {
+   p<- p %>% add_trace(p,data=b_file,mode=\"lines\",split=~line_segment,x=~prin_graph_dim_1,y=~prin_graph_dim_2,color=I(\"black\"),opacity=0.7,legendgroup=\"Trajectory\")
 }
+
 p<-p %>% layout(scene = list(xaxis = list(title = \'X\'),yaxis = list(title = \'Y\')))
+
 }
+
+
 htmlwidgets::saveWidget(widget=p,\"$opt{'O'}.html\", selfcontained = FALSE)
 
 ";
