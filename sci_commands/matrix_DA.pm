@@ -157,11 +157,54 @@ if ($opt{'T'} eq "Wald")
 print R "
 dds <- DESeq(dds,parallel = TRUE)
 res <- results(dds)
-write.table(as.matrix(res),file = \"$opt{'O'}.$name_out/Differential_acc_$contrast.txt\", col.names = TRUE, row.names = TRUE, sep = \"\\t\", quote = FALSE)
+write.table(as.matrix(res),file = \"$opt{'O'}.$name_out/Differential_acc_$contrast_wald.txt\", col.names = TRUE, row.names = TRUE, sep = \"\\t\", quote = FALSE)
 
 res <- lfcShrink(dds, coef=2)
-write.table(as.matrix(res),file = \"$opt{'O'}.$name_out/Differential_acc_$contrast\_shrunk.txt\", col.names = TRUE, row.names = TRUE, sep = \"\\t\", quote = FALSE)
+write.table(as.matrix(res),file = \"$opt{'O'}.$name_out/Differential_acc_$contrast\_shrunk_wald.txt\", col.names = TRUE, row.names = TRUE, sep = \"\\t\", quote = FALSE)
+
+shrunk_corr<-data.frame(log2FoldChange=res\$log2FoldChange,pvalue=res\$pvalue,padj=res\$padj)
+row.names(shrunk_corr)<-row.names(res)
+qval<-qvalue(shrunk_corr\$pvalue,fdr.level=0.01)
+shrunk_corr\$qval<-qval\$qvalues
+#write.table(as.matrix(shrunk_corr),file = \"Diff_acc_shrunk_$contrast\_combined_wald.txt\", col.names = TRUE, row.names = TRUE, sep = \"\\t\", quote = FALSE)
+df<-shrunk_corr
+
+
+output<-data.frame(\"annotation\"=row.names(df),\"pval\"=df\$pvalue,\"pval_adjust\"=df\$padj,\"log2fold\"= df\$log2FoldChange,\"qval\"= df\$qval)
+
+##Highlight genes that have an absolute fold change > 2 and a p-value < Bonferroni cut-off
+output\$threshold = as.factor(output\$log2fold > 1 & output\$qval < 0.05)
+
+write.table(as.matrix(output),file = \"$opt{'O'}.$name_out/Differential_acc_$contrast\_shrunk_q001_wald.txt\", col.names = TRUE, row.names = FALSE, sep = \"\\t\", quote = FALSE)
+
+##Construct the plot object
+g <- ggplot(data=output, aes(x=log2fold, y=-log10(output$pval), colour=threshold)) +
+  geom_point(alpha=0.4, size=1.75) +
+  xlab(\"log2 fold change\") + ylab(\"-log10 p-value\")+theme_bw()
+ggsave(plot = g,filename = \"$opt{'O'}.$name_out/plots/Differential_acc_$contrast\_shrunk_qval_001_threshold_plotpval_wald.png\")
+ggsave(plot = g,filename = \"$opt{'O'}.$name_out/plots/Differential_acc_$contrast\_shrunk_qval_001_threshold_plotpval_wald.pdf\")
+
+##Construct the plot object
+g <- ggplot(data=output, aes(x=log2fold, y=qval, colour=threshold)) +
+  geom_point(alpha=0.4, size=1.75) +
+  xlab(\"log2 fold change\") + ylab(\"q-value\")+theme_bw()
+ggsave(plot = g,filename = \"$opt{'O'}.$name_out/plots/Differential_acc_$contrast\_shrunk_qval_001_threshold_plotqval_wald.png\")
+ggsave(plot = g,filename = \"$opt{'O'}.$name_out/plots/Differential_acc_$contrast\_shrunk_qval_001_threshold_plotqval_wald.pdf\")
+
+
+
+qval<-qvalue(shrunk_corr\$pvalue,fdr.level=0.2)
+shrunk_corr\$qval<-qval\$qvalues
+res<-shrunk_corr
+df<-as.data.frame(res)
+output<-data.frame(\"annotation\"=row.names(df),\"pval\"=df\$pvalue,\"pval_adjust\"=df\$padj,\"log2fold\"= df\$log2FoldChange,\"qval\"= df\$qval)
+
+output\$threshold = as.factor(output\$log2fold > 1 & output\$qval < 0.05)
+write.table(as.matrix(output),file = \"$opt{'O'}.$name_out/Differential_acc_$contrast\_shrunk_q02_wald.txt\", col.names = TRUE, row.names = FALSE, sep = \"\\t\", quote = FALSE)
+
 ";
+close(R);
+
 }
 elsif ($opt{'T'} eq "LRT")
 {
@@ -170,38 +213,32 @@ print R "
      ddsLRT <- DESeq(dds, test=\"LRT\", reduced= ~ 1)
      res <- results(ddsLRT)
      write.table(as.matrix(res),file = \"$opt{'O'}.$name_out/Differential_acc_$contrast_LRT.txt\", col.names = TRUE, row.names = TRUE, sep = \"\\t\", quote = FALSE)
-";
-}
-print R "
-shrunk_corr<-data.frame(log2FoldChange=res\$log2FoldChange,pvalue=res\$pvalue,padj=res\$padj)
-row.names(shrunk_corr)<-row.names(res)
-qval<-qvalue(shrunk_corr\$pvalue,fdr.level=0.01)
-shrunk_corr\$qval<-qval\$qvalues
-#write.table(as.matrix(shrunk_corr),file = \"Diff_acc_shrunk_$contrast\_combined.txt\", col.names = TRUE, row.names = TRUE, sep = \"\\t\", quote = FALSE)
-df<-shrunk_corr
+
+     df-data.frame(log2FoldChange=res\$log2FoldChange,pvalue=res\$pvalue,padj=res\$padj)
+    row.names(df)<-row.names(res)
+    qval<-qvalue(shrunk_corr\$pvalue,fdr.level=0.01)
+    df\$qval<-qval\$qvalues
+    output<-data.frame(\"annotation\"=row.names(df),\"pval\"=df\$pvalue,\"pval_adjust\"=df\$padj,\"log2fold\"= df\$log2FoldChange,\"qval\"= df\$qval)
+
+    ##Highlight genes that have an absolute fold change > 2 and a p-value < Bonferroni cut-off
+    output\$threshold = as.factor(output\$log2fold > 1 & output\$qval < 0.05)
 
 
-output<-data.frame(\"annotation\"=row.names(b),\"pval\"=df\$pvalue,\"pval_adjust\"=df\$padj,\"log2fold\"= df\$log2FoldChange,\"qval\"= df\$qval)
-
-##Highlight genes that have an absolute fold change > 2 and a p-value < Bonferroni cut-off
-output\$threshold = as.factor(output\$log2fold > 1 & output\$qval < 0.05)
-
-
-write.table(as.matrix(output),file = \"$opt{'O'}.$name_out/Differential_acc_$contrast\_shrunk_q001.txt\", col.names = TRUE, row.names = FALSE, sep = \"\\t\", quote = FALSE)
+write.table(as.matrix(output),file = \"$opt{'O'}.$name_out/Differential_acc_$contrast\_q001_LRT.txt\", col.names = TRUE, row.names = FALSE, sep = \"\\t\", quote = FALSE)
 
 ##Construct the plot object
 g <- ggplot(data=output, aes(x=log2fold, y=-log10(output$pval), colour=threshold)) +
   geom_point(alpha=0.4, size=1.75) +
   xlab(\"log2 fold change\") + ylab(\"-log10 p-value\")+theme_bw()
-ggsave(plot = g,filename = \"$opt{'O'}.$name_out/plots/Differential_acc_$contrast\_shrunk_qval_001_threshold_plotpval.png\")
-ggsave(plot = g,filename = \"$opt{'O'}.$name_out/plots/Differential_acc_$contrast\_shrunk_qval_001_threshold_plotpval.pdf\")
+ggsave(plot = g,filename = \"$opt{'O'}.$name_out/plots/Differential_acc_$contrast\_shrunk_qval_001_threshold_plotpval_LRT.png\")
+ggsave(plot = g,filename = \"$opt{'O'}.$name_out/plots/Differential_acc_$contrast\_shrunk_qval_001_threshold_plotpval_LRT.pdf\")
 
 ##Construct the plot object
 g <- ggplot(data=output, aes(x=log2fold, y=qval, colour=threshold)) +
   geom_point(alpha=0.4, size=1.75) +
   xlab(\"log2 fold change\") + ylab(\"q-value\")+theme_bw()
-ggsave(plot = g,filename = \"$opt{'O'}.$name_out/plots/Differential_acc_$contrast\_shrunk_qval_001_threshold_plotqval.png\")
-ggsave(plot = g,filename = \"$opt{'O'}.$name_out/plots/Differential_acc_$contrast\_shrunk_qval_001_threshold_plotqval.pdf\")
+ggsave(plot = g,filename = \"$opt{'O'}.$name_out/plots/Differential_acc_$contrast\_shrunk_qval_001_threshold_plotqval_LRT.png\")
+ggsave(plot = g,filename = \"$opt{'O'}.$name_out/plots/Differential_acc_$contrast\_shrunk_qval_001_threshold_plotqval_LRT.pdf\")
 
 
 
@@ -209,19 +246,24 @@ qval<-qvalue(shrunk_corr\$pvalue,fdr.level=0.2)
 shrunk_corr\$qval<-qval\$qvalues
 res<-shrunk_corr
 df<-as.data.frame(res)
-output<-data.frame(\"annotation\"=row.names(b),\"pval\"=df\$pvalue,\"pval_adjust\"=df\$padj,\"log2fold\"= df\$log2FoldChange,\"qval\"= df\$qval)
+output<-data.frame(\"annotation\"=row.names(df),\"pval\"=df\$pvalue,\"pval_adjust\"=df\$padj,\"log2fold\"= df\$log2FoldChange,\"qval\"= df\$qval)
 
 output\$threshold = as.factor(output\$log2fold > 1 & output\$qval < 0.05)
-write.table(as.matrix(output),file = \"$opt{'O'}.$name_out/Differential_acc_$contrast\_shrunk_q02.txt\", col.names = TRUE, row.names = FALSE, sep = \"\\t\", quote = FALSE)
-
+write.table(as.matrix(output),file = \"$opt{'O'}.$name_out/Differential_acc_$contrast\_q02_LRT.txt\", col.names = TRUE, row.names = FALSE, sep = \"\\t\", quote = FALSE)
+";
+close(R);
+}
+elsif ($opt{'T'} eq "binomialff")
+{
+print R "
+#to be added tomorrow
          
 ";
-
 close(R);
+} else{ print "This is not a method defined"; die $die2}
+
 system("Rscript $opt{'O'}.$name_out/Diff_acc_$contrast.r > $opt{'O'}.$name_out/Diff_acc_$contrast.stdout 2> $opt{'O'}.$name_out/Diff_acc_$contrast.stderr");
-if (!defined $opt{'X'}) {
-	("rm -f $opt{'O'}.$name_out/Diff_acc_$contrast.r $opt{'O'}.$name_out/Diff_acc_$contrast.stdout $opt{'O'}.$name_out/Diff_acc_$contrast.stderr $opt{'O'}.$name_out/Differential_acc_$contrast.txt $opt{'O'}.$name_out/Differential_acc_$contrast\_shrunk.txt");	
-}
+
 }
 
 #from here we are looking at peaks that are specifially differentially accessible only in that contrast
@@ -236,7 +278,15 @@ for my $contrast1 (sort keys %contrast_hash)
 	my ($group1a,$group1b) = split(/_vs_/, $contrast1);
 	
         my %signf_peaks=();
-        open IN, "$opt{'O'}.$name_out/Differential_acc_$contrast\_shrunk_q001.txt"; 
+        if($opt{'T'} eq "Wald"){
+        open IN, "$opt{'O'}.$name_out/Differential_acc_$contrast\_shrunk_q001_wald.txt";
+        } 
+        elsif ($opt{'T'} eq "LRT") {
+          open IN, "$opt{'O'}.$name_out/Differential_acc_$contrast\_q001_LRT.txt"
+        }
+        elsif ($opt{'T'} eq "binomialff") {
+          open IN, "$opt{'O'}.$name_out/Differential_acc_$contrast\_q001_binomialff.txt"
+        } 
         my $firstline = <IN>;
                         while (my $l = <IN>) 
                         {
@@ -256,7 +306,14 @@ for my $contrast1 (sort keys %contrast_hash)
                 my ($group2a,$group2b) = split(/_vs_/, $contrast2);           
                   if (($group1a eq $group2a) && ($group1b ne $group2b))
                         {
-                  open IN2, "$opt{'O'}.$name_out/Differential_acc_$contrast\_shrunk_q02.txt"; 
+                          open IN2, "$opt{'O'}.$name_out/Differential_acc_$contrast\_shrunk_q02_wald.txt";
+                        } 
+                        elsif ($opt{'T'} eq "LRT") {
+                         open IN2, "$opt{'O'}.$name_out/Differential_acc_$contrast\_q02_LRT.txt"
+                        }
+                        elsif ($opt{'T'} eq "binomialff") {
+                        open IN2, "$opt{'O'}.$name_out/Differential_acc_$contrast\_q02_binomialff.txt"
+                        } 
                   $firstline = <IN2>;
                   while (my $l = <IN2>) 
                   {
@@ -280,7 +337,15 @@ for my $contrast1 (sort keys %contrast_hash)
         open (OUT,">","$opt{'O'}.$name_out/Diff_acc_shrunk_$contrast1\_filtered_final.txt");
         open (OUT2,">","$opt{'O'}.$name_out/Diff_acc_shrunk_$contrast1\_filtered_final_just_good_peaks.txt");
         open (OUT3,">","$opt{'O'}.$name_out/Diff_acc_shrunk_$contrast1\_not_filtered_final_just_good_peaks.txt");
-	open IN3, "$opt{'O'}.$name_out/Differential_acc_$contrast\_shrunk_q001.txt"; 
+	        if($opt{'T'} eq "Wald"){
+        open IN3, "$opt{'O'}.$name_out/Differential_acc_$contrast\_shrunk_q001_wald.txt";
+        } 
+        elsif ($opt{'T'} eq "LRT") {
+          open IN3, "$opt{'O'}.$name_out/Differential_acc_$contrast\_q001_LRT.txt"
+        }
+        elsif ($opt{'T'} eq "binomialff") {
+          open IN3, "$opt{'O'}.$name_out/Differential_acc_$contrast\_q001_binomialff.txt"
+        } 
 	$firstline= <IN3>;
 	chomp $firstline;
 	$firstline =~ s/annotation\.//g;
@@ -309,7 +374,7 @@ for my $contrast1 (sort keys %contrast_hash)
 	close(IN3);
 	close(OUT);
 	close(OUT2);
-        close(OUT3);
+  close(OUT3);
 
         open R, ">$opt{'O'}.$name_out/Diff_acc_$contrast1.r";
         print R "
@@ -330,6 +395,12 @@ for my $contrast1 (sort keys %contrast_hash)
 		}
         }
 }
+
+if (!defined $opt{'X'}) {
+  ("rm -f $opt{'O'}.$name_out/Diff_acc_$contrast.r $opt{'O'}.$name_out/Diff_acc_$contrast.stdout $opt{'O'}.$name_out/Diff_acc_$contrast.stderr $opt{'O'}.$name_out/Differential_acc_$contrast_*.txt "); 
+}
+
+
 
 }
 1;
