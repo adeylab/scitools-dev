@@ -40,9 +40,20 @@ if (!defined $opt{'O'}) {$opt{'O'} = $ARGV[1]; $opt{'O'} =~ s/\.matrix$//};
 if (!defined $ARGV[1]) {die $die2}
 
 open R, ">$opt{'O'}.matrix_aggregate.r";
+if (defined $opt{'b'})
+{
 print R "
-
 counts<-read.table(\"$ARGV[0]\")
+counts[counts > 0] = 1
+";
+}
+else
+{
+print R "
+counts<-read.table(\"$ARGV[0]\")
+";
+}
+print R "
 centroids<-read.table(\"$ARGV[1]\")
 
 centroid_df<-matrix(rowSums(counts[colnames(counts)\%in\%centroids[centroids\$V2==unique(centroids\$V2)[1],]\$V1]))
@@ -55,9 +66,20 @@ centroid_df<-as.data.frame(centroid_df)
 colnames(centroid_df)<-unique(centroids\$V2)
 row.names(centroid_df)<-row.names(counts)
 
-write.table(centroid_df,\"$opt{'O'}.aggregate.matrix\",col.names=T,row.names=T,sep=\"\\t\",quote=F)
-";
 
+";
+if (defined $opt{'b'})
+{
+print R "
+write.table(centroid_df,\"$opt{'O'}.aggregate.binary.R.matrix\",col.names=T,row.names=T,sep=\"\\t\",quote=F)
+";
+}
+else
+{
+print R "
+write.table(centroid_df,\"$opt{'O'}.aggregate.R.matrix\",col.names=T,row.names=T,sep=\"\\t\",quote=F)
+";
+}
 
 close R;
 system("$Rscript $opt{'O'}.matrix_aggregate.r");
@@ -134,11 +156,19 @@ foreach $cellID (keys %CELLID_FEATURE_value) {
 						push @{$ANNOT_FEATURE_list{$annot}{$rowID}}, $CELLID_FEATURE_value{$cellID}{$rowID};
 					} elsif (defined $opt{'b'}) {
 						if ($CELLID_FEATURE_value{$cellID}{$rowID}>0) {
+							#defined increase value by one
 							if (defined $ANNOT_FEATURE_aggregate_value{$annot}{$rowID}) {
 								$ANNOT_FEATURE_aggregate_value{$annot}{$rowID}++;
 							}
+							else {
+								#if not then value should become 1
+							$ANNOT_FEATURE_aggregate_value{$annot}{$rowID}=1;	
+							} 
 						} else {
-							$ANNOT_FEATURE_aggregate_value{$annot}{$rowID}=1;
+							#if not defined then give 0 value
+							if (!defined $ANNOT_FEATURE_aggregate_value{$annot}{$rowID}) {
+							$ANNOT_FEATURE_aggregate_value{$annot}{$rowID}=0;
+							}
 						}
 					} else {
 						if (defined $ANNOT_FEATURE_aggregate_value{$annot}{$rowID}) {
