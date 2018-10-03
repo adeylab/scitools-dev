@@ -77,7 +77,7 @@ read_matrix_stats($ARGV[0]);
 
 if (defined $opt{'I'})
 {
-  print "Doing all vs ind comparison\n";
+  print "Doing all vs ind comparison \n";
   for my $group1 (sort keys %ANNOT_AGGID)
 	{
                	$contrast="$group1\_vs_all_as_ref";
