@@ -255,6 +255,7 @@ close(R);
 }
 elsif ($opt{'T'} eq "binomialff")
 {
+system("scitools matrix-make-cds -O binomialfftemp $ARGV[0] $opt{'O'}.$name_out/Diff_acc_$contrast.annot $opt{'D'}");
 print R "
 #to be added tomorrow
          
