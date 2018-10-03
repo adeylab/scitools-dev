@@ -302,8 +302,16 @@ cds <- estimateSizeFactors(cds)
 cds <- estimateDispersions(cds)
 
 #now do the DA
-diff_timepoint <- differentialGeneTest(agg_cds,fullModelFormulaStr=\"~timepoint + num_genes_expressed\")
+diff_DA <- differentialGeneTest(agg_cds,fullModelFormulaStr=\"~timepoint + num_genes_expressed\")
+qval001<-qvalue(diff_DA\$pvalue,fdr.level=0.01)
+qval02<-qvalue(diff_DA\$pvalue,fdr.level=0.2)
+output<-data.frame(\"annotation\"=row.names(diff_DA),\"pval\"=diff_DA\$pvalue,\"qval\"= qval001)
+write.table(as.matrix(output),file = \"$opt{'O'}.$name_out/Differential_acc_$contrast\_q001_binomialff.txt\", col.names = TRUE, row.names = FALSE, sep = \"\\t\", quote = FALSE)
+output<-data.frame(\"annotation\"=row.names(diff_DA),\"pval\"=diff_DA\$pvalue,\"qval\"= qval02)
+write.table(as.matrix(output),file = \"$opt{'O'}.$name_out/Differential_acc_$contrast\_q02_binomialff.txt\", col.names = TRUE, row.names = FALSE, sep = \"\\t\", quote = FALSE
+";
 
+diff_DA$pval
          
 ";
 close(R);
