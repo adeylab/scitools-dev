@@ -20,7 +20,7 @@ This script will perform DA analysis on aggregate matrix. Aggregate annotation f
 
 Options:
    -O   [STR]   Output prefix (default is [input annot].matrix)
-   -A   [STR]   provided annotation file which consist of aggragate_centroid_name\tgroupthat you want to compare
+   -A   [STR]   provided annotation file which consist of aggragate_centroid_name \\t group that you want to compare
 		e.g.: IND1_1	IND1
 		      IND1_2	IND1
 		      IND2_3	IND2

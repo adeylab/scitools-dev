@@ -40,9 +40,20 @@ if (!defined $opt{'O'}) {$opt{'O'} = $ARGV[1]; $opt{'O'} =~ s/\.matrix$//};
 if (!defined $ARGV[1]) {die $die2}
 
 open R, ">$opt{'O'}.matrix_aggregate.r";
+if (defined $opt{'b'})
+{
 print R "
-
 counts<-read.table(\"$ARGV[0]\")
+counts[counts > 0] = 1
+";
+}
+else
+{
+print R "
+counts<-read.table(\"$ARGV[0]\")
+";
+}
+print R "
 centroids<-read.table(\"$ARGV[1]\")
 
 centroid_df<-matrix(rowSums(counts[colnames(counts)\%in\%centroids[centroids\$V2==unique(centroids\$V2)[1],]\$V1]))
