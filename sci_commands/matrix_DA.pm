@@ -257,7 +257,53 @@ elsif ($opt{'T'} eq "binomialff")
 {
 system("scitools matrix-make-cds -O binomialfftemp $ARGV[0] $opt{'O'}.$name_out/Diff_acc_$contrast.annot $opt{'D'}");
 print R "
-#to be added tomorrow
+suppressWarnings(library(cicero))
+message(\"Loading Cicero\")
+# reading in matrix, annotation, and dimension data
+
+cds_cell_data <- read.delim(\"binomialfftemp.cds_files/cds_cell_data.txt\")
+cds_dims_data <- read.delim(\"binomialfftemp.cds_files/cds_dims_data.txt\",header=F)
+cds_site_data <- read.delim(\"binomialfftemp.cds_files/cds_site_data.txt\")
+cds_counts_matrix <- read.table(\"binomialfftemp.cds_files/cds_counts_matrix.txt\")
+message(\"Read in CDS Files.\")
+
+# generating cell data set
+feature_data <- new(\"AnnotatedDataFrame\", data = cds_site_data)
+sample_data <- new(\"AnnotatedDataFrame\", data = cds_cell_data)
+
+if(ncol(cds_dims_data)==4){
+colnames(cds_dims_data)<-c(\"cellID\",\"Dimension_1\",\"Dimension_2\",\"Dimension_3\")
+row.names(cds_dims_data)<-cds_dims_data\$cellID
+dimension_reduction<-cds_dims_data[2:ncol(cds_dims_data)]
+}else{
+colnames(cds_dims_data)<-c(\"cellID\",\"Dimension_1\",\"Dimension_2\")
+row.names(cds_dims_data)<-cds_dims_data\$cellID
+dimension_reduction<-cds_dims_data[2:ncol(cds_dims_data)]
+}
+
+message(\"Setting up CDS matrix, binarized for Cicero.\")
+
+
+cds <- suppressWarnings(newCellDataSet(as.matrix(cds_counts_matrix), phenoData = sample_data, featureData = feature_data,expressionFamily = negbinomial.size(),lowerDetectionLimit = 0))
+
+cds\@expressionFamily <- binomialff()
+cds\@expressionFamily\@vfamily <- \"binomialff\"
+
+pData(cds)\$temp <- NULL
+fData(cds)\$chr <- as.numeric(as.character(fData(cds)\$chr))
+fData(cds)\$bp1 <- as.numeric(as.character(fData(cds)\$bp1))
+fData(cds)\$bp2 <- as.numeric(as.character(fData(cds)\$bp2))
+cds <- cds[order(fData(cds)\$chr, fData(cds)\$bp1),]
+
+set.seed(2017)
+pData(cds)\$cells <- NULL
+cds <- detectGenes(cds)
+cds <- estimateSizeFactors(cds)
+cds <- estimateDispersions(cds)
+
+
+
+
          
 ";
 close(R);
