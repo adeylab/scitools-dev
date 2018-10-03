@@ -48,7 +48,7 @@ system("mkdir $opt{'O'}.$name_out");
 system("mkdir $opt{'O'}.$name_out/plots");
 	
 #read in annotation, scitools approach
-if (defined $opt{'A'}) 
+if (defined $opt{'A'} && !defined $ARGV[1]) 
 	{
 	read_annot($opt{'A'});
 	for my $CELLID (sort keys %CELLID_annot)
@@ -56,8 +56,7 @@ if (defined $opt{'A'})
 		push(@{$ANNOT_AGGID{$CELLID_annot{$CELLID}}},$CELLID);
 	}
 	
-	}
-elsif (!defined $opt{'A'} && defined $ARGV[1]) {
+	} elsif (!defined $opt{'A'} && defined $ARGV[1]) {
 	read_annot($ARGV[1]);
 	for my $aggannot (sort keys %ANNOT_count)
 	{
@@ -155,6 +154,7 @@ for $contrast (sort keys %contrast_hash)
   ";
   if ($opt{'T'} eq "Wald")
   {
+  print "This is Wald\n";
   print R "
   dds <- DESeq(dds,parallel = TRUE)
   res <- results(dds)
@@ -208,6 +208,7 @@ for $contrast (sort keys %contrast_hash)
   }
   elsif ($opt{'T'} eq "LRT")
   {
+  print "This is LRT\n";
   print R "
   # an alternate analysis: likelihood ratio test
   ddsLRT <- DESeq(dds, test=\"LRT\", reduced= ~ 1)
@@ -255,6 +256,7 @@ for $contrast (sort keys %contrast_hash)
   }
   elsif ($opt{'T'} eq "binomialff")
   {
+  print "This is binomialff\n";
   system("scitools matrix-make-cds -O binomialfftemp $ARGV[0] $opt{'O'}.$name_out/Diff_acc_$contrast.annot $opt{'D'}");
   print R "
   suppressWarnings(library(cicero))
@@ -449,7 +451,7 @@ for my $contrast1 (sort keys %contrast_hash)
 }
 
 if (!defined $opt{'X'}) {
-  ("rm -f $opt{'O'}.$name_out/Diff_acc_$contrast.r $opt{'O'}.$name_out/Diff_acc_$contrast.stdout $opt{'O'}.$name_out/Diff_acc_$contrast.stderr $opt{'O'}.$name_out/Differential_acc_$contrast_*.txt "); 
+  system("rm -f $opt{'O'}.$name_out/Diff_acc_$contrast.r $opt{'O'}.$name_out/Diff_acc_$contrast.stdout $opt{'O'}.$name_out/Diff_acc_$contrast.stderr $opt{'O'}.$name_out/Differential_acc_$contrast_*.txt "); 
 }
 
 
