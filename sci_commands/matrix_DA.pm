@@ -311,10 +311,6 @@ write.table(as.matrix(output),file = \"$opt{'O'}.$name_out/Differential_acc_$con
 output<-data.frame(\"annotation\"=row.names(diff_DA),\"pval\"=diff_DA\$pvalue,\"qval\"= qval02)
 write.table(as.matrix(output),file = \"$opt{'O'}.$name_out/Differential_acc_$contrast\_q02_binomialff.txt\", col.names = TRUE, row.names = FALSE, sep = \"\\t\", quote = FALSE
 ";
-
-diff_DA$pval
-         
-";
 close(R);
 } else{ print "This is not a method defined"; die $die2}
 
@@ -338,10 +334,10 @@ for my $contrast1 (sort keys %contrast_hash)
         open IN, "$opt{'O'}.$name_out/Differential_acc_$contrast\_shrunk_q001_wald.txt";
         } 
         elsif ($opt{'T'} eq "LRT") {
-          open IN, "$opt{'O'}.$name_out/Differential_acc_$contrast\_q001_LRT.txt"
+          open IN, "$opt{'O'}.$name_out/Differential_acc_$contrast\_q001_LRT.txt";
         }
         elsif ($opt{'T'} eq "binomialff") {
-          open IN, "$opt{'O'}.$name_out/Differential_acc_$contrast\_q001_binomialff.txt"
+          open IN, "$opt{'O'}.$name_out/Differential_acc_$contrast\_q001_binomialff.txt";
         } 
         my $firstline = <IN>;
                         while (my $l = <IN>) 
@@ -365,10 +361,10 @@ for my $contrast1 (sort keys %contrast_hash)
                           open IN2, "$opt{'O'}.$name_out/Differential_acc_$contrast\_shrunk_q02_wald.txt";
                         } 
                         elsif ($opt{'T'} eq "LRT") {
-                         open IN2, "$opt{'O'}.$name_out/Differential_acc_$contrast\_q02_LRT.txt"
+                         open IN2, "$opt{'O'}.$name_out/Differential_acc_$contrast\_q02_LRT.txt";
                         }
                         elsif ($opt{'T'} eq "binomialff") {
-                        open IN2, "$opt{'O'}.$name_out/Differential_acc_$contrast\_q02_binomialff.txt"
+                        open IN2, "$opt{'O'}.$name_out/Differential_acc_$contrast\_q02_binomialff.txt";
                         } 
                   $firstline = <IN2>;
                   while (my $l = <IN2>) 
@@ -397,10 +393,10 @@ for my $contrast1 (sort keys %contrast_hash)
         open IN3, "$opt{'O'}.$name_out/Differential_acc_$contrast\_shrunk_q001_wald.txt";
         } 
         elsif ($opt{'T'} eq "LRT") {
-          open IN3, "$opt{'O'}.$name_out/Differential_acc_$contrast\_q001_LRT.txt"
+          open IN3, "$opt{'O'}.$name_out/Differential_acc_$contrast\_q001_LRT.txt";
         }
         elsif ($opt{'T'} eq "binomialff") {
-          open IN3, "$opt{'O'}.$name_out/Differential_acc_$contrast\_q001_binomialff.txt"
+          open IN3, "$opt{'O'}.$name_out/Differential_acc_$contrast\_q001_binomialff.txt";
         } 
 	$firstline= <IN3>;
 	chomp $firstline;
