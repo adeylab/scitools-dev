@@ -38,8 +38,23 @@ if (!defined $ARGV[1]) {die $die2};
 if (!defined $opt{'O'}) {$opt{'O'} = $ARGV[0]; $opt{'O'} =~ s/\.matrix$//};
 if (!defined $opt{'T'}) {$opt{'T'} = "Wald"};
 
-$name_out = "DA_plots";
-	
+#now creates separate directory for Wald, binomialff and LRT
+
+if ($opt{'T'} eq "Wald")
+  {
+   $name_out = "DA_plots_Wald"; 
+  }
+elsif ($opt{'T'} eq "LRT")
+  {
+    $name_out = "DA_plots_LRT";
+  }
+elsif ($opt{'T'} eq "binomialff")
+  {
+    $name_out = "DA_plots_binomialff";
+  }
+  else {print "This is not a method defined"; die}
+
+#if done need to erase folder	
 if (-e "$opt{'O'}.$name_out") {
 	die "\nFATAL: $opt{'O'}.$name_out directory already exists! Exiting!\n$die2";
 }
@@ -179,14 +194,14 @@ for $contrast (sort keys %contrast_hash)
   write.table(as.matrix(output),file = \"$opt{'O'}.$name_out/Differential_acc_$contrast\_shrunk_q001_wald.txt\", col.names = TRUE, row.names = FALSE, sep = \"\\t\", quote = FALSE)
 
   ##Construct the plot object
-  g <- ggplot(data=output, aes(x=log2fold, y=-log10(output$pval), colour=threshold)) +
+  g <- ggplot(data=output, aes(x=log2fold, y=-log10(output\$pval), colour=threshold)) +
   geom_point(alpha=0.4, size=1.75) +
   xlab(\"log2 fold change\") + ylab(\"-log10 p-value\")+theme_bw()
   ggsave(plot = g,filename = \"$opt{'O'}.$name_out/plots/Differential_acc_$contrast\_shrunk_qval_001_threshold_plotpval_wald.png\")
   ggsave(plot = g,filename = \"$opt{'O'}.$name_out/plots/Differential_acc_$contrast\_shrunk_qval_001_threshold_plotpval_wald.pdf\")
 
   ##Construct the plot object
-  g <- ggplot(data=output, aes(x=log2fold, y=qval, colour=threshold)) +
+  g <- ggplot(data=output, aes(x=log2fold, y=output\$qval, colour=threshold)) +
   geom_point(alpha=0.4, size=1.75) +
   xlab(\"log2 fold change\") + ylab(\"q-value\")+theme_bw()
   ggsave(plot = g,filename = \"$opt{'O'}.$name_out/plots/Differential_acc_$contrast\_shrunk_qval_001_threshold_plotqval_wald.png\")
@@ -228,14 +243,14 @@ for $contrast (sort keys %contrast_hash)
   write.table(as.matrix(output),file = \"$opt{'O'}.$name_out/Differential_acc_$contrast\_q001_LRT.txt\", col.names = TRUE, row.names = FALSE, sep = \"\\t\", quote = FALSE)
 
   ##Construct the plot object
-  g <- ggplot(data=output, aes(x=log2fold, y=-log10(output$pval), colour=threshold)) +
+  g <- ggplot(data=output, aes(x=log2fold, y=-log10(output\$pval), colour=threshold)) +
   geom_point(alpha=0.4, size=1.75) +
   xlab(\"log2 fold change\") + ylab(\"-log10 p-value\")+theme_bw()
   ggsave(plot = g,filename = \"$opt{'O'}.$name_out/plots/Differential_acc_$contrast\_shrunk_qval_001_threshold_plotpval_LRT.png\")
   ggsave(plot = g,filename = \"$opt{'O'}.$name_out/plots/Differential_acc_$contrast\_shrunk_qval_001_threshold_plotpval_LRT.pdf\")
 
   ##Construct the plot object
-  g <- ggplot(data=output, aes(x=log2fold, y=qval, colour=threshold)) +
+  g <- ggplot(data=output, aes(x=log2fold, y=output\$qval, colour=threshold)) +
   geom_point(alpha=0.4, size=1.75) +
   xlab(\"log2 fold change\") + ylab(\"q-value\")+theme_bw()
   ggsave(plot = g,filename = \"$opt{'O'}.$name_out/plots/Differential_acc_$contrast\_shrunk_qval_001_threshold_plotqval_LRT.png\")
@@ -307,16 +322,23 @@ for $contrast (sort keys %contrast_hash)
   diff_DA <- differentialGeneTest(agg_cds,fullModelFormulaStr=\"~timepoint + num_genes_expressed\")
   qval001<-qvalue(diff_DA\$pvalue,fdr.level=0.01)
   qval02<-qvalue(diff_DA\$pvalue,fdr.level=0.2)
-  output<-data.frame(\"annotation\"=row.names(diff_DA),\"pval\"=diff_DA\$pvalue,\"qval\"= qval001)
+  #will find out what log2FoldChange is
+  output<-data.frame(\"annotation\"=row.names(diff_DA),\"pval\"=diff_DA\$pvalue,\"pval_adjust\"=qval001,\"log2fold\"= qval001,\"qval\"= qval001)
+  ##Highlight genes that have an absolute fold change > 2 and a p-value < corrected
+  output\$threshold = as.factor(output\$qval < 0.05)
   write.table(as.matrix(output),file = \"$opt{'O'}.$name_out/Differential_acc_$contrast\_q001_binomialff.txt\", col.names = TRUE, row.names = FALSE, sep = \"\\t\", quote = FALSE)
-  output<-data.frame(\"annotation\"=row.names(diff_DA),\"pval\"=diff_DA\$pvalue,\"qval\"= qval02)
+  output<-data.frame(\"annotation\"=row.names(diff_DA),\"pval\"=diff_DA\$pvalue,\"pval_adjust\"=qval02,\"log2fold\"= qval02,\"qval\"= qval02)
+  output\$threshold = as.factor(output\$qval < 0.05)
   write.table(as.matrix(output),file = \"$opt{'O'}.$name_out/Differential_acc_$contrast\_q02_binomialff.txt\", col.names = TRUE, row.names = FALSE, sep = \"\\t\", quote = FALSE
   ";
   close(R);
   } else { print "This is not a method defined"; die};
 
   system("Rscript $opt{'O'}.$name_out/Diff_acc_$contrast.r > $opt{'O'}.$name_out/Diff_acc_$contrast.stdout 2> $opt{'O'}.$name_out/Diff_acc_$contrast.stderr");
-
+if (!defined $opt{'X'}) {
+  print "Removing txt and r files\n";
+  system("rm -f $opt{'O'}.$name_out/Diff_acc_$contrast.r $opt{'O'}.$name_out/Diff_acc_$contrast.stdout $opt{'O'}.$name_out/Diff_acc_$contrast.stderr $opt{'O'}.$name_out/Differential_acc_$contrast_*.txt "); 
+}
 }
 
 #from here we are looking at peaks that are specifially differentially accessible only in that contrast
@@ -449,12 +471,6 @@ for my $contrast1 (sort keys %contrast_hash)
 		}
         }
 }
-
-if (!defined $opt{'X'}) {
-  system("rm -f $opt{'O'}.$name_out/Diff_acc_$contrast.r $opt{'O'}.$name_out/Diff_acc_$contrast.stdout $opt{'O'}.$name_out/Diff_acc_$contrast.stderr $opt{'O'}.$name_out/Differential_acc_$contrast_*.txt "); 
-}
-
-
 
 }
 1;
