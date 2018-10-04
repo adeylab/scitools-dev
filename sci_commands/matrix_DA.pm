@@ -38,8 +38,23 @@ if (!defined $ARGV[1]) {die $die2};
 if (!defined $opt{'O'}) {$opt{'O'} = $ARGV[0]; $opt{'O'} =~ s/\.matrix$//};
 if (!defined $opt{'T'}) {$opt{'T'} = "Wald"};
 
-$name_out = "DA_plots";
-	
+#now creates separate directory for Wald, binomialff and LRT
+
+if ($opt{'T'} eq "Wald")
+  {
+   $name_out = "DA_plots_Wald"; 
+  }
+elsif ($opt{'T'} eq "LRT")
+  {
+    $name_out = "DA_plots_LRT";
+  }
+elsif ($opt{'T'} eq "binomialff")
+  {
+    $name_out = "DA_plots_binomialff";
+  }
+  else {print "This is not a method defined"; die}
+
+#if done need to erase folder	
 if (-e "$opt{'O'}.$name_out") {
 	die "\nFATAL: $opt{'O'}.$name_out directory already exists! Exiting!\n$die2";
 }
