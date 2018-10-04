@@ -25,8 +25,8 @@ Options:
 		      IND1_2	IND1
 		      IND2_3	IND2
 		Warning: This will be used for comparisons instead of agg annot file
-	-D Dims file for binomialff test (it is used to make cds)
-   -T Type of test performed: negative binomial \"Wald\" or Likelihood ratio test (\"LRT\"). binomialff test will be added later default: \"Wald\" 
+   -D Dims file for binomialff test (it is used to make cds)
+   -T Type of test performed: negative binomial Wald (\"Wald\") or Likelihood ratio test (\"LRT\") or binomialff (\"binomialff\") default: \"Wald\" 
    -I	[STR]   If defined script compares an individual group to all others combined as opposed to comparing group by group (default) 	
    -X           Retain intermediate files (def = delete)
 
@@ -34,7 +34,7 @@ Options:
 ";
 
 #name output and create folder 
-if (!defined $ARGV[1]) {die $die2};
+if (!defined $ARGV[0]) {die $die2};
 if (!defined $opt{'O'}) {$opt{'O'} = $ARGV[0]; $opt{'O'} =~ s/\.matrix$//};
 if (!defined $opt{'T'}) {$opt{'T'} = "Wald"};
 
