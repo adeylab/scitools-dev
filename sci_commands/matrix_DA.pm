@@ -335,7 +335,10 @@ for $contrast (sort keys %contrast_hash)
   } else { print "This is not a method defined"; die};
 
   system("Rscript $opt{'O'}.$name_out/Diff_acc_$contrast.r > $opt{'O'}.$name_out/Diff_acc_$contrast.stdout 2> $opt{'O'}.$name_out/Diff_acc_$contrast.stderr");
-
+if (!defined $opt{'X'}) {
+  print "Removing txt and r files\n";
+  system("rm -f $opt{'O'}.$name_out/Diff_acc_$contrast.r $opt{'O'}.$name_out/Diff_acc_$contrast.stdout $opt{'O'}.$name_out/Diff_acc_$contrast.stderr $opt{'O'}.$name_out/Differential_acc_$contrast_*.txt "); 
+}
 }
 
 #from here we are looking at peaks that are specifially differentially accessible only in that contrast
@@ -468,12 +471,6 @@ for my $contrast1 (sort keys %contrast_hash)
 		}
         }
 }
-
-if (!defined $opt{'X'}) {
-  system("rm -f $opt{'O'}.$name_out/Diff_acc_$contrast.r $opt{'O'}.$name_out/Diff_acc_$contrast.stdout $opt{'O'}.$name_out/Diff_acc_$contrast.stderr $opt{'O'}.$name_out/Differential_acc_$contrast_*.txt "); 
-}
-
-
 
 }
 1;
