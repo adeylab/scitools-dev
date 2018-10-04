@@ -84,8 +84,17 @@ modelMat <- scale(cisTopicObject\@selected.model\$document_expects, center = TRU
 } else {
 print R "
 cisTopicObject <- runModels(cisTopicObject, topic=c($opt{'T'}), seed=2018, nCores=$opt{'n'}, burnin = 250, iterations = 300)
-modelMat<-scale(cisTopicObject@models$document_expects,center=TRUE,scale=TRUE)
 
+if (length(c($opt{'T'}))>1){
+#Future update:Plot model log likelihood (P(D|T)) at the last iteration
+pdf(file=\"$opt{'O'}.cistopic.modelselection.pdf\")
+cisTopicObject <- selectModel(cisTopicObject)
+logLikelihoodByIter(cisTopicObject)
+dev.off()  
+modelMat <- scale(cisTopicObject\@selected.model\$document_expects, center = TRUE, scale = TRUE)
+} else {
+modelMat<-scale(cisTopicObject\@models\$document_expects,center=TRUE,scale=TRUE)
+}
 ";
 }
 
