@@ -322,9 +322,13 @@ for $contrast (sort keys %contrast_hash)
   diff_DA <- differentialGeneTest(agg_cds,fullModelFormulaStr=\"~timepoint + num_genes_expressed\")
   qval001<-qvalue(diff_DA\$pvalue,fdr.level=0.01)
   qval02<-qvalue(diff_DA\$pvalue,fdr.level=0.2)
-  output<-data.frame(\"annotation\"=row.names(diff_DA),\"pval\"=diff_DA\$pvalue,\"qval\"= qval001)
+  #will find out what log2FoldChange is
+  output<-data.frame(\"annotation\"=row.names(diff_DA),\"pval\"=diff_DA\$pvalue,\"pval_adjust\"=qval001,\"log2fold\"= qval001,\"qval\"= qval001)
+  ##Highlight genes that have an absolute fold change > 2 and a p-value < corrected
+  output\$threshold = as.factor(output\$qval < 0.05)
   write.table(as.matrix(output),file = \"$opt{'O'}.$name_out/Differential_acc_$contrast\_q001_binomialff.txt\", col.names = TRUE, row.names = FALSE, sep = \"\\t\", quote = FALSE)
-  output<-data.frame(\"annotation\"=row.names(diff_DA),\"pval\"=diff_DA\$pvalue,\"qval\"= qval02)
+  output<-data.frame(\"annotation\"=row.names(diff_DA),\"pval\"=diff_DA\$pvalue,\"pval_adjust\"=qval02,\"log2fold\"= qval02,\"qval\"= qval02)
+  output\$threshold = as.factor(output\$qval < 0.05)
   write.table(as.matrix(output),file = \"$opt{'O'}.$name_out/Differential_acc_$contrast\_q02_binomialff.txt\", col.names = TRUE, row.names = FALSE, sep = \"\\t\", quote = FALSE
   ";
   close(R);
