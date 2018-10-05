@@ -10,7 +10,7 @@ sub cds_monocle {
 @ARGV = @_;
 # Defaults
 
-getopts("O:R:XP:D:L:Ti:d:P", \%opt);
+getopts("O:R:X:D:L:Ti:d:P", \%opt);
 
 $die2 = "
 scitools cds_monocle [options] [directory containing cds files]
