@@ -156,15 +156,15 @@ cds <- clusterCells(cds,verbose = T,cores=10)
 cds <- suppressWarnings(partitionCells(cds)) 
 ";
 
-if (defined $opt{'P'}) {
-print R "
-cds <- learnGraph(cds, max_components = 3, RGE_method = \"$opt{'L'}\", partition_group=paste(colnames(pData(cds))[1]),do_partition=T,verbose = T)
-";
-} else {
-print R "
-cds <- learnGraph(cds, max_components = 3, RGE_method = \"$opt{'L'}\", verbose = T)
-"; 
-}
+   if (defined $opt{'P'}) {
+   print R "
+   cds <- learnGraph(cds, max_components = 3, RGE_method = \"$opt{'L'}\", partition_group=paste(colnames(pData(cds))[1]),do_partition=T,verbose = T)
+   ";
+   } else {
+   print R "
+   cds <- learnGraph(cds, max_components = 3, RGE_method = \"$opt{'L'}\", verbose = T)
+   "; 
+   }
 
 print R "
 #Writing out full CDS file
@@ -210,15 +210,17 @@ message(\"Generating Plots\")
 cds <- clusterCells(cds,verbose = T,cores=10)
 cds <- suppressWarnings(partitionCells(cds))
 ";
-if (defined $opt{'P'}) {
+   if (defined $opt{'P'}) {
+   print R "
+   cds <- learnGraph(cds, max_components = 3, RGE_method = \"$opt{'L'}\", partition_group=paste(colnames(pData(cds))[1]),do_partition=T,verbose = T)
+   ";
+   } else {
+   print R "
+   cds <- learnGraph(cds, max_components = 3, RGE_method = \"$opt{'L'}\", verbose = T)
+   "; 
+   }
+
 print R "
-cds <- learnGraph(cds, max_components = 3, RGE_method = \"$opt{'L'}\", partition_group=paste(colnames(pData(cds))[1]),do_partition=T,verbose = T)
-";
-} else {
-print R "
-cds <- learnGraph(cds, max_components = 3, RGE_method = \"$opt{'L'}\", verbose = T)
-"; 
-}
 #Writing out full CDS file
 saveRDS(cds,file=\"$opt{'O'}/monocle.CDS.rds\")
 
