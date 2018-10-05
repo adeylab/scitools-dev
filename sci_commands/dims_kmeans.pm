@@ -112,15 +112,6 @@ par(
 plot(k, type=\'b\', avg_sil, xlab=\'Number of clusters\', ylab=\'Average Silhouette Scores\', frame=FALSE)
 dev.off()
 
-k_row<-as.integer($opt{'K'}/4)
-png(  \"$opt{'O'}.silhouette_widths.K$opt{'K'}.png\",)
-par(mfrow=c(k_row,4))
-for (i in k){
-  plot(silhouette(km$cluster, daisy(df)), col=i, border=NA)
-}
-dev.off()
-
-
 "; close R;
 
 system("$Rscript $opt{'O'}.silhouette_maxK$opt{'K'}.r");

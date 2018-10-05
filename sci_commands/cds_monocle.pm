@@ -10,7 +10,7 @@ sub cds_monocle {
 @ARGV = @_;
 # Defaults
 
-getopts("O:R:XP:D:L:Ti:d:", \%opt);
+getopts("O:R:XP:D:L:Ti:d:P", \%opt);
 
 $die2 = "
 scitools cds_monocle [options] [directory containing cds files]
@@ -37,6 +37,8 @@ Options:
                   Default: 2 Dimensions
    -L    [STR] RGE method for branch analysis in monocle3. Must member of the following list:
    				[SimplePPT,L1graph,DDRTree] Default=SimplePPT
+   -P    [FLAG]   Partition Groups. Will only build branches within the same annotation.
+                  (Default=No Partition)
    -X          Retain intermediate files (Default = delete)
                   
 ";
@@ -151,8 +153,20 @@ print R "
 #3D Plotting
 message(\"Generating 3D Plots\")
 cds <- clusterCells(cds,verbose = T,cores=10)
-cds <- suppressWarnings(partitionCells(cds))
-cds <- learnGraph(cds, max_components = 3, RGE_method = \"$opt{'L'}\", partition_component = T,verbose = T)
+cds <- suppressWarnings(partitionCells(cds)) 
+";
+
+if (defined $opt{'P'}) {
+print R "
+cds <- learnGraph(cds, max_components = 3, RGE_method = \"$opt{'L'}\", partition_group=paste(colnames(pData(cds))[1]),do_partition=T,verbose = T)
+";
+} else {
+print R "
+cds <- learnGraph(cds, max_components = 3, RGE_method = \"$opt{'L'}\", verbose = T)
+"; 
+}
+
+print R "
 #Writing out full CDS file
 saveRDS(cds,file=\"$opt{'O'}/monocle.CDS.rds\")
 
@@ -195,7 +209,16 @@ print R "
 message(\"Generating Plots\")
 cds <- clusterCells(cds,verbose = T,cores=10)
 cds <- suppressWarnings(partitionCells(cds))
-cds <- learnGraph(cds, max_components = 2, RGE_method = \"$opt{'L'}\", partition_component = T,verbose = T)
+";
+if (defined $opt{'P'}) {
+print R "
+cds <- learnGraph(cds, max_components = 3, RGE_method = \"$opt{'L'}\", partition_group=paste(colnames(pData(cds))[1]),do_partition=T,verbose = T)
+";
+} else {
+print R "
+cds <- learnGraph(cds, max_components = 3, RGE_method = \"$opt{'L'}\", verbose = T)
+"; 
+}
 #Writing out full CDS file
 saveRDS(cds,file=\"$opt{'O'}/monocle.CDS.rds\")
 
