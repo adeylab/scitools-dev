@@ -34,8 +34,8 @@ Options:
    -p   [FLT]   adjusted p-value filter to be usef for motif discovery. Def: NULL
                 Sites have to be equal to or below the given float.
    -P   [FLT]   Top percentage of differential accessibility peaks to be used for motif discovery. Def: 5
+                This filter is run after -l and -p filtering, if they are specified.
                 Sites have to be greater or equal to the top percentage (by sorted lowest to highested adjusted p values) 
-                This option overrides -p and -l filters.
    -L   [FLAG]  If flagged, will perform LOLA analysis on data sets from Sheffield lab. 
    -n   [INT]   Number of cores to be used for LOLA analysis. (Default = 1)
    -X   [FLAG]  Retain intermediate files (Default = delete)
@@ -48,7 +48,6 @@ if (!defined $opt{'g'}) {$opt{'g'} = "hg38"};
 if (!defined $opt{'n'}) {$opt{'n'} = 1};
 if (!defined $opt{'O'}) {$opt{'O'} = $ARGV[0]; $opt{'O'} =~ s/\.matrix$//};
 if (!defined $opt{'P'} && !defined $opt{'p'} && !defined $opt{'l'}) {$opt{'P'} = 5};
-if (defined $opt{'P'}) {undef $opt{'p'}; undef $opt{'l'}};
 open R, ">$opt{'O'}.da.enrichment.r";
 
 print R "
