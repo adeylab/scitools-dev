@@ -72,11 +72,15 @@ dat<-dat[dat\$padj<=$opt{'p'},]
 ";
 };
 
-if (defined $opt{'p'}) {
+if (defined $opt{'q'}) {
 print R "
+if (\"qval\" %in% colnames(dat)){
 message(\"Filtering Peaks to those with q-values less than or equal to $opt{'q'}\")
 dat<-dat[dat\$qval<=$opt{'q'},]
+}else{
+message(\"q Values not found in given file. Skipping q-value filter.\")
 
+}
 
 ";
 };
