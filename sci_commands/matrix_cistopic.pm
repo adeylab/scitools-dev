@@ -83,7 +83,6 @@ modelMat <- scale(cisTopicObject\@selected.model\$document_expects, center = TRU
 } else {
 print R "
 cisTopicObject <- runModels(cisTopicObject, topic=$opt{'T'}, seed=2018, nCores=$opt{'n'}, burnin = 250, iterations = 300)
-modelMat<-scale(cisTopicObject\@models\$document_expects,center=TRUE,scale=TRUE)
 
 ";
 }
