@@ -56,6 +56,7 @@ if (defined $opt{'R'}) {$Rscript = $opt{'R'}};
 
 open R, ">$opt{'O'}.cistopic.r";
 print R "
+library(plyr)
 library(cisTopic)
 IN<-as.matrix(read.table(\"$ARGV[0]\"))
 row.names(IN)<-sub(\"_\",\"-\",sub(\"_\",\":\",row.names(IN)))
