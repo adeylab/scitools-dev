@@ -10,7 +10,7 @@ sub da_enrichment {
 @ARGV = @_;
 # Defaults
 
-getopts("O:R:Xg:l:LP:p:nq::", \%opt);
+getopts("O:R:Xg:l:LP:p:n:q:", \%opt);
 
 $die2 = "
 scitools da_enrichment [options] [Input differential accessibility File]
@@ -33,7 +33,7 @@ Options:
                 Sites have to be equal to or above the given float.
    -p   [FLT]   adjusted p-value filter to be usef for motif discovery. Def: NULL
                 Sites have to be equal to or below the given float.
-   -q   [FLT]   q-value filter to be usef for motif discovery. Def: NULL
+   -q   [FLT]   q-value filter to be used for motif discovery. Def: NULL
                 Sites have to be equal to or below the given float.
    -P   [FLT]   Top percentage of differential accessibility peaks to be used for motif discovery. Def: 5
                 This filter is run after -l and -p filtering, if they are specified.
