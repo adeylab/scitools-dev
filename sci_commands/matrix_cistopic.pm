@@ -39,6 +39,8 @@ Options:
    -T    [INT]    User defined number of Topics to use. 
                   If unspecified: will generate 15, 20, 25, 30, 50, 65, 100 Topics, 
                   and use log-liklihood estimators to select the best.
+                  Specification can be a single number of a comma separated list.
+                  Will use a core for each number supplied (DO NOT EXCEED A LIST LENGTH OF 10)
    -X           Retain intermediate files (def = delete)
    -R   [STR]   Rscript call (def = $Rscript)
 
@@ -82,8 +84,19 @@ modelMat <- scale(cisTopicObject\@selected.model\$document_expects, center = TRU
 ";
 } else {
 print R "
-cisTopicObject <- runModels(cisTopicObject, topic=$opt{'T'}, seed=2018, nCores=$opt{'n'}, burnin = 250, iterations = 300)
+cisTopicObject <- runModels(cisTopicObject, topic=c($opt{'T'}), seed=2018, nCores=$opt{'n'}, burnin = 250, iterations = 300)
 
+
+if (length(c($opt{'T'}))>1){
+#Future update:Plot model log likelihood (P(D|T)) at the last iteration
+pdf(file=\"$opt{'O'}.cistopic.modelselection.pdf\")
+cisTopicObject <- selectModel(cisTopicObject)
+logLikelihoodByIter(cisTopicObject)
+dev.off()  
+modelMat <- scale(cisTopicObject\@selected.model\$document_expects, center = TRUE, scale = TRUE)
+} else {
+modelMat<-scale(cisTopicObject\@models\$document_expects,center=TRUE,scale=TRUE)
+}
 ";
 }
 

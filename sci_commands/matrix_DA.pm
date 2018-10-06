@@ -10,75 +10,76 @@ sub matrix_DA {
 
 @ARGV = @_;
 use Getopt::Std; %opt = ();
-getopts("O:A:I:T:D:X", \%opt);
+getopts("O:A:IT:D:Xn:", \%opt);
 
 $die2 = "
-scitools matrix-da [options] [counts matrix] [aggr annotation file]
+scitools matrix-da [options] [aggregate matrix] [aggregate annotation file]
    or    da-matrix
 
-This script will perform DA analysis on aggregate matrix. Aggregate annotation file that is output by the aggregate_cells
+This script will perform differential accessibility analysis on:
+[aggregate matrix]:           an aggregate matrix generated through scitools aggregate-matrix
+[aggregate annotation file]:  an aggregate annotation file that is output by scitools aggregate_cells
+
+With the statistical test that is specified by option -T.
 
 Options:
-   -O   [STR]   Output prefix (default is [input annot].matrix)
-   -A   [STR]   provided annotation file which consist of aggragate_centroid_name \\t group that you want to compare
-		e.g.: IND1_1	IND1
-		      IND1_2	IND1
-		      IND2_3	IND2
-		Warning: This will be used for comparisons instead of agg annot file
-   -D Dims file for binomialff test (it is used to make cds)
-   -T Type of test performed: negative binomial Wald (\"Wald\") or Likelihood ratio test (\"LRT\") or binomialff (\"binomialff\") default: \"Wald\" 
-   -I	[STR]   If defined script compares an individual group to all others combined as opposed to comparing group by group (default) 	
-   -X           Retain intermediate files (def = delete)
-
-   
+   -O   [STR]     Output prefix (default is [input annot].matrix)
+   -A   [STR]     provided annotation file which consist of aggregate_centroid_name\tgroupthat you want to compare
+                           e.g.: IND1_1   IND1
+                                 IND1_2   IND1
+                                 IND2_3   IND2
+                           Warning: This will be used for comparisons instead of [aggregate annotation file]
+   -T   [STR]     Currently accepts [Wald|LRT]
+                  Type of test performed: negative binomial \"Wald\" or Likelihood ratio test (\"LRT\"). binomialff test will be added later default: \"Wald\" 
+   -I   [FLAG]    If defined script compares an individual group to all others combined as opposed to comparing group by group (default)  
+   -n   [INT]     Number of cores to use for comparisons. (Default=1)
+   -X   [FLAG]    Retain intermediate files (def = delete)
+ 
 ";
 
 #name output and create folder 
 if (!defined $ARGV[0]) {die $die2};
 if (!defined $opt{'O'}) {$opt{'O'} = $ARGV[0]; $opt{'O'} =~ s/\.matrix$//};
 if (!defined $opt{'T'}) {$opt{'T'} = "Wald"};
+if (!defined $opt{'n'}) {$opt{'n'} = 1};
 
 #now creates separate directory for Wald, binomialff and LRT
 
 if ($opt{'T'} eq "Wald")
   {
-   $name_out = "DA_plots_Wald"; 
+   $name_out = "DA_Wald"; 
   }
 elsif ($opt{'T'} eq "LRT")
   {
-    $name_out = "DA_plots_LRT";
+    $name_out = "DA_LRT";
   }
 elsif ($opt{'T'} eq "binomialff")
   {
-    $name_out = "DA_plots_binomialff";
+    $name_out = "DA_binomialff";
   }
   else {print "This is not a method defined"; die}
 
-#if done need to erase folder	
-if (-e "$opt{'O'}.$name_out") {
-	die "\nFATAL: $opt{'O'}.$name_out directory already exists! Exiting!\n$die2";
-}
+#RM: Just overwrite folder contents if they already exist
+#if (-e "$opt{'O'}.$name_out") {
+#	die "\nFATAL: $opt{'O'}.$name_out directory already exists! Exiting!\n$die2";
+#}
 
 system("mkdir $opt{'O'}.$name_out");
 system("mkdir $opt{'O'}.$name_out/plots");
 	
 #read in annotation, scitools approach
-if (defined $opt{'A'} && !defined $ARGV[1]) 
-	{
-	read_annot($opt{'A'});
-	for my $CELLID (sort keys %CELLID_annot)
-	{
-		push(@{$ANNOT_AGGID{$CELLID_annot{$CELLID}}},$CELLID);
-	}
-	
-	} elsif (!defined $opt{'A'} && defined $ARGV[1]) {
-	read_annot($ARGV[1]);
-	for my $aggannot (sort keys %ANNOT_count)
-	{
-		@annotagg = split(/_/, $aggannot);
-		push(@{$ANNOT_AGGID{$annotagg[0]}},$aggannot);
-	}
-	} else {die $die2}
+if (defined $opt{'A'}) {
+   read_annot($opt{'A'});
+   for my $CELLID (sort keys %CELLID_annot){
+   push(@{$ANNOT_AGGID{$CELLID_annot{$CELLID}}},$CELLID);
+   }
+  } elsif (!defined $opt{'A'} && defined $ARGV[1]) {
+   read_annot($ARGV[1]);
+   for my $aggannot (sort keys %ANNOT_count){
+      @annotagg = split(/_/, $aggannot);
+      push(@{$ANNOT_AGGID{$annotagg[0]}},$aggannot);
+   }
+   } else {die $die2}
 
 
 
@@ -87,80 +88,79 @@ read_matrix_stats($ARGV[0]);
 
 
 #create contrast annot
-
 #contrast of individual groups against all other groups together
 
-if (defined $opt{'I'})
-{
-  print "Doing all vs ind comparison \n";
-  for my $group1 (sort keys %ANNOT_AGGID)
-	{
-               	$contrast="$group1\_vs_all_as_ref";
-               	$contrast_hash{$contrast}++;
-                open OUT, "> $opt{'O'}.$name_out/Diff_acc_$contrast.annot"; 
-                for my $group2 (sort keys %ANNOT_AGGID)
-		{
-			if ($group1 ne $group2)
-			{
-				for my $AGGID (@{$ANNOT_AGGID{$group1}})
-				{
-               			print OUT $AGGID. "\t" .$group1. "\n";
-				}
-                        
-				for my $AGGID (@{$ANNOT_AGGID{$group2}})
-				{
-               			print OUT $AGGID. "\t" .$contrast."\n";
-				}
-			}	  
-		}
-	 close(OUT);
+if (defined $opt{'I'}){
+  print "Doing all vs ind comparison\n";
+  for my $group1 (sort keys %ANNOT_AGGID){
+      $contrast="$group1\_vs_all_as_ref";
+      $contrast_hash{$contrast}++;
+    open OUT, "> $opt{'O'}.$name_out/Diff_acc_$contrast.annot"; 
+    for my $group2 (sort keys %ANNOT_AGGID){
+      if ($group1 ne $group2){
+         for my $AGGID (@{$ANNOT_AGGID{$group1}}){
+          print OUT $AGGID. "\t" .$group1. "\n";
+           }
+        for my $AGGID (@{$ANNOT_AGGID{$group2}}){
+          print OUT $AGGID. "\t" .$contrast."\n";
          }
-        
+      }    
+   }
+    close(OUT);
+  }
 } else {
-  print "Doing ind vs ind comparison\n";
-  #contrast of individual groups against other individual groups
-  for my $group1 (sort keys %ANNOT_AGGID)
-	{
-		for my $group2 (sort keys %ANNOT_AGGID)
-		{
-		$contrast="$group1\_vs_$group2\_as_ref";
-               	if (($group1 ne $group2) && (!defined $contrast_hash{$contrast}))
-               	{     	
-               	 
+print "Doing ind vs ind comparison\n";
+#contrast of individual groups against other individual groups
+for my $group1 (sort keys %ANNOT_AGGID)
+   {
+      for my $group2 (sort keys %ANNOT_AGGID)
+      {
+      $contrast="$group1\_vs_$group2\_as_ref";
+                  if (($group1 ne $group2) && (!defined $contrast_hash{$contrast}))
+                  {        
+                   
                  $contrast_hash{$contrast}++;
                         open OUT, "> $opt{'O'}.$name_out/Diff_acc_$contrast.annot";   
                         for my $AGGID (@{$ANNOT_AGGID{$group1}})
-               		{
-               			print OUT $AGGID. "\t" .$group1. "\n";
-               		}
+                     {
+                        print OUT $AGGID. "\t" .$group1. "\n";
+                     }
                         
-               		for my $AGGID (@{$ANNOT_AGGID{$group2}})
-               		{
-               			print OUT $AGGID. "\t" .$contrast."\n";
-               		}
-               	}
-               	close(OUT);
-		}
+                     for my $AGGID (@{$ANNOT_AGGID{$group2}})
+                     {
+                        print OUT $AGGID. "\t" .$contrast."\n";
+                     }
+                  }
+                  close(OUT);
+      }
             
 
-	}
+   }
 }
+
+
+
 for $contrast (sort keys %contrast_hash) 
 {
   print "Analyzing : ". $contrast."\n";        
   open R, ">$opt{'O'}.$name_out/Diff_acc_$contrast.r";
   print R "
-  library(\"ggplot2\")
-  library(\"DESeq2\")
-  library(\"BiocParallel\")
+  library(ggplot2)
+  library(DESeq2)
+  library(BiocParallel)
   library(qvalue)
-  register(MulticoreParam(30)) 
-  counts_mat<-as.matrix(read.delim(\"$opt{'O'}.matrix\"))
+  register(MulticoreParam($opt{'n'})) 
+  counts_mat<-as.matrix(read.delim(\"$ARGV[0]\"))
   counts_mat<-na.omit(counts_mat)
-  coldata<-read.table(file = \"$opt{'O'}.$name_out/Diff_acc_$contrast.annot\",sep = \"\\t\",row.names = 1)
-  colnames(coldata)<-c(\"condition\")
+  coldata<-read.table(file = \"$opt{'O'}.$name_out/Diff_acc_$contrast.annot\",sep = \"\\t\")
+  colnames(coldata)<-c(\"aggID\",\"condition\")
+
+  coldata<-unique(coldata[1:2])
+  rownames(coldata)<-coldata\$aggID
+
   counts_mat <- counts_mat[, rownames(coldata)]
   all(rownames(coldata) == colnames(counts_mat))
+
   dds <- DESeqDataSetFromMatrix(countData = counts_mat,
                               colData = coldata,
                               design = ~ condition)
@@ -173,7 +173,7 @@ for $contrast (sort keys %contrast_hash)
   print R "
   dds <- DESeq(dds,parallel = TRUE)
   res <- results(dds)
-  write.table(as.matrix(res),file = \"$opt{'O'}.$name_out/Differential_acc_$contrast_wald.txt\", col.names = TRUE, row.names = TRUE, sep = \"\\t\", quote = FALSE)
+  write.table(as.matrix(res),file = \"$opt{'O'}.$name_out/Differential_acc_$contrast\_wald.txt\", col.names = TRUE, row.names = TRUE, sep = \"\\t\", quote = FALSE)
 
   res <- lfcShrink(dds, coef=2)
   write.table(as.matrix(res),file = \"$opt{'O'}.$name_out/Differential_acc_$contrast\_shrunk_wald.txt\", col.names = TRUE, row.names = TRUE, sep = \"\\t\", quote = FALSE)
@@ -228,7 +228,7 @@ for $contrast (sort keys %contrast_hash)
   # an alternate analysis: likelihood ratio test
   ddsLRT <- DESeq(dds, test=\"LRT\", reduced= ~ 1)
   res <- results(ddsLRT)
-  write.table(as.matrix(res),file = \"$opt{'O'}.$name_out/Differential_acc_$contrast_LRT.txt\", col.names = TRUE, row.names = TRUE, sep = \"\\t\", quote = FALSE)
+  write.table(as.matrix(res),file = \"$opt{'O'}.$name_out/Differential_acc_$contrast\_LRT.txt\", col.names = TRUE, row.names = TRUE, sep = \"\\t\", quote = FALSE)
 
   df-data.frame(log2FoldChange=res\$log2FoldChange,pvalue=res\$pvalue,padj=res\$padj)
   row.names(df)<-row.names(res)
@@ -452,7 +452,7 @@ for my $contrast1 (sort keys %contrast_hash)
 	close(OUT2);
   close(OUT3);
 
-        open R, ">$opt{'O'}.$name_out/Diff_acc_$contrast1.r";
+        open R, ">$opt{'O'}.$name_out/Diff_acc_$contrast1\_plot.r";
         print R "
         library(\"ggplot2\")
         a<-read.delim(\"./Diff_acc_shrunk_$contrast1\_filtered_final.txt\")
@@ -465,9 +465,9 @@ for my $contrast1 (sort keys %contrast_hash)
         ggsave(plot = g,filename = \"$opt{'O'}.$name_out/plots/Differential_access_$contrast1\_q001_q02_removed.pdf\")
         ";
         close(R);
-        system("Rscript $opt{'O'}.$name_out/Diff_acc_$contrast1.r > $opt{'O'}.$name_out/Diff_acc_$contrast1.stdout 2> $opt{'O'}.$name_out/Diff_acc_$contrast1.stderr");	
+        system("Rscript $opt{'O'}.$name_out/Diff_acc_$contrast1\_plot.r > $opt{'O'}.$name_out/Diff_acc_$contrast1\_plot.stdout 2> $opt{'O'}.$name_out/Diff_acc_$contrast1\_plot.stderr");	
 		if (!defined $opt{'X'}) {
-			system("rm -f $opt{'O'}.$name_out/Diff_acc_$contrast1.r $opt{'O'}.$name_out/Diff_acc_$contrast1.stdout $opt{'O'}.$name_out/Diff_acc_$contrast1.stderr");
+			system("rm -f $opt{'O'}.$name_out/Diff_acc_$contrast1\_plot.r $opt{'O'}.$name_out/Diff_acc_$contrast1\.r $opt{'O'}.$name_out/Diff_acc_$contrast1.stdout $opt{'O'}.$name_out/Diff_acc_$contrast1.stderr");
 		}
         }
 }

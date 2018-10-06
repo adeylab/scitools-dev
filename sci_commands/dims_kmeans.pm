@@ -34,13 +34,12 @@ Options:
    -X           Retain intermediate files (def = delete)
    -R   [STR]   Rscript call (def = $Rscript)
    -p           Plot the output using specified dims file
-   -P   [DIMS]  Plot the resulting Kmeans clustering using the
-                specified dims file (for more plot options use
-                scitools plot-dims)
+   -P   [DIMS]  Plot the resulting Kmeans clustering using this
+                specified dims file rather than argument dims file.
    -x   [INT]   X-dimension to plot (def = $xdim)
    -y   [INT]   Y-dimension to plot (def = $ydim)
    -s   [STR]   scitools call (def = $scitools)
-   -t           Transpose matrix before DBSCAN
+   -t           Transpose matrix before KMEANS
                 (flag if [input dims] is a cistopic or irlba matrix)
 ";
 
@@ -112,6 +111,7 @@ par(
 )
 plot(k, type=\'b\', avg_sil, xlab=\'Number of clusters\', ylab=\'Average Silhouette Scores\', frame=FALSE)
 dev.off()
+
 "; close R;
 
 system("$Rscript $opt{'O'}.silhouette_maxK$opt{'K'}.r");
