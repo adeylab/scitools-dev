@@ -82,7 +82,7 @@ modelMat <- scale(cisTopicObject\@selected.model\$document_expects, center = TRU
 } else {
 print R "
 cisTopicObject <- runModels(cisTopicObject, topic=$opt{'T'}, seed=2018, nCores=$opt{'n'}, burnin = 250, iterations = 300)
-modelMat<-scale(cisTopicObject@models$document_expects,center=TRUE,scale=TRUE)
+modelMat<-scale(cisTopicObject\@models\$document_expects,center=TRUE,scale=TRUE)
 
 ";
 }
@@ -95,6 +95,10 @@ rownames(tModelmat)<-cisTopicObject\@cell.names
 colnames(Modeldf)<-cisTopicObject\@cell.names
 row.names(Modeldf)<-paste0(\"Topic_\",row.names(Modeldf))
 write.table(Modeldf,file=\"$opt{'O'}.cistopic.matrix\",col.names=T,row.names=T,quote=F,sep=\"\\t\")
+
+#adding part where the contribution matrix is calculated
+
+
 ";
 close R;
 
