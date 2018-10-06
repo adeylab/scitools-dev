@@ -58,6 +58,7 @@ if (defined $opt{'R'}) {$Rscript = $opt{'R'}};
 
 open R, ">$opt{'O'}.cistopic.r";
 print R "
+library(plyr)
 library(cisTopic)
 IN<-as.matrix(read.table(\"$ARGV[0]\"))
 row.names(IN)<-sub(\"_\",\"-\",sub(\"_\",\":\",row.names(IN)))
@@ -85,6 +86,7 @@ modelMat <- scale(cisTopicObject\@selected.model\$document_expects, center = TRU
 print R "
 cisTopicObject <- runModels(cisTopicObject, topic=c($opt{'T'}), seed=2018, nCores=$opt{'n'}, burnin = 250, iterations = 300)
 
+
 if (length(c($opt{'T'}))>1){
 #Future update:Plot model log likelihood (P(D|T)) at the last iteration
 pdf(file=\"$opt{'O'}.cistopic.modelselection.pdf\")
@@ -106,6 +108,12 @@ rownames(tModelmat)<-cisTopicObject\@cell.names
 colnames(Modeldf)<-cisTopicObject\@cell.names
 row.names(Modeldf)<-paste0(\"Topic_\",row.names(Modeldf))
 write.table(Modeldf,file=\"$opt{'O'}.cistopic.matrix\",col.names=T,row.names=T,quote=F,sep=\"\\t\")
+
+#adding part where the contribution matrix is calculated, we use a binarization method to select for peaks that contribute to each topic
+cisTopicObject <- getRegionsScores(cisTopicObject, method='Zscore', scale=TRUE)
+cisTopicObject <- binarizecisTopics(cisTopicObject, thrP=0.975, plot=FALSE)
+getBedFiles(cisTopicObject, path='$opt{'O'}/cisTopics_asBed')
+
 ";
 close R;
 
