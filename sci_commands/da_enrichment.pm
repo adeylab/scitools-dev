@@ -33,6 +33,8 @@ Options:
                 Sites have to be equal to or above the given float.
    -p   [FLT]   adjusted p-value filter to be usef for motif discovery. Def: NULL
                 Sites have to be equal to or below the given float.
+   -q   [FLT]   q-value filter to be usef for motif discovery. Def: NULL
+                Sites have to be equal to or below the given float.
    -P   [FLT]   Top percentage of differential accessibility peaks to be used for motif discovery. Def: 5
                 This filter is run after -l and -p filtering, if they are specified.
                 Sites have to be greater or equal to the top percentage (by sorted lowest to highested adjusted p values) 
@@ -65,6 +67,17 @@ if (defined $opt{'p'}) {
 print R "
 message(\"Filtering Peaks to those with p-values less than or equal to $opt{'p'}\")
 dat<-dat[dat\$padj<=$opt{'p'},]
+
+
+";
+};
+
+if (defined $opt{'p'}) {
+print R "
+message(\"Filtering Peaks to those with q-values less than or equal to $opt{'q'}\")
+dat<-dat[dat\$qval<=$opt{'q'},]
+
+
 ";
 };
 if (defined $opt{'l'}) {
