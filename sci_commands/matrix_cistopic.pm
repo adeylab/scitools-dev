@@ -8,7 +8,7 @@ use Exporter "import";
 sub matrix_cistopic {
 
 @ARGV = @_;
-getopts("O:c:r:n:T:XR:", \%opt);
+getopts("O:c:r:n:T:S:XR:", \%opt);
 
 $die2 = "
 scitools matrix-cistopic [options] [input matrix]
@@ -41,6 +41,7 @@ Options:
                   and use log-liklihood estimators to select the best.
                   Specification can be a single number of a comma separated list.
                   Will use a core for each number supplied (DO NOT EXCEED A LIST LENGTH OF 10)
+   -S			If defined CDS will be retained in RDS format for further analysis			
    -X           Retain intermediate files (def = delete)
    -R   [STR]   Rscript call (def = $Rscript)
 
@@ -112,9 +113,18 @@ write.table(Modeldf,file=\"$opt{'O'}.cistopic.matrix\",col.names=T,row.names=T,q
 #adding part where the contribution matrix is calculated, we use a binarization method to select for peaks that contribute to each topic
 cisTopicObject <- getRegionsScores(cisTopicObject, method='Zscore', scale=TRUE)
 cisTopicObject <- binarizecisTopics(cisTopicObject, thrP=0.975, plot=FALSE)
-getBedFiles(cisTopicObject, path='$opt{'O'}/cisTopics_asBed')
+getBedFiles(cisTopicObject, path='$opt{'O'}')
 
 ";
+
+
+if (defined $opt{'S'})
+{
+print R "
+saveRDS(cisTopicObject,\"$opt{'O'}.cistopicObject.rds\")
+";
+}
+
 close R;
 
 system("$Rscript $opt{'O'}.cistopic.r");
