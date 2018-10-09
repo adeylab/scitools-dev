@@ -10,7 +10,7 @@ sub da_enrichment {
 @ARGV = @_;
 # Defaults
 
-getopts("O:R:Xg:l:LP:p:n:q:", \%opt);
+getopts("O:R:Xg:l:LP:p:n:B:r:q:", \%opt);
 
 $die2 = "
 scitools da_enrichment [options] [Input differential accessibility File]
@@ -38,6 +38,8 @@ Options:
    -P   [FLT]   Top percentage of differential accessibility peaks to be used for motif discovery. Def: 5
                 This filter is run after -l and -p filtering, if they are specified.
                 Sites have to be greater or equal to the top percentage (by sorted lowest to highested adjusted p values) 
+   -B			If a text file with a list of bedfile names is provided analysis will be done on these with opt r as the ref 
+   -r			All peaks bed file
    -L   [FLAG]  If flagged, will perform LOLA analysis on data sets from Sheffield lab. 
    -n   [INT]   Number of cores to be used for LOLA analysis. (Default = 1)
    -X   [FLAG]  Retain intermediate files (Default = delete)
@@ -50,8 +52,10 @@ if (!defined $opt{'g'}) {$opt{'g'} = "hg38"};
 if (!defined $opt{'n'}) {$opt{'n'} = 1};
 if (!defined $opt{'O'}) {$opt{'O'} = $ARGV[0]; $opt{'O'} =~ s/\.matrix$//};
 if (!defined $opt{'P'} && !defined $opt{'p'} && !defined $opt{'l'}) {$opt{'P'} = 5};
-open R, ">$opt{'O'}.da.enrichment.r";
 
+if ((!defined $opt{'B'} ) && (!defined $opt{'r'} ))
+{
+open R, ">$opt{'O'}.da.enrichment.r";
 print R "
 dat<-read.table(\"$ARGV[0]\")
 full_peaks<-row.names(dat)
@@ -143,6 +147,59 @@ if (!defined $opt{'X'}) {
     system("rm -f $opt{'O'}.significant_peaks.bed");
 
 } 
+
+
+}
+else
+{
+open IN, "$opt{'B'}";
+   while ($l = <IN>) {
+      chomp $l;
+      $bed_include{$l}++;
+  } close IN;
+
+  foreach $bed (sort keys %bed_include) {
+  $opt{'O'}="$bed.homer_motif_enrich";
+  system("/home/groups/oroaklab/src/homer/bin/findMotifsGenome.pl $bed $opt{'g'} $opt{'O'}.Enrichment_Results -size 500 -bg $opt{'r'}");
+  
+  if (defined $opt{'L'}) {
+	print R "
+
+	library(LOLA)
+	library(GenomicRanges)
+	message(\"Conducting LOLA Analysis.\")
+	#/home/groups/oroaklab/src/R/R-3.5.1/library2/LOLA/nm/t1/resources/regions/LOLACore/$opt{'g'}
+
+	dbPath = system.file(\"nm/t1/resources/regions/LOLACore\", \"$opt{'g'}\", package=\"LOLA\")
+	regionDB = loadRegionDB(dbLocation=dbPath)
+	dat_sig_peaks<-as.data.frame(dat_sig_peaks)
+	colnames(dat_sig_peaks)<-c(\"chr\",\"start\",\"end\")
+	sig_peaks<-makeGRangesFromDataFrame(dat_sig_peaks,ignore.strand=TRUE)
+
+	dat_full_peaks<-as.data.frame(dat_full_peaks)
+	colnames(dat_full_peaks)<-c(\"chr\",\"start\",\"end\")
+	full_peaks<-makeGRangesFromDataFrame(dat_full_peaks,ignore.strand=TRUE)
+
+	locResults = runLOLA(userSets=sig_peaks,userUniverse=full_peaks,regionDB=regionDB,cores=$opt{'n'})
+
+	writeCombinedEnrichment(locResults, outFolder= \"$opt{'O'}.Enrichment_Results\", includeSplits=TRUE)
+
+";
+  
+  
+  };
+  
+  
+  
+  
+  }
+
+
+
+
+
+
+
 }
 1;
 
