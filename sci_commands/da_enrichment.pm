@@ -47,14 +47,16 @@ Options:
 ";
 
 
-if (!defined $ARGV[0]) {die $die2};
 if (!defined $opt{'g'}) {$opt{'g'} = "hg38"};
 if (!defined $opt{'n'}) {$opt{'n'} = 1};
+if ((!defined $opt{'B'} ) && (!defined $opt{'r'} ))
+{
+if (!defined $ARGV[0]) {die $die2};
 if (!defined $opt{'O'}) {$opt{'O'} = $ARGV[0]; $opt{'O'} =~ s/\.matrix$//};
 if (!defined $opt{'P'} && !defined $opt{'p'} && !defined $opt{'l'}) {$opt{'P'} = 5};
 
-if ((!defined $opt{'B'} ) && (!defined $opt{'r'} ))
-{
+
+
 open R, ">$opt{'O'}.da.enrichment.r";
 print R "
 dat<-read.table(\"$ARGV[0]\")
@@ -159,10 +161,11 @@ open IN, "$opt{'B'}";
   } close IN;
 
   foreach $bed (sort keys %bed_include) {
-  $opt{'O'}="$bed.homer_motif_enrich";
-  system("/home/groups/oroaklab/src/homer/bin/findMotifsGenome.pl $bed $opt{'g'} $opt{'O'}.Enrichment_Results -size 500 -bg $opt{'r'}");
+  $opt{'O'}=$bed;
+  $opt{'O'} =~ s/\.bed//;
   
   if (defined $opt{'L'}) {
+	open R, ">$opt{'O'}.da.enrichment.r";
 	print R "
 
 	library(LOLA)
@@ -172,29 +175,31 @@ open IN, "$opt{'B'}";
 
 	dbPath = system.file(\"nm/t1/resources/regions/LOLACore\", \"$opt{'g'}\", package=\"LOLA\")
 	regionDB = loadRegionDB(dbLocation=dbPath)
-	dat_sig_peaks<-as.data.frame(dat_sig_peaks)
+	dat_sig_peaks<-read.table(file=\"$bed\",header=F,sep=\"\\t\")
 	colnames(dat_sig_peaks)<-c(\"chr\",\"start\",\"end\")
 	sig_peaks<-makeGRangesFromDataFrame(dat_sig_peaks,ignore.strand=TRUE)
 
-	dat_full_peaks<-as.data.frame(dat_full_peaks)
+	dat_full_peaks<-read.table(file=\"$opt{'r'}\",header=F,sep=\"\\t\")
 	colnames(dat_full_peaks)<-c(\"chr\",\"start\",\"end\")
 	full_peaks<-makeGRangesFromDataFrame(dat_full_peaks,ignore.strand=TRUE)
 
 	locResults = runLOLA(userSets=sig_peaks,userUniverse=full_peaks,regionDB=regionDB,cores=$opt{'n'})
 
-	writeCombinedEnrichment(locResults, outFolder= \"$opt{'O'}.Enrichment_Results\", includeSplits=TRUE)
+	writeCombinedEnrichment(locResults, outFolder= \"$opt{'O'}.LOLA.Enrichment_Results\", includeSplits=TRUE)
 
 ";
-  
-  
+	close(R);
+	system("$Rscript $opt{'O'}.da.enrichment.r");
   };
+   system("/home/groups/oroaklab/src/homer/bin/findMotifsGenome.pl $bed $opt{'g'} $opt{'O'}.homer.Enrichment_Results -size 500 -bg $opt{'r'}"); 
   
-  
-  
+  if (!defined $opt{'X'}) {
+    system("rm -f $opt{'O'}.da.enrichment.r");
+	}
   
   }
 
-
+}
 
 
 
