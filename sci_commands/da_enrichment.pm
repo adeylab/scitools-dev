@@ -24,6 +24,8 @@ known transcription factor motif enrichment compared to all peaks within the tab
 If -L flagged, will perform LOLA analysis for enrichment of accessibility across various
 annotations. (e.g. cpgislands,H3K24me3 peaks, promoters etc.)
 
+If -B and -R flagged, will perform analysis for enrichment of accessibility over a set of provided bed files such as topic bed files
+
 
 Options:
    -O   [STR]   Output Prefix (default file name output is [Input differential accessibility File].homer.motifs)
