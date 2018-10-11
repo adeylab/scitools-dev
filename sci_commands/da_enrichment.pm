@@ -95,7 +95,7 @@ message(\"q Values not found in given file. Skipping q-value filter.\")
 if (defined $opt{'l'}) {
 print R "
 message(\"Filtering Peaks to those with Log2 Fold Change greater than or equal to $opt{'l'}\")
-dat<-dat[dat\$log2FoldChange>=$opt{'l'},]
+dat<-dat[dat\$log2fold>=$opt{'l'},]
 ";
 };
 
