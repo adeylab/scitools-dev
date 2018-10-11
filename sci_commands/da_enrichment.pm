@@ -61,7 +61,7 @@ if (!defined $opt{'P'} && !defined $opt{'p'} && !defined $opt{'l'}) {$opt{'P'} =
 
 open R, ">$opt{'O'}.da.enrichment.r";
 print R "
-dat<-read.table(\"$ARGV[0]\")
+dat<-read.delim(\"$ARGV[0]\")
 full_peaks<-row.names(dat)
 dat\$chr<-sapply(strsplit(full_peaks,\"_\"),\"[\",1)
 dat\$start<-sapply(strsplit(full_peaks,\"_\"),\"[\",2)
