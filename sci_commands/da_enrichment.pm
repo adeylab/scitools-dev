@@ -37,9 +37,9 @@ Options:
                 Sites have to be equal to or below the given float.
    -q   [FLT]   q-value filter to be used for motif discovery. Def: NULL
                 Sites have to be equal to or below the given float.
-   -P   [FLT]   Top percentage of differential accessibility peaks to be used for motif discovery. Def: 5
+   -P   [FLT]   Top percentage of differential accessibility peaks to be used for motif discovery. Def: NULL
                 This filter is run after -l and -p filtering, if they are specified.
-                Sites have to be greater or equal to the top percentage (by sorted lowest to highested adjusted p values) 
+                Sites have to be greater or equal to the top percentage (sorted by lowest to highest q values) 
    -B			If a text file with a list of bedfile names is provided analysis will be done on these with opt r as the ref 
    -r			All peaks bed file
    -L   [FLAG]  If flagged, will perform LOLA analysis on data sets from Sheffield lab. 
@@ -55,7 +55,7 @@ if ((!defined $opt{'B'} ) && (!defined $opt{'r'} ))
 {
 if (!defined $ARGV[0]) {die $die2};
 if (!defined $opt{'O'}) {$opt{'O'} = $ARGV[0]; $opt{'O'} =~ s/\.matrix$//};
-if (!defined $opt{'P'} && !defined $opt{'p'} && !defined $opt{'l'}) {$opt{'P'} = 5};
+#if (!defined $opt{'P'} && !defined $opt{'p'} && !defined $opt{'l'}) {$opt{'P'} = 5};
 
 
 
