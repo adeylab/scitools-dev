@@ -102,8 +102,9 @@ dat<-dat[dat\$log2FoldChange>=$opt{'l'},]
 if (defined $opt{'P'}) {
 print R "
 message(\"Filtering Peaks to $opt{'P'}\% most significant.\")
-dat<-head(dat[order(dat\$padj),],n=floor(($opt{'P'}/100)*nrow(dat)))
+dat<-head(dat[order(dat\$qval),],n=floor(($opt{'P'}/100)*nrow(dat)))
 dat_sig_peaks<-cbind(dat\$chr,dat\$start,dat\$end)
+write.table(dat_sig_peaks,\"$opt{'O'}.top.$opt{'P'}.percent.significant_peaks.bed\",quote=F,sep=\"\\t\",col.names=F,row.names=F)
 write.table(dat_sig_peaks,\"$opt{'O'}.significant_peaks.bed\",quote=F,sep=\"\\t\",col.names=F,row.names=F)
 ";
 } else  {
