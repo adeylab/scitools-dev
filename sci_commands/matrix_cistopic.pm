@@ -8,7 +8,7 @@ use Exporter "import";
 sub matrix_cistopic {
 
 @ARGV = @_;
-getopts("O:c:r:n:T:S:XR:", \%opt);
+getopts("O:c:r:n:T:SXR:", \%opt);
 
 $die2 = "
 scitools matrix-cistopic [options] [input matrix]
@@ -54,7 +54,7 @@ if (!defined $opt{'O'}) {$opt{'O'} = $ARGV[0]; $opt{'O'} =~ s/\.matrix$//};
 if (!defined $opt{'c'}) {$opt{'c'} = 1};
 if (!defined $opt{'r'}) {$opt{'r'} = 1};
 if (!defined $opt{'n'}) {$opt{'n'} = 1};
-
+if (!defined $opt{'T'}) {$opt{'T'} = 15,20,25,30,50,65,100};
 if (defined $opt{'R'}) {$Rscript = $opt{'R'}};
 
 open R, ">$opt{'O'}.cistopic.r";
@@ -67,26 +67,7 @@ row.names(IN)<-sub(\"_\",\"-\",sub(\"_\",\":\",row.names(IN)))
 #Set up filtered binarized counts matrix
 cisTopicObject <- createcisTopicObject(IN,min.cells=$opt{'r'},min.regions=$opt{'c'}, keepCountsMatrix=FALSE)
 
-";
-
-if (!defined $opt{'T'}) {
-print R "
-#Run Multiple models with different topic numbers. Optimal topic number is generally slightly bigger than the potential cell states in the data set
-cisTopicObject <- runModels(cisTopicObject, topic=c(15, 20, 25, 30, 50, 65, 100), seed=2018, nCores=$opt{'n'}, burnin = 250, iterations = 300)
-#saveRDS(cisTopicObject,\"$opt{'O'}.cistopicObject.rds\")
-
-#Future update:Plot model log likelihood (P(D|T)) at the last iteration
-pdf(file=\"$opt{'O'}.cistopic.modelselection.pdf\")
-cisTopicObject <- selectModel(cisTopicObject)
-logLikelihoodByIter(cisTopicObject)
-dev.off()
-modelMat <- scale(cisTopicObject\@selected.model\$document_expects, center = TRUE, scale = TRUE)
-
-";
-} else {
-print R "
 cisTopicObject <- runModels(cisTopicObject, topic=c($opt{'T'}), seed=2018, nCores=$opt{'n'}, burnin = 250, iterations = 300)
-
 
 if (length(c($opt{'T'}))>1){
 #Future update:Plot model log likelihood (P(D|T)) at the last iteration
@@ -98,10 +79,7 @@ modelMat <- scale(cisTopicObject\@selected.model\$document_expects, center = TRU
 } else {
 modelMat<-scale(cisTopicObject\@models\$document_expects,center=TRUE,scale=TRUE)
 }
-";
-}
 
-print R "
 #Print out cisTopic Matrix#
 tModelmat<-as.data.frame(t(modelMat))
 Modeldf<-as.data.frame(modelMat)
@@ -109,14 +87,11 @@ rownames(tModelmat)<-cisTopicObject\@cell.names
 colnames(Modeldf)<-cisTopicObject\@cell.names
 row.names(Modeldf)<-paste0(\"Topic_\",row.names(Modeldf))
 write.table(Modeldf,file=\"$opt{'O'}.cistopic.matrix\",col.names=T,row.names=T,quote=F,sep=\"\\t\")
-
 #adding part where the contribution matrix is calculated, we use a binarization method to select for peaks that contribute to each topic
 cisTopicObject <- getRegionsScores(cisTopicObject, method='Zscore', scale=TRUE)
 cisTopicObject <- binarizecisTopics(cisTopicObject, thrP=0.975, plot=FALSE)
 getBedFiles(cisTopicObject, path='$opt{'O'}')
-
 ";
-
 
 if (defined $opt{'S'})
 {
