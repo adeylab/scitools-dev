@@ -24,7 +24,7 @@ known transcription factor motif enrichment compared to all peaks within the tab
 If -L flagged, will perform LOLA analysis for enrichment of accessibility across various
 annotations. (e.g. cpgislands,H3K24me3 peaks, promoters etc.)
 
-If -B and -R flagged, will perform analysis for enrichment of accessibility over a set of provided bed files such as topic bed files
+If -B and -r are flagged, will perform analysis for enrichment of accessibility over a set of provided bed files (such as topic bed files)
 
 
 Options:
@@ -40,8 +40,8 @@ Options:
    -P   [FLT]   Top percentage of differential accessibility peaks to be used for motif discovery. Def: NULL
                 This filter is run after -l and -p filtering, if they are specified.
                 Sites have to be greater or equal to the top percentage (sorted by lowest to highest q values) 
-   -B			If a text file with a list of bedfile names is provided analysis will be done on these with opt r as the ref 
-   -r			All peaks bed file
+   -B		[STR]	  If a text file with a list of bedfile names is provided analysis will be done on these with opt r as the ref 
+   -r		[STR]	  All peaks bed file
    -L   [FLAG]  If flagged, will perform LOLA analysis on data sets from Sheffield lab. 
    -n   [INT]   Number of cores to be used for LOLA analysis. (Default = 1)
    -X   [FLAG]  Retain intermediate files (Default = delete)
@@ -51,8 +51,7 @@ Options:
 
 if (!defined $opt{'g'}) {$opt{'g'} = "hg38"};
 if (!defined $opt{'n'}) {$opt{'n'} = 1};
-if ((!defined $opt{'B'} ) && (!defined $opt{'r'} ))
-{
+if ((!defined $opt{'B'} ) && (!defined $opt{'r'} )){
 if (!defined $ARGV[0]) {die $die2};
 if (!defined $opt{'O'}) {$opt{'O'} = $ARGV[0]; $opt{'O'} =~ s/\.matrix$//};
 #if (!defined $opt{'P'} && !defined $opt{'p'} && !defined $opt{'l'}) {$opt{'P'} = 5};
@@ -62,7 +61,7 @@ if (!defined $opt{'O'}) {$opt{'O'} = $ARGV[0]; $opt{'O'} =~ s/\.matrix$//};
 open R, ">$opt{'O'}.da.enrichment.r";
 print R "
 dat<-read.delim(\"$ARGV[0]\")
-full_peaks<-as.character(dat\$annotation)
+full_peaks<-as.character(row.names(dat)
 dat\$chr<-sapply(strsplit(full_peaks,\"_\"),\"[\",1)
 dat\$start<-sapply(strsplit(full_peaks,\"_\"),\"[\",2)
 dat\$end<-sapply(strsplit(full_peaks,\"_\"),\"[\",3)
@@ -150,13 +149,10 @@ if (!defined $opt{'X'}) {
     system("rm -f $opt{'O'}.da.enrichment.r");
     system("rm -f $opt{'O'}.full_peaks.bed");
     system("rm -f $opt{'O'}.significant_peaks.bed");
-
 } 
 
 
-}
-else
-{
+}else {
 open IN, "$opt{'B'}";
    while ($l = <IN>) {
       chomp $l;
