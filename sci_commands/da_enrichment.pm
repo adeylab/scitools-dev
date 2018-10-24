@@ -61,7 +61,7 @@ if (!defined $opt{'O'}) {$opt{'O'} = $ARGV[0]; $opt{'O'} =~ s/\.matrix$//};
 open R, ">$opt{'O'}.da.enrichment.r";
 print R "
 dat<-read.delim(\"$ARGV[0]\")
-full_peaks<-as.character(row.names(dat)
+full_peaks<-as.character(row.names(dat))
 dat\$chr<-sapply(strsplit(full_peaks,\"_\"),\"[\",1)
 dat\$start<-sapply(strsplit(full_peaks,\"_\"),\"[\",2)
 dat\$end<-sapply(strsplit(full_peaks,\"_\"),\"[\",3)
