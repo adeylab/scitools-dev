@@ -63,7 +63,7 @@ open IN, "$opt{'O'}.temp.pg.annot";
 while($l=<IN>)
 {
 $l =~ s/"//g;   
-print OUT $MATRIX_COLNAMES[$counter]."\tCLuster_".$l;
+print OUT $MATRIX_COLNAMES[$counter]."\tCluster_".$l;
 $counter++;
 }
 close(IN);
