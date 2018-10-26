@@ -52,7 +52,7 @@ data_matrix=ori_matrix.transpose()\n";
 print OUT "
 
 communities, graph, Q = phenograph.cluster(data_matrix)
-numpy.savetxt(\"$opt{'O'}.temp.pg.annot\",communities,delimiter=\"\\t\")
+numpy.savetxt(\"$opt{'O'}.temp.pg.annot\",communities,result.astype(int), fmt='%i',delimiter=\"\\t\")
 ";
 close OUT;
 system("$Pscript $opt{'O'}.pg.py");
@@ -63,7 +63,7 @@ open IN, "$opt{'O'}.temp.pg.annot";
 while($l=<IN>)
 {
 $l =~ s/"//g;   
-print OUT $MATRIX_COLNAMES[$counter]."\t".$l;
+print OUT $MATRIX_COLNAMES[$counter]."\tCLuster_".$l;
 $counter++;
 }
 close(IN);
