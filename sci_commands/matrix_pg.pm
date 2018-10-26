@@ -57,7 +57,7 @@ numpy.savetxt(\"$opt{'O'}.temp.pg.annot\",communities,delimiter=\"\\t\")
 close OUT;
 system("$Pscript $opt{'O'}.pg.py");
 
-open OUT, ">$opt{'O'}.UMAP.dims";
+open OUT, ">$opt{'O'}.pg.annot";
 $counter=0;
 open IN, "$opt{'O'}.temp.pg.annot"; 
 while($l=<IN>)
