@@ -125,22 +125,7 @@ IN_ch<-read.delim(\"$ARGV[0]\")\n";
 
 if (defined $opt{'r'} && (defined $opt{'n'} || defined $opt{'N'})) {print R "ROW <- read.table(\"$opt{'O'}.row_colors.list\")\n"};
 if (defined $opt{'A'} && (defined $opt{'c'} || defined $opt{'C'})) {print R "COL <- read.table(\"$opt{'O'}.col_colors.list\")\n"};
-if (defined $opt{'A'}) {
-print R "annot_ch<-read.table(\"$opt{'A'}\",header=F) 
-#order annot file in matrix order
-annot_col<-annot_ch[match(colnames(IN_ch), annot_ch$V1),]
-\n"};
 
-
-if (defined $opt{'A'} && (defined $opt{'c'} || defined $opt{'C'})) {
-print R "color_ch<=list(Type=c($color_mapping))
-ha_col<-HeatmapAnnotation(Type = annot_col\$V2,col=color_ch)\n"
-};
-
-if (defined $opt{'r'} && (defined $opt{'n'} || defined $opt{'N'})) {
-print R "color_ch<=list(Type=c($color_mapping))
-ha_row<-HeatmapAnnotation(Type = annot_ch\$V2,col=color_ch,which = \"row\")\n"
-};
 
 if ($imageType =~ /pdf/i) {
 	print R "$imageType(\"$opt{'O'}.heatmap2.$imageType\",width=$width,height=$height)\n";
@@ -178,34 +163,65 @@ print R ")\ndev.off()\n";
 
 #complexheatmap implementation
 
+
+#complex heatmap with col annot
+if (defined $opt{'A'}) {
+print R "annot_ch<-read.table(\"$opt{'A'}\",header=F) 
+#order annot file in matrix order
+annot_col<-annot_ch[match(colnames(IN_ch), annot_ch\$V1),]
+\n"};
+
+
+if (defined $opt{'A'} && (defined $opt{'c'} || defined $opt{'C'})) {
+print R "color_ch<=list(Type=c($color_mapping))
+ha_col<-HeatmapAnnotation(Type = annot_col\$V2,col=color_ch)\n"
+};
+
+
+#now with rows
+
+if (defined $opt{'r'}) {
+print R "
+annot_ch_row<-read.table(\"$opt{'r'}\",header=F) 
+#order annot file in matrix order
+annot_row<-annot_ch_row[,match(rownames(IN_ch), annot_ch_row\$V1)]
+\n"};
+
+
+if (defined $opt{'r'} && (defined $opt{'n'} || defined $opt{'N'})) {
+print R "
+color_ch_row<=list(Type=c($color_mapping_row))
+ha_row<-HeatmapAnnotation(Type = annot_ch_row\$V2,col=color_ch_row,which = \"row\")\n"
+};
+
+
 if ($imageType =~ /pdf/i) {
 	print R "$imageType(\"$opt{'O'}.complexheatmap.$imageType\",width=$width,height=$height)\n";
 } else {
 	print R "$imageType(\"$opt{'O'}.complexheatmap.$imageType\",width=$width,height=$height,units=\"in\",res=$res)\n";
 }
 
-print R "H <- Heatmap(IN,";
+print R "H <- Heatmap(IN_ch,";
 
-if (defined $opt{'r'} && (defined $opt{'n'} || defined $opt{'N'}) && defined $opt{'A'} && (defined $opt{'c'} || defined $opt{'C'})) {
+if (defined $opt{'A'} && (defined $opt{'c'} || defined $opt{'C'})) {
 	print R ",
-	ColSideColors=as.vector(COL\$V1),
-	RowSideColors=as.vector(ROW\$V1)";
-} elsif (defined $opt{'r'} && (defined $opt{'n'} || defined $opt{'N'})) {
-	print R ",
-	bottom_annotation=ha";
-} elsif (defined $opt{'A'} && (defined $opt{'c'} || defined $opt{'C'})) {
-	print R ",
-	bottom_annotation=ha";
+	bottom_annotation=ha_col";
 }
 
 if (defined $opt{'v'}) {
 	print R ",
-	Rowv=FALSE";
+	cluster_rows=FALSE";
 }
 if (defined $opt{'V'}) {
 	print R ",
-	Colv=FALSE";
+	cluster_columns=FALSE";
 }
+
+if (defined $opt{'r'} && (defined $opt{'n'} || defined $opt{'N'})) {
+	print R ",
+	+ha_col";
+}
+
 
 print R ")\ndev.off()\n";
 
