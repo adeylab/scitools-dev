@@ -127,14 +127,14 @@ if (defined $opt{'r'} && (defined $opt{'n'} || defined $opt{'N'})) {print R "ROW
 if (defined $opt{'A'} && (defined $opt{'c'} || defined $opt{'C'})) {print R "COL <- read.table(\"$opt{'O'}.col_colors.list\")\n"};
 if (defined $opt{'A'}) {
 print R "annot_ch<-read.table(\"$opt{'A'}\",header=F) 
+#order annot file in matrix order
 annot<-annot_ch[match(colnames(IN_ch), annot_ch$V1),]
-\n"}
+\n"};
 
 
-if (defined $opt{'A'} && (defined $opt{'c'} || defined $opt{'C'}) {
-print R "annot_ch<-read.table(\"$opt{'A'}\",header=F) 
-annot<-annot_ch[match(colnames(IN_ch), annot_ch$V1),]
-\n"}
+if (defined $opt{'A'} && (defined $opt{'c'} || defined $opt{'C'})) {print R "color_ch<=list(Type=c($color_mapping))
+ha<-HeatmapAnnotation(Type = annot_ch\$V2,col=color_ch)\n"; 
+};
 
 
 
