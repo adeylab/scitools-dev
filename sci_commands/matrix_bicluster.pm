@@ -203,31 +203,36 @@ if ($imageType =~ /pdf/i) {
 	print R "$imageType(\"$opt{'O'}.complexheatmap.$imageType\",width=$width,height=$height,units=\"in\",res=$res)\n";
 }
 
-print R "H <- Heatmap(IN_ch,";
+print R "H <- Heatmap(IN_ch";
 
 if (defined $opt{'A'} && (defined $opt{'c'} || defined $opt{'C'})) {
-	print R ",
-	bottom_annotation=ha_col,";
+	print R " ,bottom_annotation=ha_col";
 }
 
 if (defined $opt{'v'}) {
-	print R ",
-	show_column_names=F,
-	cluster_rows=FALSE";
+	print R ",cluster_rows=FALSE";
 }
 if (defined $opt{'V'}) {
-	print R ",
-	show_column_names=F
-	cluster_columns=FALSE";
+	print R ",cluster_columns=FALSE";
 }
 
+if (defined $opt{'p'}) {
+	print R ",show_row_names=F";
+}
+if (defined $opt{'P'}) {
+	print R ",show_column_names=F";
+}
+
+print R ")";
+
+
 if (defined $opt{'r'} && (defined $opt{'n'} || defined $opt{'N'})) {
-	print R ",
+	print R "
 	+ha_col";
 }
 
 
-print R ")\ndev.off()\n";
+print R "\ndev.off()\n";
 
 
 
