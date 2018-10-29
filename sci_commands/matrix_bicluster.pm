@@ -14,7 +14,7 @@ $gradient_def = "BuRd";
 $imageType = "png";
 
 @ARGV = @_;
-getopts("O:d:t:s:A:a:C:c:r:N:n:G:R:V:v:X:", \%opt);
+getopts("O:d:t:s:A:a:C:c:r:N:n:G:R:V:v:P:p:X:", \%opt);
 
 $die2 = "
 scitools matrix-bicluster [options] [input matrix]
@@ -40,6 +40,8 @@ Options:
    -R   [STR]   Rscript call (def = $Rscript)
    -V           Do not cluster columns
    -v           Do not cluster rows
+   -P 			Do not show column show column names
+   -p 			Do not show row names
    -X           Do not delete intermediate files (def = delete)
    
 ";
@@ -205,15 +207,17 @@ print R "H <- Heatmap(IN_ch,";
 
 if (defined $opt{'A'} && (defined $opt{'c'} || defined $opt{'C'})) {
 	print R ",
-	bottom_annotation=ha_col";
+	bottom_annotation=ha_col,";
 }
 
 if (defined $opt{'v'}) {
 	print R ",
+	show_column_names=F,
 	cluster_rows=FALSE";
 }
 if (defined $opt{'V'}) {
 	print R ",
+	show_column_names=F
 	cluster_columns=FALSE";
 }
 
