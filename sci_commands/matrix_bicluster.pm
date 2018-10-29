@@ -113,12 +113,30 @@ open R, ">$opt{'O'}.heatmap2.r";
 print R "
 library(gplots)
 library(grid)
+#second type of heatmap
+library(ComplexHeatmap)
+library(circlize)
+set.seed(123)
+
 
 $gradient_function
-IN <- read.table(\"$ARGV[0]\")\n";
+IN <- read.table(\"$ARGV[0]\");
+IN_ch<-read.delim(\"$ARGV[0]\")\n";
 
 if (defined $opt{'r'} && (defined $opt{'n'} || defined $opt{'N'})) {print R "ROW <- read.table(\"$opt{'O'}.row_colors.list\")\n"};
 if (defined $opt{'A'} && (defined $opt{'c'} || defined $opt{'C'})) {print R "COL <- read.table(\"$opt{'O'}.col_colors.list\")\n"};
+if (defined $opt{'A'}) {
+print R "annot_ch<-read.table(\"$opt{'A'}\",header=F) 
+annot<-annot_ch[match(colnames(IN_ch), annot_ch$V1),]
+\n"}
+
+
+if (defined $opt{'A'} && (defined $opt{'c'} || defined $opt{'C'}) {
+print R "annot_ch<-read.table(\"$opt{'A'}\",header=F) 
+annot<-annot_ch[match(colnames(IN_ch), annot_ch$V1),]
+\n"}
+
+
 
 if ($imageType =~ /pdf/i) {
 	print R "$imageType(\"$opt{'O'}.heatmap2.$imageType\",width=$width,height=$height)\n";
@@ -153,6 +171,44 @@ if (defined $opt{'V'}) {
 }
 
 print R ")\ndev.off()\n";
+
+#complexheatmap implementation
+
+if ($imageType =~ /pdf/i) {
+	print R "$imageType(\"$opt{'O'}.complexheatmap.$imageType\",width=$width,height=$height)\n";
+} else {
+	print R "$imageType(\"$opt{'O'}.complexheatmap.$imageType\",width=$width,height=$height,units=\"in\",res=$res)\n";
+}
+
+print R "H <- heatmap.2(as.matrix(IN),
+	trace=\"none\",
+	col=gradient_funct(99),
+	tracecol=\"black\"";
+
+if (defined $opt{'r'} && (defined $opt{'n'} || defined $opt{'N'}) && defined $opt{'A'} && (defined $opt{'c'} || defined $opt{'C'})) {
+	print R ",
+	ColSideColors=as.vector(COL\$V1),
+	RowSideColors=as.vector(ROW\$V1)";
+} elsif (defined $opt{'r'} && (defined $opt{'n'} || defined $opt{'N'})) {
+	print R ",
+	RowSideColors=as.vector(ROW\$V1)";
+} elsif (defined $opt{'A'} && (defined $opt{'c'} || defined $opt{'C'})) {
+	print R ",
+	ColSideColors=as.vector(COL\$V1)";
+}
+
+if (defined $opt{'v'}) {
+	print R ",
+	Rowv=FALSE";
+}
+if (defined $opt{'V'}) {
+	print R ",
+	Colv=FALSE";
+}
+
+print R ")\ndev.off()\n";
+
+
 
 close R;
 
