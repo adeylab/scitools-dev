@@ -54,7 +54,7 @@ if (!defined $opt{'O'}) {$opt{'O'} = $ARGV[0]; $opt{'O'} =~ s/\.matrix$//};
 if (!defined $opt{'c'}) {$opt{'c'} = 1};
 if (!defined $opt{'r'}) {$opt{'r'} = 1};
 if (!defined $opt{'n'}) {$opt{'n'} = 1};
-if (!defined $opt{'T'}) {$opt{'T'} = 15,20,25,30,50,65,100};
+if (!defined $opt{'T'}) {$opt{'T'} = "15,20,25,30,50,65,100"};
 if (defined $opt{'R'}) {$Rscript = $opt{'R'}};
 
 open R, ">$opt{'O'}.cistopic.r";
