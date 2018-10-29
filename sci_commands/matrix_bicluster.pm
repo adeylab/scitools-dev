@@ -73,10 +73,10 @@ if (defined $opt{'a'}) {
 if (defined $opt{'N'}) {read_color_file($opt{'N'})};
 if (defined $opt{'n'}) {read_color_string($opt{'n'})};
 %ROW_ANNOT_color = %ANNOT_color; %ANNOT_color = ();
+$color_mapping_row=$color_mapping;
 
 if (defined $opt{'C'}) {read_color_file($opt{'C'})};
 if (defined $opt{'c'}) {read_color_string($opt{'c'})};
-
 # make col or row vector
 open MATRIX, "$ARGV[0]";
 $h = <MATRIX>; chomp $h; @H = split(/\t/, $h);
@@ -128,15 +128,19 @@ if (defined $opt{'A'} && (defined $opt{'c'} || defined $opt{'C'})) {print R "COL
 if (defined $opt{'A'}) {
 print R "annot_ch<-read.table(\"$opt{'A'}\",header=F) 
 #order annot file in matrix order
-annot<-annot_ch[match(colnames(IN_ch), annot_ch$V1),]
+annot_col<-annot_ch[match(colnames(IN_ch), annot_ch$V1),]
 \n"};
 
 
-if (defined $opt{'A'} && (defined $opt{'c'} || defined $opt{'C'})) {print R "color_ch<=list(Type=c($color_mapping))
-ha<-HeatmapAnnotation(Type = annot_ch\$V2,col=color_ch)\n"; 
+if (defined $opt{'A'} && (defined $opt{'c'} || defined $opt{'C'})) {
+print R "color_ch<=list(Type=c($color_mapping))
+ha_col<-HeatmapAnnotation(Type = annot_col\$V2,col=color_ch)\n"
 };
 
-
+if (defined $opt{'r'} && (defined $opt{'n'} || defined $opt{'N'})) {
+print R "color_ch<=list(Type=c($color_mapping))
+ha_row<-HeatmapAnnotation(Type = annot_ch\$V2,col=color_ch,which = \"row\")\n"
+};
 
 if ($imageType =~ /pdf/i) {
 	print R "$imageType(\"$opt{'O'}.heatmap2.$imageType\",width=$width,height=$height)\n";
@@ -180,10 +184,7 @@ if ($imageType =~ /pdf/i) {
 	print R "$imageType(\"$opt{'O'}.complexheatmap.$imageType\",width=$width,height=$height,units=\"in\",res=$res)\n";
 }
 
-print R "H <- heatmap.2(as.matrix(IN),
-	trace=\"none\",
-	col=gradient_funct(99),
-	tracecol=\"black\"";
+print R "H <- Heatmap(IN,";
 
 if (defined $opt{'r'} && (defined $opt{'n'} || defined $opt{'N'}) && defined $opt{'A'} && (defined $opt{'c'} || defined $opt{'C'})) {
 	print R ",
@@ -191,10 +192,10 @@ if (defined $opt{'r'} && (defined $opt{'n'} || defined $opt{'N'}) && defined $op
 	RowSideColors=as.vector(ROW\$V1)";
 } elsif (defined $opt{'r'} && (defined $opt{'n'} || defined $opt{'N'})) {
 	print R ",
-	RowSideColors=as.vector(ROW\$V1)";
+	bottom_annotation=ha";
 } elsif (defined $opt{'A'} && (defined $opt{'c'} || defined $opt{'C'})) {
 	print R ",
-	ColSideColors=as.vector(COL\$V1)";
+	bottom_annotation=ha";
 }
 
 if (defined $opt{'v'}) {
