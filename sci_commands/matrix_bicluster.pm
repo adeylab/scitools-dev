@@ -125,8 +125,8 @@ $gradient_function
 IN <- read.table(\"$ARGV[0]\");
 IN_ch<-read.delim(\"$ARGV[0]\")\n";
 
-if (defined $opt{'r'} && (defined $opt{'n'} || defined $opt{'N'})) {print R "ROW <- read.table(\"$opt{'O'}.row_colors.list\")\n"};
-if (defined $opt{'A'} && (defined $opt{'c'} || defined $opt{'C'})) {print R "COL <- read.table(\"$opt{'O'}.col_colors.list\")\n"};
+if (defined $opt{'r'} && (defined $opt{'n'} || defined $opt{'N'})) {print R "ROW <- read.delim(\"$opt{'O'}.row_colors.list\")\n"};
+if (defined $opt{'A'} && (defined $opt{'c'} || defined $opt{'C'})) {print R "COL <- read.delim(\"$opt{'O'}.col_colors.list\")\n"};
 
 
 if ($imageType =~ /pdf/i) {
