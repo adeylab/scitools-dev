@@ -232,7 +232,7 @@ if (defined $opt{'r'} && (defined $opt{'n'} || defined $opt{'N'})) {
 }
 
 
-print R "\nH\ndev.off()\n";
+print R "\nH\n dev.off()\n";
 
 
 
