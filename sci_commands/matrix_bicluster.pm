@@ -141,7 +141,7 @@ annot_col<-annot_ch[match(colnames(IN_ch), annot_ch\$V1),]
 if (defined $opt{'A'} && (defined $opt{'c'} || defined $opt{'C'})) {
 print R "color_ch<-list(Type=c($color_mapping))
 ha_col<-HeatmapAnnotation(Type = annot_col\$V2,col=color_ch)\n"
-};
+} elsif(defined $opt{'A'} && (!defined $opt{'c'} || !defined $opt{'C'})){print R "ha_col<-HeatmapAnnotation(Type = annot_col\$V2}\n"};
 
 
 #now with rows
