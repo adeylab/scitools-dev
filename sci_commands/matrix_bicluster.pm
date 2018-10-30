@@ -205,8 +205,8 @@ print R "\nH\n dev.off()\n";
 
 #heatmap2 implementation
 
-if (defined $opt{'r'} && (defined $opt{'n'} || defined $opt{'N'})) {print R "ROW <- read.delim(\"$opt{'O'}.row_colors.list\")\n"};
-if (defined $opt{'A'} && (defined $opt{'c'} || defined $opt{'C'})) {print R "COL <- read.delim(\"$opt{'O'}.col_colors.list\")\n"};
+if (defined $opt{'r'} && (defined $opt{'n'} || defined $opt{'N'})) {print R "ROW <- read.delim(\"$opt{'O'}.row_colors.list,header= F\")\n"};
+if (defined $opt{'A'} && (defined $opt{'c'} || defined $opt{'C'})) {print R "COL <- read.delim(\"$opt{'O'}.col_colors.list,header= F\")\n"};
 
 
 if ($imageType =~ /pdf/i) {
@@ -217,7 +217,7 @@ if ($imageType =~ /pdf/i) {
 
 print R "HM2 <- heatmap.2(as.matrix(IN),
 	trace=\"none\",
-	col=gradient_funct(99),
+	#col=gradient_funct(99),
 	tracecol=\"black\"";
 
 if (defined $opt{'r'} && (defined $opt{'n'} || defined $opt{'N'}) && defined $opt{'A'} && (defined $opt{'c'} || defined $opt{'C'})) {
