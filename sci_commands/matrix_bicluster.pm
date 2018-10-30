@@ -192,7 +192,7 @@ print R ")";
 
 if (defined $opt{'r'} && (defined $opt{'n'} || defined $opt{'N'})) {
 	print R "
-	+ha_col";
+	+ha_row";
 }
 
 
