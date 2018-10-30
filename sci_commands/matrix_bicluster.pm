@@ -139,7 +139,7 @@ annot_col<-annot_ch[match(colnames(IN_ch), annot_ch\$V1),]
 
 
 if (defined $opt{'A'} && (defined $opt{'c'} || defined $opt{'C'})) {
-print R "color_ch<=list(Type=c($color_mapping))
+print R "color_ch<-list(Type=c($color_mapping))
 ha_col<-HeatmapAnnotation(Type = annot_col\$V2,col=color_ch)\n"
 };
 
@@ -156,7 +156,7 @@ annot_row<-annot_ch_row[,match(rownames(IN_ch), annot_ch_row\$V1)]
 
 if (defined $opt{'r'} && (defined $opt{'n'} || defined $opt{'N'})) {
 print R "
-color_ch_row<=list(Type=c($color_mapping_row))
+color_ch_row<-list(Type=c($color_mapping_row))
 ha_row<-HeatmapAnnotation(Type = annot_ch_row\$V2,col=color_ch_row,which = \"row\")\n"
 };
 
