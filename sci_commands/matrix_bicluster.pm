@@ -169,7 +169,7 @@ if ($imageType =~ /pdf/i) {
 
 print R "H <- Heatmap(IN_ch";
 
-if (defined $opt{'A'} && (defined $opt{'c'} || defined $opt{'C'})) {
+if (defined $opt{'A'}) {
 	print R " ,bottom_annotation=ha_col";
 }
 
