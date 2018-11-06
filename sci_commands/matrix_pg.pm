@@ -10,7 +10,7 @@ sub matrix_pg {
 @ARGV = @_;
 
 
-getopts("O:X:P:", \%opt);
+getopts("O:XP:", \%opt);
 
 $die2 = "
 scitools matrix-pg [options] [input matrix or dims] 

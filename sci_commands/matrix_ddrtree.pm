@@ -10,7 +10,7 @@ sub matrix_ddrtree {
 @ARGV = @_;
 # Defaults
 
-getopts("O:X:R:C:c:", \%opt);
+getopts("O:XR:C:c:", \%opt);
 
 $die2 = "
 scitools matrix-ddrtree [options] [input matrix] [annotation file] [dims file]

@@ -10,7 +10,7 @@ sub cicero_plot {
 @ARGV = @_;
 # Defaults
 
-getopts("O:R:X:G:f:c:", \%opt);
+getopts("O:R:XG:f:c:", \%opt);
 
 $die2 = "
 scitools cicero-plot [options] [directory containing cds files][bed or CCAN file or list of windows or list of genes]
