@@ -61,7 +61,7 @@ if (!defined $opt{'O'}) {$opt{'O'} = $ARGV[0]; $opt{'O'} =~ s/\.matrix$//};
 open R, ">$opt{'O'}.da.enrichment.r";
 print R "
 dat<-read.delim(\"$ARGV[0]\")
-full_peaks<-dat\$annotation
+full_peaks<-as.character(dat\$annotation)
 dat\$chr<-sapply(strsplit(full_peaks,\"_\"),\"[\",1)
 dat\$start<-sapply(strsplit(full_peaks,\"_\"),\"[\",2)
 dat\$end<-sapply(strsplit(full_peaks,\"_\"),\"[\",3)
@@ -123,6 +123,9 @@ message(\"Conducting LOLA Analysis.\")
 #/home/groups/oroaklab/src/R/R-3.5.1/library2/LOLA/nm/t1/resources/regions/LOLACore/$opt{'g'}
 
 dbPath = system.file(\"nm/t1/resources/regions/LOLACore\", \"$opt{'g'}\", package=\"LOLA\")
+if (dbPath == ""){
+  message(\"LOLA Database not found. Skipping LOLA analysis.\")
+  }else{
 regionDB = loadRegionDB(dbLocation=dbPath)
 dat_sig_peaks<-as.data.frame(dat_sig_peaks)
 colnames(dat_sig_peaks)<-c(\"chr\",\"start\",\"end\")
@@ -134,7 +137,7 @@ full_peaks<-makeGRangesFromDataFrame(dat_full_peaks,ignore.strand=TRUE)
 
 locResults = runLOLA(userSets=sig_peaks,userUniverse=full_peaks,regionDB=regionDB,cores=$opt{'n'})
 
-writeCombinedEnrichment(locResults, outFolder= \"$opt{'O'}.Enrichment_Results\", includeSplits=TRUE)
+writeCombinedEnrichment(locResults, outFolder= \"$opt{'O'}.Enrichment_Results\", includeSplits=TRUE)}
 
 ";
 };
