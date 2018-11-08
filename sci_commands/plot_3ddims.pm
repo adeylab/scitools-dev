@@ -10,7 +10,7 @@ use File::Basename;
 sub plot_3ddims {
 
 @ARGV = @_;
-getopts("O:XR:A:T:t:a:p:o:u", \%opt);
+getopts("O:XR:A:T:t:a:p:o:ud:", \%opt);
 
 $die2 = "
 scitools plot-3ddims [options] [3D dims file]
@@ -30,6 +30,8 @@ Options:
    -X           Retain intermediate files (def = delete)
    -u           Will generate unannotated, uncolored gif.
    -a   [NUM]   0 to 1 range for point alpha values (Default = 0.6)
+   -d   [NUM]   If defined -T and -t, can set color cut off for top -d percent accessible 
+                cells rather than a color range.
    -p   [INT]   Point size (Default=3)
    -R   [STR]   Rscript call (def = $Rscript)
 ";
@@ -154,7 +156,9 @@ if ($ARGV[0] =~ /rds$/){
         point_colors_df<-merge(point_colors_df,goi,by.x=\"sample_name\",by.y=\"cellID\")
 
         colors<-colorRampPalette(brewer.pal(6,\"RdBu\"))(100)
-
+        ";
+    if (!defined $opt{'d'}){
+        print R "
         for (i in grep(\"ENS\",colnames(point_colors_df))){
         title=colnames(point_colors_df)[i]
         point_colors_df\$colsplit<-as.numeric(cut(scale(point_colors_df[i]),100))
@@ -169,8 +173,25 @@ if ($ARGV[0] =~ /rds$/){
         movie3d(spin3d(axis=c(0,0,1),rpm=5),duration=30,movie=paste(colnames(point_colors_df)[i]),dir=dir,convert=TRUE)
     }
     ";
-    }
+    } else {
+    print R "
 
+        for (i in grep(\"ENS\",colnames(point_colors_df))){
+        title=colnames(point_colors_df)[i]
+        bot_d_val=min(tail(sort(as.numeric(unlist(point_colors_df[i]))),round((nrow(point_colors_df[i])/100)*$opt{'d'})))
+        levels(point_colors_df\$point_colors)<-c(\"darkgrey\",\"red\")
+        point_colors_df[point_colors_df[i]>=bot_d_val,]\$point_colors<-\"red\"
+
+        open3d(windowRect = c(200, 200, 1024, 1024))
+        segments3d(x=as.vector(t(edge_df[, c(3,7)])),y=as.vector(t(edge_df[, c(4,8)])),z=as.vector(t(edge_df[, c(5,9)])), lwd = 2, col = backbone_segment_color,line_antialias = TRUE)
+        point_colors_df\$point_alpha = 0.8
+        point_colors_df\$point_alpha[is.na(point_colors_df\$point_colors)] = 0
+        points3d(point_colors_df[, c(\"data_dim_1\", \"data_dim_2\", \"data_dim_3\")], size = cell_size, col = point_colors_df\$point_colors, alpha = point_colors_df\$point_alpha, point_antialias = TRUE)
+        legend3d(\"bottomright\",legend=colnames(point_colors_df)[i],inset=c(0.02),cex=0.8)
+        movie3d(spin3d(axis=c(0,0,1),rpm=5),duration=30,movie=paste(colnames(point_colors_df)[i]),dir=dir,convert=TRUE)
+
+    }
+    ";
 } else {
 
     if (!defined $opt{'o'}) {$opt{'o'} = $ARGV[0]; $opt{'o'} =~ s/\.dims$//; $opt{'o'}=basename($opt{'o'})};
