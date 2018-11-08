@@ -123,7 +123,7 @@ message(\"Conducting LOLA Analysis.\")
 #/home/groups/oroaklab/src/R/R-3.5.1/library2/LOLA/nm/t1/resources/regions/LOLACore/$opt{'g'}
 
 dbPath = system.file(\"nm/t1/resources/regions/LOLACore\", \"$opt{'g'}\", package=\"LOLA\")
-if (dbPath == ""){
+if (dbPath == \"\"){
   message(\"LOLA Database not found. Skipping LOLA analysis.\")
   }else{
 regionDB = loadRegionDB(dbLocation=dbPath)
