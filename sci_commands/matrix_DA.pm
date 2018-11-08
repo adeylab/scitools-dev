@@ -31,7 +31,8 @@ Options:
                            Warning: This will be used for comparisons instead of [aggregate annotation file]
    -T   [STR]     Currently accepts [Wald|LRT]
                   Type of test performed: negative binomial \"Wald\" or Likelihood ratio test (\"LRT\"). binomialff test will be added later default: \"Wald\" 
-   -I   [FLAG]    If defined script compares an individual group to all others combined as opposed to comparing group by group (default)  
+   -I   [FLAG]    If defined script compares an individual group to all others combined.
+                  (Default: If not flagged performs all group by group comparisons.)  
    -n   [INT]     Number of cores to use for comparisons. (Default=1)
    -X   [FLAG]    Retain intermediate files (def = delete)
  
