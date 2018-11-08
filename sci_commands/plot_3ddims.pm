@@ -135,10 +135,10 @@ if ($ARGV[0] =~ /rds$/){
     }
 
     if (defined $opt{'T'} && defined $opt{'t'}){
-    @tf_list = split(/,/,$opt{'t'});
-    foreach (@tf_list) {$_ = "'$_'";}
-    $opt{'t'}=join(', ', @tf_list );
-    print R "
+        @tf_list = split(/,/,$opt{'t'});
+        foreach (@tf_list) {$_ = "'$_'";}
+        $opt{'t'}=join(', ', @tf_list );
+        print R "
 
         #Generate TF Accessibility Colored Rotating Gif
         dev<-read.table(\"$opt{'T'}\",header=T)
@@ -157,24 +157,24 @@ if ($ARGV[0] =~ /rds$/){
 
         colors<-colorRampPalette(brewer.pal(6,\"RdBu\"))(100)
         ";
-    if (!defined $opt{'d'}){
-        print R "
-        for (i in grep(\"ENS\",colnames(point_colors_df))){
-        title=colnames(point_colors_df)[i]
-        point_colors_df\$colsplit<-as.numeric(cut(scale(point_colors_df[i]),100))
-        point_colors_df\$point_colors<-colors[point_colors_df\$colsplit]
+        if (!defined $opt{'d'}){
+            print R "
+            for (i in grep(\"ENS\",colnames(point_colors_df))){
+            title=colnames(point_colors_df)[i]
+            point_colors_df\$colsplit<-as.numeric(cut(scale(point_colors_df[i]),100))
+            point_colors_df\$point_colors<-colors[point_colors_df\$colsplit]
 
-        open3d(windowRect = c(200, 200, 1024, 1024))
-        segments3d(x=as.vector(t(edge_df[, c(3,7)])),y=as.vector(t(edge_df[, c(4,8)])),z=as.vector(t(edge_df[, c(5,9)])), lwd = 2, col = backbone_segment_color,line_antialias = TRUE)
-        point_colors_df\$point_alpha = 0.8
-        point_colors_df\$point_alpha[is.na(point_colors_df\$point_colors)] = 0
-        points3d(point_colors_df[, c(\"data_dim_1\", \"data_dim_2\", \"data_dim_3\")], size = cell_size, col = point_colors_df\$point_colors, alpha = point_colors_df\$point_alpha, point_antialias = TRUE)
-        legend3d(\"bottomright\",legend=colnames(point_colors_df)[i],inset=c(0.02),cex=0.8)
-        movie3d(spin3d(axis=c(0,0,1),rpm=5),duration=30,movie=paste(colnames(point_colors_df)[i]),dir=dir,convert=TRUE)
-    }
-    ";
-    } else {
-    print R "
+            open3d(windowRect = c(200, 200, 1024, 1024))
+            segments3d(x=as.vector(t(edge_df[, c(3,7)])),y=as.vector(t(edge_df[, c(4,8)])),z=as.vector(t(edge_df[, c(5,9)])), lwd = 2, col = backbone_segment_color,line_antialias = TRUE)
+            point_colors_df\$point_alpha = 0.8
+            point_colors_df\$point_alpha[is.na(point_colors_df\$point_colors)] = 0
+            points3d(point_colors_df[, c(\"data_dim_1\", \"data_dim_2\", \"data_dim_3\")], size = cell_size, col = point_colors_df\$point_colors, alpha = point_colors_df\$point_alpha, point_antialias = TRUE)
+            legend3d(\"bottomright\",legend=colnames(point_colors_df)[i],inset=c(0.02),cex=0.8)
+            movie3d(spin3d(axis=c(0,0,1),rpm=5),duration=30,movie=paste(colnames(point_colors_df)[i]),dir=dir,convert=TRUE)
+        }
+        ";
+         } else {
+        print R "
 
         for (i in grep(\"ENS\",colnames(point_colors_df))){
         title=colnames(point_colors_df)[i]
@@ -190,9 +190,10 @@ if ($ARGV[0] =~ /rds$/){
         legend3d(\"bottomright\",legend=colnames(point_colors_df)[i],inset=c(0.02),cex=0.8)
         movie3d(spin3d(axis=c(0,0,1),rpm=5),duration=30,movie=paste(colnames(point_colors_df)[i]),dir=dir,convert=TRUE)
 
-    }
-    ";
-} else {
+        }
+        ";}
+
+    } else {
 
     if (!defined $opt{'o'}) {$opt{'o'} = $ARGV[0]; $opt{'o'} =~ s/\.dims$//; $opt{'o'}=basename($opt{'o'})};
     open R, ">$opt{'O'}/$opt{'o'}.3Dplot.r";
