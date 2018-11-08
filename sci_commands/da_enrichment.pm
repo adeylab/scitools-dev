@@ -17,7 +17,7 @@ scitools da_enrichment [options] [Input differential accessibility File]
    or    enrichment_da
 
 This script will take the full differential accessibility table output 
-(Differential_acc_[comparison]_as_ref.txt) from the matrix-da scitools function.
+(Differential_acc_[tested samples]_as_ref_shrunk_q02_wald.txt) from the matrix-da scitools function.
 It will then take user-defined top hits of differential accessibility and look for
 known transcription factor motif enrichment compared to all peaks within the table output.
 
@@ -61,7 +61,7 @@ if (!defined $opt{'O'}) {$opt{'O'} = $ARGV[0]; $opt{'O'} =~ s/\.matrix$//};
 open R, ">$opt{'O'}.da.enrichment.r";
 print R "
 dat<-read.delim(\"$ARGV[0]\")
-full_peaks<-as.character(row.names(dat))
+full_peaks<-dat\$annotation
 dat\$chr<-sapply(strsplit(full_peaks,\"_\"),\"[\",1)
 dat\$start<-sapply(strsplit(full_peaks,\"_\"),\"[\",2)
 dat\$end<-sapply(strsplit(full_peaks,\"_\"),\"[\",3)
