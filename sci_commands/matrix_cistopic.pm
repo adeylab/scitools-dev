@@ -75,7 +75,7 @@ annot<-read.table(file=\"$opt{'A'}\",header=F,row.names=1)
 
 
 
-cisTopicObject <- addCellMetadata(cisTopicObject, cell.data = cellData)
+cisTopicObject <- addCellMetadata(cisTopicObject, cell.data = annot)
 names(annot)<-c\"celltype\")
 ";
 
