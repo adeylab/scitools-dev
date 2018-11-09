@@ -230,6 +230,7 @@ sub load_aliases {
 	foreach $alias ("matrix_makeCDS","matrix_make_cds","matrix2cds","matrix_makecds","makecds","make-cds","cds-make") {$COMMAND_ALIAS{$alias} = "matrix_make_cds"};
 	foreach $alias ("matrix_cistopic","cistopic","cistopic_matrix","matrix-cistopic") {$COMMAND_ALIAS{$alias} = "matrix_cistopic"};
 	foreach $alias ("da_enrichment","da-enrichment","enrichment-da","enrichment_da") {$COMMAND_ALIAS{$alias} = "da_enrichment"};
+	foreach $alias ("atac_genehancer","atac-genehancer","genehancer","genehancer_atac","genehancer-atac") {$COMMAND_ALIAS{$alias} = "atac_genehancer"};
 
 }
 
@@ -322,5 +323,6 @@ sub load_descriptions {
 	$COMMAND_DESCRIPTOR{"matrix_bicluster"} = "Bicluster and plot a heatmap";
 	$COMMAND_DESCRIPTOR{"matrix_cistopic"} = "cisTopic on matrix";
 	$COMMAND_DESCRIPTOR{"da_enrichment"} = "Analyze Diff Accessible Peaks with HOMER and LOLA";
+	$COMMAND_DESCRIPTOR{"atac_genehancer"} = "Overlap peaks bed file with Genehancer database";
 
 }
