@@ -36,6 +36,7 @@ Options:
    -c   [INT]   Number of nonZero sites per column (cell) to retain (def = 1)
    -r   [INT]   Number of nonZero sites per row (peak) to retain (def = 1)
    -n 	[INT] 	Number of cores for parallel processing. (def=1)
+   -A   [STR]   Annotation file is useful. cisTopic will provide a PCA with the influence of Topics
    -T    [INT]    User defined number of Topics to use. 
                   If unspecified: will generate 15, 20, 25, 30, 50, 65, 100 Topics, 
                   and use log-liklihood estimators to select the best.
@@ -66,7 +67,23 @@ row.names(IN)<-sub(\"_\",\"-\",sub(\"_\",\":\",row.names(IN)))
 
 #Set up filtered binarized counts matrix
 cisTopicObject <- createcisTopicObject(IN,min.cells=$opt{'r'},min.regions=$opt{'c'}, keepCountsMatrix=FALSE)
+";
+if (defined $opt{'A'})
+{
+print R "
+annot<-read.table(file=\"$opt{'A'}\",header=F,row.names=1)
 
+
+
+cisTopicObject <- addCellMetadata(cisTopicObject, cell.data = cellData)
+names(annot)<-c\"celltype\")
+";
+
+}
+
+
+
+print R "
 cisTopicObject <- runModels(cisTopicObject, topic=c($opt{'T'}), seed=2018, nCores=$opt{'n'}, burnin = 250, iterations = 300)
 
 if (length(c($opt{'T'}))>1){
@@ -91,12 +108,17 @@ write.table(Modeldf,file=\"$opt{'O'}.cistopic.matrix\",col.names=T,row.names=T,q
 cisTopicObject <- getRegionsScores(cisTopicObject, method='Zscore', scale=TRUE)
 cisTopicObject <- binarizecisTopics(cisTopicObject, thrP=0.975, plot=FALSE)
 getBedFiles(cisTopicObject, path='$opt{'O'}')
+saveRDS(cisTopicObject,\"$opt{'O'}.cistopicObject.rds\")
 ";
 
-if (defined $opt{'S'})
+if (defined $opt{'A'})
 {
 print R "
-saveRDS(cisTopicObject,\"$opt{'O'}.cistopicObject.rds\")
+cisTopicObject <- runPCA(cisTopicObject)
+(\"PCA_cistopic.png\",width=12,height=12,units=\"in\",res=300)
+plotCellStates(cisTopicObject, method='Biplot', topic_contr='Zscore', colorBy=c(\'celltype\'))
+dev.off()
+plotCellStates(cisTopicObject, method='Biplot', topic_contr='Zscore', colorBy=c(\'celltype\'))
 ";
 }
 
