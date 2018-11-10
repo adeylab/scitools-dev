@@ -25,7 +25,7 @@ if (!defined $ARGV[0]) {die $die2};
 if (!defined $opt{'P'}) {$opt{'P'}=$Pscript};
 if (!defined $opt{'O'}) {$opt{'O'} = $ARGV[0]; $opt{'O'} =~ s/\.bed//};
 
-$bedtools_command="bedtools intersect -a $ARGV[0] -b /home/groups/oroaklab/refs/hg38/hg38_genehancer.txt -wb | awk \'OFS=\"\\t\" {a[\$1,\"\\t\",\$2,\"\\t\",\$3]=;}END{for(i in a) print i,a[i]}\' > $opt{'O'}.genehancer.temp";
+$bedtools_command="bedtools intersect -a $ARGV[0] -b /home/groups/oroaklab/refs/hg38/hg38_genehancer.txt -wb > $opt{'O'}.genehancer.temp";
 system($bedtools_command); 
 
 open py, ">$opt{'O'}.genehancer.py";
