@@ -75,7 +75,7 @@ annot<-read.table(file=\"$opt{'A'}\",header=F)
 #match rows of annot
 annot<-annot[match(colnames(IN), annot\$V1),]
 row.names(annot)<-anno\$V1
-names(annot)<-c(\"cellname\",\"celltype\")
+names(annot)<-c(\"cellname\",\"LineType\")
 cisTopicObject <- addCellMetadata(cisTopicObject, cell.data = annot)
 ";
 
@@ -117,9 +117,9 @@ cisTopicObject <- runPCA(cisTopicObject)
 coordinates <- object\@dr[[\'PCA\']]\$ind.coord
 write.table(coordinates,file=\"$opt{'O'}.PCA.internal.dims\",col.names=T,row.names=T,quote=F,sep=\"\\t\")
 png(file=\"PCA_cistopic.png\",width=12,height=12,units=\"in\",res=300)
-plotCellStates(cisTopicObject, method=\'Biplot\', topic_contr=\'Zscore\', colorBy=c(\'celltype\'))
+plotCellStates(cisTopicObject, method=\'Biplot\', topic_contr=\'Zscore\',topics=\'all\', colorBy=c(\'LineType\'))
 dev.off()
-plotCellStates(cisTopicObject, method=\'Biplot\', topic_contr=\'Zscore\', colorBy=c(\'celltype\'))
+plotCellStates(cisTopicObject, method=\'Biplot\', topic_contr=\'Zscore\', topics=\'all\', colorBy=c(\'LineType\'))
 ";
 }
 
