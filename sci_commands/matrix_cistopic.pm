@@ -8,7 +8,7 @@ use Exporter "import";
 sub matrix_cistopic {
 
 @ARGV = @_;
-getopts("O:c:r:n:T:SXR:", \%opt);
+getopts("O:A:c:r:n:T:SXR:", \%opt);
 
 $die2 = "
 scitools matrix-cistopic [options] [input matrix]
