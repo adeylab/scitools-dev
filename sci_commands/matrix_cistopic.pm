@@ -74,7 +74,7 @@ print R "
 annot<-read.table(file=\"$opt{'A'}\",header=F)
 #match rows of annot
 annot<-annot[match(colnames(IN), annot\$V1),]
-row.names(annot)<-anno\$V1
+row.names(annot)<-annot\$V1
 names(annot)<-c(\"cellname\",\"LineType\")
 cisTopicObject <- addCellMetadata(cisTopicObject, cell.data = annot)
 ";
