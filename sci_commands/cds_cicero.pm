@@ -97,7 +97,7 @@ cds <- make_cicero_cds(cds, reduced_coordinates = dimension_reduction, k=$opt{'k
 message(\"Running Cicero\")
 ";
 
-if ($opt{'G'}=="human.hg38.genome") {
+if ($opt{'G'} eq "human.hg38.genome") {
 print R "
 
 human.hg38.genome<-read.table(\"/home/groups/oroaklab/refs/hg38/hg38.bedtools.genome\",header=F)
