@@ -51,7 +51,7 @@ if (defined $opt{'b'}) {$bedtools = $opt{'b'}};
 if ($ARGV[0] eq "hg38") {$ARGV[0]="/home/groups/oroaklab/refs/hg38/refseq_tss_2kbup_1kbdown.filtered.txt"};
 if ($ARGV[0] eq "mm10") {$ARGV[0]="/home/groups/oroaklab/refs/mm10/mm10.RefGene.promoters_neg2000_pos500.bed.sorted.bed"};
 
-system("bedtools intersect -a $ARGV[0] -b $ARGV[1] -wa -wb | awk 'OFS=\"\\t\"{split(\$8,a,\":\"); print \$4,a[1]}' > $opt{'O'}.refcount.tmp");
+system("bedtools intersect -a $ARGV[0] -b $ARGV[1] -wa -wb -sorted | awk 'OFS=\"\\t\"{split(\$8,a,\":\"); print \$4,a[1]}' > $opt{'O'}.refcount.tmp");
 
 open R, "$opt{'O'}.refcount.R";
 
