@@ -193,7 +193,7 @@ if ($ARGV[0] =~ /rds$/){
         }
         ";}
 
-    } else {
+    } }else {
 
     if (!defined $opt{'o'}) {$opt{'o'} = $ARGV[0]; $opt{'o'} =~ s/\.dims$//; $opt{'o'}=basename($opt{'o'})};
     open R, ">$opt{'O'}/$opt{'o'}.3Dplot.r";
@@ -298,7 +298,6 @@ close R;
 system("$Rscript $opt{'O'}/$opt{'o'}.3Dplot.r");
 if (!defined $opt{'X'}) {
         system("rm -f $opt{'O'}/$opt{'o'}.3Dplot.r");
-}
 }
 }
 }
