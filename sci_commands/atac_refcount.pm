@@ -12,7 +12,7 @@ sub atac_refcount {
 # Defaults:
 $min_feature_size = 500;
 
-getopts("O:b:s:X", \%opt);
+getopts("O:b:s:r:X", \%opt);
 
 $die2 = "
 scitools atac-refcount [options] [Reference Genome or bed annotation] [duplicate removed and filtered bam file]
@@ -37,6 +37,7 @@ Options:
    -O   [STR]   Output prefix (default is bam file prefix)
    -b   [STR]   Bedtools call (def = $bedtools)
    -s   [STR]   Samtools call (def = $samtools)
+   -r   [STR]   R call (def= $Rscript)
    -X           Retain intermediate files (def = remove)
 
 
@@ -44,19 +45,20 @@ Options:
 ";
 
 if (!defined $ARGV[1]) {die $die2};
-if (!defined $opt{'O'}) {$opt{'O'} = $ARGV[0]; $opt{'O'} =~ s/\.bam$//};
+if (!defined $opt{'O'}) {$opt{'O'} = $ARGV[1]; $opt{'O'} =~ s/\.bam$//};
 if (defined $opt{'s'}) {$samtools = $opt{'s'}};
 if (defined $opt{'b'}) {$bedtools = $opt{'b'}};
+if (defined $opt{'r'}) {$bedtools = $opt{'r'}};
 
 if ($ARGV[0] eq "hg38") {$ARGV[0]="/home/groups/oroaklab/refs/hg38/refseq_tss_2kbup_1kbdown.filtered.txt"};
 if ($ARGV[0] eq "mm10") {$ARGV[0]="/home/groups/oroaklab/refs/mm10/mm10.RefGene.promoters_neg2000_pos500.bed.sorted.bed"};
 
 system("bedtools intersect -a $ARGV[0] -b $ARGV[1] -wa -wb -sorted | awk 'OFS=\"\\t\"{split(\$8,a,\":\"); print \$4,a[1]}' > $opt{'O'}.refcount.tmp");
 
-open R, "$opt{'O'}.refcount.R";
+open R, ">$opt{'O'}.refcount.R";
 
-print R
-"
+print R "
+
 library(data.table)
   dat<-read.table(\"$opt{'O'}.refcount.tmp\")
   colnames(dat)<-c(\"ANNO\",\"CELLID\")
@@ -66,6 +68,8 @@ library(data.table)
   write.table(dat_cast,\"$opt{'O'}.refcounts.matrix\",sep=\"\\t\",col.names=T,row.names=T,quote=F)
 ";
 close R;
+
+system("$Rscript $opt{'O'}.refcount.R");
 
 if (!defined $opt{'X'}) {
   system("rm -f $opt{'O'}.refcount.tmp $opt{'O'}.refcount.R");
