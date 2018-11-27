@@ -169,7 +169,8 @@ sub load_aliases {
 	
 	# sci-ATAC-seq Commands
 	foreach $alias ("atac_callpeaks", "atac_callpeak", "callpeak", "callpeaks") {$COMMAND_ALIAS{$alias} = "atac_callpeak"};
-	foreach $alias ("atac_mergepeaks", "atac_mergepeak", "mergepeak", "mergepeaks") {$COMMAND_ALIAS{$alias} = "atac_mergepeak"};
+	foreach $alias ("atac_mergepeaks", "atac_mergepeak", "mergepeak", "mergepeaks",
+					"merge_bed", "bed_merge", "mergebed", "bedmerge") {$COMMAND_ALIAS{$alias} = "atac_mergepeak"};
 	foreach $alias ("atac_counts", "atac_count", "count", "counts") {$COMMAND_ALIAS{$alias} = "atac_count"};
 	foreach $alias ("atac_enrich", "enrich_atac") {$COMMAND_ALIAS{$alias} = "atac_enrich"};
 	
