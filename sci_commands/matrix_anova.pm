@@ -32,6 +32,7 @@ if (!defined $opt{'O'}) {$opt{'O'} = $ARGV[0]};
 if (defined $opt{'R'}) {$Rscript = $opt{'R'}};
 if (!defined $opt{'F'}) {$fdr = 0.05};
 read_matrix($ARGV[0]);
+read_annot($ARGV[1]);
 
 if (defined $opt{'a'}) {
 	@ANNOT_LIST = split(/,/, $opt{'a'});
