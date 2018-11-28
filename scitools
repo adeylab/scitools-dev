@@ -166,6 +166,7 @@ sub load_aliases {
 	foreach $alias ("annot_make", "make_annot") {$COMMAND_ALIAS{$alias} = "annot_make"};
 	foreach $alias ("annot_merge", "merge_annot") {$COMMAND_ALIAS{$alias} = "annot_merge"};
 	foreach $alias ("rename_cells") {$COMMAND_ALIAS{$alias} = "rename_cells"};
+	foreach $alias ("annot_collapse", "collapse_annot", "rename_annot", "annot_rename") {$COMMAND_ALIAS{$alias} = "annot_collapse"};
 	
 	# sci-ATAC-seq Commands
 	foreach $alias ("atac_callpeaks", "atac_callpeak", "callpeak", "callpeaks") {$COMMAND_ALIAS{$alias} = "atac_callpeak"};
@@ -263,6 +264,7 @@ sub load_descriptions {
 	$COMMAND_DESCRIPTOR{"bam2sra"} = "Unfilterd bam files to SRA / GEO fastq files";
 	$COMMAND_DESCRIPTOR{"annot_make"} = "Make annotation file";
 	$COMMAND_DESCRIPTOR{"annot_merge"} = "Merge annotation files";
+	$COMMAND_DESCRIPTOR{"annot_collapse"} = "Collapse annotations, or rename them";
 	$COMMAND_DESCRIPTOR{"rename_cells"} = "Rename cells";
 	$COMMAND_DESCRIPTOR{"atac_callpeak"} = "Call peaks on bam file using macs2";
 	$COMMAND_DESCRIPTOR{"atac_mergepeak"} = "Merge ATAC_seq peak files";
