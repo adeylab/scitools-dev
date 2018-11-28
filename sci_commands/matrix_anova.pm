@@ -28,6 +28,7 @@ Note: Requires R package qvalue
 
 if (!defined $ARGV[0]) {die $die2};
 if (!defined $ARGV[1]) {die $die2};
+if (!defined $opt{'O'}) {$opt{'O'} = $ARGV[0]};
 if (defined $opt{'R'}) {$Rscript = $opt{'R'}};
 if (!defined $opt{'F'}) {$fdr = 0.05};
 read_matrix($ARGV[0]);
