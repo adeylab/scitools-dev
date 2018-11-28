@@ -104,7 +104,10 @@ print R "
 library(qvalue)
 IN<-read.delim(\"$opt{'O'}.Annova_sum.txt\")
 qobj <- qvalue(IN\$pval, fdr.level=$fdr, pi0.method=\"bootstrap\", adj=1.2)
-write.table(as.matrix(qobj),file=\"./$opt{'O'}.annova.qval.txt\",quote=FALSE,sep=\"\\t\",row.names=T,col.names=T)";
+OUT<-data.frame(Feature_name=IN\$Feature_name,F=IN\$F,pval=IN\$pval,qval=qobj\$qvalues,lfdr=qobj\$lfdr,sign=qobj\$significant)
+
+
+write.table(as.matrix(OUT),file=\"./$opt{'O'}.annova.qval.txt\",quote=FALSE,sep=\"\\t\",row.names=T,col.names=T)";
 close R;
 system("$Rscript $opt{'O'}.final.anova.r");
 if (!defined $opt{'X'}) {system("rm -f $opt{'O'}.final.anova.r")};
