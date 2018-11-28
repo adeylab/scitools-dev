@@ -83,7 +83,7 @@ write(output,file=\"$opt{'O'}.Annova_sum.txt\",append=TRUE,ncolumns=3,sep = \"\\
 
 #individual comparisons with TukeyHSD
 comp<-TukeyHSD(fit)
-write.table(as.matrix(comp\$V5),file=\"$opt{'O'}.$feature_polished.TukeyHSD.txt\",quote=FALSE,sep=\"\\t\",row.names=T,col.names=T)";
+write.table(as.matrix(comp\$V3),file=\"$opt{'O'}.$feature_polished.TukeyHSD.txt\",quote=FALSE,sep=\"\\t\",row.names=T,col.names=T)";
 
 close R;
 
