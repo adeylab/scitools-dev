@@ -79,11 +79,11 @@ F<-summary(fit)[[1]][[\"F value\"]][1]
 P<-summary(fit)[[1]][[\"Pr(>F)\"]][1]
 
 output<-c(feature,F,P)
-write(output,file=paste0(folder[1],\"$opt{'O'}.Annova_sum.txt\"),append=TRUE,ncolumns=3,sep = \"\\t\")
+write(output,file=\"$opt{'O'}.Annova_sum.txt\",append=TRUE,ncolumns=3,sep = \"\\t\")
 
 #individual comparisons with TukeyHSD
 comp<-TukeyHSD(fit)
-write.table(as.matrix(comp\$V5),file=\"./$opt{'O'}.$feature_polished.TukeyHSD.txt\",quote=FALSE,sep=\"\\t\",row.names=T,col.names=T)";
+write.table(as.matrix(comp\$V5),file=\"$opt{'O'}.$feature_polished.TukeyHSD.txt\",quote=FALSE,sep=\"\\t\",row.names=T,col.names=T)";
 
 close R;
 
