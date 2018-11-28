@@ -49,8 +49,18 @@ if (defined $opt{'a'}) {
 		open VALS, ">$opt{'O'}.$feature_polished.values";
 		foreach $cellID (keys %CELLID_FEATURE_value) {
 			$annot=$CELLID_annot{$cellID};
-			if (defined $CELLID_FEATURE_value{$cellID}{$feature} && defined $ANNOT_include{$annot}) {
+			if (defined $CELLID_FEATURE_value{$cellID}{$feature}) {
+				if (defined $opt{'a'})
+				{
+					if (defined $ANNOT_include{$annot})
+				{
 				print VALS "$cellID\t$CELLID_FEATURE_value{$cellID}{$feature}\t$annot\n";
+				}
+				}
+				else
+				{
+				print VALS "$cellID\t$CELLID_FEATURE_value{$cellID}{$feature}\t$annot\n";	
+				}
 			}
 		} close VALS;
 
