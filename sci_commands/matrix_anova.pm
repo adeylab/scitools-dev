@@ -41,7 +41,9 @@ if (defined $opt{'a'}) {
 	}
 }
 
-
+open ANOVA, ">$opt{'O'}.Annova_sum.txt";
+print ANOVA "Feature_name\tF\tpval\n"; 
+close ANOVA;
 	
 	foreach $feature (keys %MATRIX_feature_nonZero) {
 		$feature_polished = $feature;
@@ -64,9 +66,7 @@ if (defined $opt{'a'}) {
 			}
 		} close VALS;
 
-open ANOVA, ">$opt{'O'}.Annova_sum.txt";
-print ANOVA "Feature_name\tF\tpval\n"; 
-close ANOVA;
+
 
 open R, ">$opt{'O'}.$feature_polished.anova.r";
 print R "
