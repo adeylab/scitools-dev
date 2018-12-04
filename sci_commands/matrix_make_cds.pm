@@ -69,7 +69,7 @@ if (defined $opt{'G'}) {
 	while ($l = <IN>) {
 		chomp $l;
 		@P = split(/\t/, $l);
-		if ($SITEID_gene{$P[3]} ne "NA") {
+		if ($SITEID_gene{$P[3]} eq "NA") {
 			$SITEID_gene{$P[3]} = $P[7];
 		}
 		if (defined $opt{'X'}) {
