@@ -10,10 +10,10 @@ sub matrix_make_cds {
 @ARGV = @_;
 # Defaults
 
-getopts("O:R:", \%opt);
+getopts("O:R:G:", \%opt);
 
 $die2 = "
-scitools matrix_make_cds [options] [input matrix] [annotation file] [dims file]
+scitools matrix_make_cds (options) [input matrix] [annotation file] [dims file]
    or    matrix_makecds
          matrix2cds
 		 
@@ -21,7 +21,7 @@ scitools matrix_make_cds [options] [input matrix] [annotation file] [dims file]
  Generates 4 txt files to be used in scitools atac-monocle3 and scitools atac-cicero calls for quick processing.
  Alternatively, the files are ready to be loaded into monocle or cicero in R, external to scitools. This enables
    use of additional cicero or monocle commands that are not included in the scitools wrapper.
- For more informaiton on monocle and cicero we recommend visiting: http://cole-trapnell-lab.github.io/
+ For more informaiton on monocle and cicero we recommend visiting the trapnell lab github
  
 	1. cds_site_data.txt       :   Feature set file (called peaks used in counts matrix)
 	2. cds_cell_data.txt       :   Restructured Annotation file, with timepoints included.
@@ -34,7 +34,9 @@ scitools matrix_make_cds [options] [input matrix] [annotation file] [dims file]
 
 Options:
    -O   [STR]   Output Directory (default is [current working directory]/cds_files)
+   -G   [bed]   Bed of promters with the name as a gene (will include gene column)
    -R   [STR]   Rscript call (def = $Rscript)
+   -b   [STR]   Bedtools call (def = $bedtools)
                   
 ";
 
@@ -47,6 +49,30 @@ if (!defined $opt{'O'}) {$opt{'O'} = $ARGV[0]; $opt{'O'} =~ s/\.matrix$//};
 $opt{'O'} =~ s/\.cds_files$//;
 
 system("mkdir $opt{'O'}.cds_files");
+
+if (defined $opt{'G'}) {
+	open IN, "$ARGV[0]";
+	open OUT, ">$opt{'O'}.cds_files/cds_sites.bed";
+	$null = <IN>;
+	while ($l = <IN>) {
+		chomp $l;
+		@P = split(/\t/, $l);
+		$site = shift(@P);
+		($chr,$bp1,$bp2) = split(/[_]/, $site);
+		$siteName = "$chr\_$bp1\_$bp2";
+		$SITEID_gene{$siteName} = "NA";
+		print OUT "$chr\t$bp1\t$bp2\t$siteName\n";
+	} close IN; close OUT;
+	open IN, "$bedtools intersect -a $opt{'O'}.cds_files/cds_sites.bed -b $opt{'G'} -wa -wb |";
+	while ($l = <IN>) {
+		chomp $l;
+		@P = split(/\t/, $l);
+		if ($SITEID_gene{$P[3]} ne "NA") {
+			$SITEID_gene{$P[3]} = $P[7];
+		}
+	} close IN;
+	system("rm -f $opt{'O'}.cds_files/cds_sites.bed");
+}
 
 open SITE_DATA, ">$opt{'O'}.cds_files/cds_site_data.txt";
 open CELL_DATA, ">$opt{'O'}.cds_files/cds_cell_data.txt";
@@ -70,7 +96,11 @@ $h_out =~ s/\t$//;
 print COUNTS "$h_out\n";
 #print out header
 
-print SITE_DATA "site_name\tchr\tbp1\tbp2\tnum_cells_expressed\tsite_length\n";
+if (defined $opt{'G'}) {
+	print SITE_DATA "site_name\tchr\tbp1\tbp2\tnum_cells_expressed\tsite_length\tgene\n";
+} else {
+	print SITE_DATA "site_name\tchr\tbp1\tbp2\tnum_cells_expressed\tsite_length\n";
+}
 while ($l = <IN>) {
 	chomp $l;
 	@P = split(/\t/, $l);
@@ -123,8 +153,15 @@ while ($l = <IN>) {
 		
 		}
 	
-	print SITE_DATA "$siteName\t$siteName\t$chrID\t$bp1\t$bp2\t$SITENAME_expressed{$siteName}\t".($bp2-$bp1)."\n";
-	
+	if (defined $opt{'G'}) {
+		if (!defined $SITEID_gene{$siteName}) {
+			$SITEID_gene{$siteName} = "NA";
+			print STDERR "WARNING: $siteName was not found when identifying gene tags! - setting to NA\n";
+		}
+		print SITE_DATA "$siteName\t$siteName\t$chrID\t$bp1\t$bp2\t$SITENAME_expressed{$siteName}\t".($bp2-$bp1)."\t$SITEID_gene{$siteName}\n";
+	} else {
+		print SITE_DATA "$siteName\t$siteName\t$chrID\t$bp1\t$bp2\t$SITENAME_expressed{$siteName}\t".($bp2-$bp1)."\n";
+	}
 } close IN;
 close COUNTS; close SITE_DATA; 
 
