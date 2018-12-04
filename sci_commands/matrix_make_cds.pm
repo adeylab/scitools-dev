@@ -10,7 +10,7 @@ sub matrix_make_cds {
 @ARGV = @_;
 # Defaults
 
-getopts("O:R:G:", \%opt);
+getopts("O:R:G:X", \%opt);
 
 $die2 = "
 scitools matrix_make_cds (options) [input matrix] [annotation file] [dims file]
@@ -37,6 +37,7 @@ Options:
    -G   [bed]   Bed of promters with the name as a gene (will include gene column)
    -R   [STR]   Rscript call (def = $Rscript)
    -b   [STR]   Bedtools call (def = $bedtools)
+   -X           Retain intermediate files (for -G)
                   
 ";
 
@@ -64,14 +65,22 @@ if (defined $opt{'G'}) {
 		print OUT "$chr\t$bp1\t$bp2\t$siteName\n";
 	} close IN; close OUT;
 	open IN, "$bedtools intersect -a $opt{'O'}.cds_files/cds_sites.bed -b $opt{'G'} -wa -wb |";
+	if (defined $opt{'X'}) {open OUT, ">$opt{'O'}.cds_files/cds_site_gene_links.txt"};
 	while ($l = <IN>) {
 		chomp $l;
 		@P = split(/\t/, $l);
 		if ($SITEID_gene{$P[3]} ne "NA") {
 			$SITEID_gene{$P[3]} = $P[7];
 		}
+		if (defined $opt{'X'}) {
+			print OUT "$P[3]\t$P[7]\n";
+		}
 	} close IN;
-	system("rm -f $opt{'O'}.cds_files/cds_sites.bed");
+	if (!defined $opt{'X'}) {
+		system("rm -f $opt{'O'}.cds_files/cds_sites.bed");
+	} else {
+		close OUT;
+	}
 }
 
 open SITE_DATA, ">$opt{'O'}.cds_files/cds_site_data.txt";
