@@ -62,6 +62,7 @@ if (defined $opt{'h'}) {$height = $opt{'h'}};
 if (defined $opt{'w'}) {$width = $opt{'w'}};
 if (defined $opt{'S'}) {$flanking_size = $opt{'S'}};
 if (defined $opt{'f'}) {$gene_scale_factor = $opt{'f'}};
+if (defined $opt{'p'}) {$pt_size = $opt{'p'}};
 if (defined $opt{'t'}) {$gene_text_size = $opt{'t'}};
 if (defined $opt{'A'}) {
 	read_annot($opt{'A'});
