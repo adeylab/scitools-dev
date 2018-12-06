@@ -45,6 +45,7 @@ if (-e "$opt{'O'}.annot") {die "ERROR: $opt{'O'}.annot already exists - will not
 open OUT, ">$opt{'O'}.annot";
 open IN, $ARGV[0];
 while ($l = <IN>) {
+	chomp $l;
 	($cellID,$annot) = split(/\t/, $l);
 	if (defined $opt{'i'} && !defined $ANNOT_group{$annot}) {
 		$ANNOT_group{$annot} = $annot;
