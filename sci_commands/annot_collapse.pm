@@ -33,10 +33,11 @@ if (!defined $opt{'O'}) {
 
 # parse group specifications
 for ($i = 1; $i < @ARGV; $i++) {
-	@ANNOT_LIST = split(/[=,]/, $ARGV[$1]);
-	$groupID = shift(@ANNOT_LIST);
+	($groupID,$annots) = split(/=/, $ARGV[$i]);
+	@ANNOT_LIST = split(/,/, $annots);
 	foreach $annot (@ANNOT_LIST) {
 		$ANNOT_group{$annot} = $groupID;
+		print STDERR "INFO: $annot assigned to $groupID\n";
 	}
 }
 
