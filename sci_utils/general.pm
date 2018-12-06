@@ -194,7 +194,7 @@ sub read_color_string {
 
 sub read_color_file {
 	%ANNOT_color = ();
-	open COL_FILE, "$_[0]";
+	open COL_FILE, "$_[0]" || die "ERROR: Cannot open provided color file: $_[0]!\n";
 	$color_mapping = "\"Cell\" = \"lightsteelblue4\",";
 	while ($color_assignment = <COL_FILE>) {
 		chomp $color_assignment;
