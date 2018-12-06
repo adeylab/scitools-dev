@@ -48,9 +48,12 @@ while ($l = <IN>) {
 	($cellID,$annot) = split(/\t/, $l);
 	if (defined $opt{'i'} && !defined $ANNOT_group{$annot}) {
 		$ANNOT_group{$annot} = $annot;
+		print STDERR "INFO: $annot not assigned - saving as $annot (-i toggled)\n";
 	}
 	if (defined $ANNOT_group{$annot}) {
 		print OUT "$cellID\t$ANNOT_group{$annot}\n";
+	} else {
+		print STDERR "WARNING: $annot not assigned - skipping!\n";
 	}
 }
 close IN; close OUT;
