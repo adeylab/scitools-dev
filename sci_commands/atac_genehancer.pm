@@ -5,7 +5,7 @@ use Exporter "import";
 @EXPORT = ("atac_genehancer");
 sub atac_genehancer {
 @ARGV = @_;
-getopts("O:P:X", \%opt);
+getopts("O:P:Xi", \%opt);
 $die2 = "
 scitools atac-genehancer [options] [peaks bed file]
    or    genehancer
@@ -18,6 +18,7 @@ Note: if multiple genehancer sites overlap with a peak, will make the tab-separa
 Options:
    -O   [STR]   Output prefix (default is peaks prefix)
                 (adds .GeneHancer.bed)
+   -i 	[FLAG]	Will output the inverse of intersect (peaks not within Genehancer)
    -P   [STR]   Python call (def = $Pscript)
    -X   [FLAG]  Remove temp files
 ";
@@ -26,6 +27,8 @@ if (!defined $opt{'P'}) {$opt{'P'}=$Pscript};
 if (!defined $opt{'O'}) {$opt{'O'} = $ARGV[0]; $opt{'O'} =~ s/\.bed//};
 
 $bedtools_command="bedtools intersect -a $ARGV[0] -b /home/groups/oroaklab/refs/hg38/hg38_genehancer.txt -wb > $opt{'O'}.genehancer.temp";
+
+if (defined $opt{'i'}){$bedtools_command="bedtools intersect -v -a $ARGV[0] -b /home/groups/oroaklab/refs/hg38/hg38_genehancer.txt -wb > $opt{'O'}.genehancer.temp";};
 system($bedtools_command); 
 
 open py, ">$opt{'O'}.genehancer.py";
