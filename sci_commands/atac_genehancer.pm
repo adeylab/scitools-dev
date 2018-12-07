@@ -28,9 +28,10 @@ if (!defined $opt{'O'}) {$opt{'O'} = $ARGV[0]; $opt{'O'} =~ s/\.bed//};
 
 $bedtools_command="bedtools intersect -a $ARGV[0] -b /home/groups/oroaklab/refs/hg38/hg38_genehancer.txt -wb > $opt{'O'}.genehancer.temp";
 
-if (defined $opt{'i'}){$bedtools_command="bedtools intersect -v -a $ARGV[0] -b /home/groups/oroaklab/refs/hg38/hg38_genehancer.txt -wb > $opt{'O'}.genehancer.temp";};
+if (defined $opt{'i'}){$bedtools_command="bedtools intersect -v -a $ARGV[0] -b /home/groups/oroaklab/refs/hg38/hg38_genehancer.txt -wb > $opt{'O'}.genehancer.inverse.bed";};
 system($bedtools_command); 
 
+if (!defined $opt{'i'}){
 open py, ">$opt{'O'}.genehancer.py";
 print py "
 
@@ -81,6 +82,7 @@ if (!defined $opt{'X'}) {
         system("rm -f $opt{'O'}.genehancer.temp");
 }
 }
+};
 1;
 
 
