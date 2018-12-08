@@ -42,11 +42,11 @@ library(Rphenograph)
 
 if ($ARGV[0] =~ /\.dims/) {
 print OUT "
-dat_matrix<-as.data.frame(read.table(\"$ARGV[0]\",header=T)
+dat_matrix<-as.data.frame(read.table(\"$ARGV[0]\",header=T))
 ";
 } else {
 print OUT "
-dat_matrix<-as.data.frame(t(read.table(\"$ARGV[0]\",header=T))
+dat_matrix<-as.data.frame(t(read.table(\"$ARGV[0]\",header=T)))
 ";
 }
 
@@ -59,13 +59,13 @@ dat_pg<-Rphenograph(dat_matrix,k=$opt{'k'})
 pg_clusterID<-paste(\"pg_\",membership(dat_pg[[2]]),sep=\"\")
 dat_out<-do.call(rbind, Map(data.frame, A=cellID, B=pg_clusterID))
 
-write.table(dat_out,file=\"$opt{'O'}.k${'k'}.pg.annot\",col.names=F,row.names=F,quote=F,sep=\"\\t\")
+write.table(dat_out,file=\"$opt{'O'}.k$opt{'k'}.pg.annot\",col.names=F,row.names=F,quote=F,sep=\"\\t\")
 ";
 close OUT;
-system("$Rscript $opt{'O'}.pg.R");
+system("$Rscript $opt{'O'}.phenograph.R");
 
 if (defined $opt{'X'}) {
-	system("rm -f $opt{'O'}.pg.R");
+	system("rm -f $opt{'O'}.phenograph.R");
 }
 
 }
