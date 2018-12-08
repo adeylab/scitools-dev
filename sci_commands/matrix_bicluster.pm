@@ -14,7 +14,7 @@ $gradient_def = "BuRd";
 $imageType = "png";
 
 @ARGV = @_;
-getopts("O:d:t:s:A:a:C:c:r:N:n:G:R:V:v:P:Xp:", \%opt);
+getopts("O:d:t:s:A:a:C:c:r:N:n:G:R:VvPXpS:", \%opt);
 
 $die2 = "
 scitools matrix-bicluster [options] [input matrix]
@@ -40,7 +40,8 @@ Options:
    -R   [STR]   Rscript call (def = $Rscript)
    -V           Do not cluster columns
    -v           Do not cluster rows
-   -P 			Do not show column show column names
+   -S 	      Based on silhuette plot do row clustering with optimal number of clusters
+   -P 			Do not show column names
    -p 			Do not show row names
    -X           Do not delete intermediate files (def = delete)
    
@@ -118,6 +119,7 @@ library(grid)
 #second type of heatmap
 library(ComplexHeatmap)
 library(circlize)
+library(cluster)
 set.seed(123)
 
 
@@ -125,7 +127,32 @@ $gradient_function
 IN <- read.table(\"$ARGV[0]\");
 IN_ch<-read.delim(\"$ARGV[0]\")\n";
 
+if ($imageType =~ /pdf/i) {
+	print R "$imageType(\"$opt{'O'}.silhouette.$imageType\",width=$width,height=$height)\n";
+} else {
+	print R "$imageType(\"$opt{'O'}.silhouette.$imageType\",width=$width,height=$height,units=\"in\",res=$res)\n";
+}
+if (defined $opt{'S'}){
+print R "
+k.max <- 15
+sil <- rep(0, k.max)
+for(i in 2:k.max){
+pr = pam(IN_ch,k=i)
+sil[i] <-mean(silhouette(pr)[, \"sil_width\"])
+}
 
+# Plot the  average silhouette width
+plot(1:k.max, sil, type = \"b\", pch = 19,
+     frame = FALSE, xlab = \"Number of clusters k\")
+abline(v = which.max(sil), lty = 2)
+dev.off()
+kmaval=which.max(sil)
+pa=pam(IN_ch,k=kmaval)
+write.table(pa\$clustering,rownames=T,colnames=T,sep=\"t\",quote=F)
+\n";
+
+
+}
 
 #complexheatmap implementation
 
@@ -167,7 +194,11 @@ if ($imageType =~ /pdf/i) {
 	print R "$imageType(\"$opt{'O'}.complexheatmap.$imageType\",width=$width,height=$height,units=\"in\",res=$res)\n";
 }
 
+
 print R "H <- Heatmap(IN_ch";
+if (defined $opt{'S'}) {
+	print R " ,split = paste0(\"pam\", pa\$clustering)";
+}
 
 if (defined $opt{'A'}) {
 	print R " ,bottom_annotation=ha_col";
