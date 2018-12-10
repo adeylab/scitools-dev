@@ -64,8 +64,8 @@ sub load_defaults {
 					$ref_shortcuts .= "\t$refID = $val\n";
 				} elsif ($var =~ /^LOG/) {
 					$log_check = "T";
-					$projectID = $var; $projectID =~ s/^LOG_//;
-					$LOG_DIR{$val} = $projectID;
+					($projectID,$path) = split(/,/, $val);
+					$LOG_DIR{$path} = $projectID;
 					print STDERR "LOG VAR FOUND!\n";
 				} else {
 					if ($var eq "gzip") {$gzip = $val}
