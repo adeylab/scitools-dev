@@ -34,7 +34,7 @@ $opt{'O'} =~ s/\.dims$//;
 if (defined $opt{'P'}) {$Pscript = $opt{'P'}};
 read_matrix($ARGV[0]);
 
-open OUT, ">$opt{'O'}.phenograph.R";
+open OUT, ">$opt{'O'}.k$opt{'k'}.phenograph.R";
 print OUT"
 library(Rphenograph)
 ";
@@ -62,10 +62,10 @@ dat_out<-do.call(rbind, Map(data.frame, A=cellID, B=pg_clusterID))
 write.table(dat_out,file=\"$opt{'O'}.k$opt{'k'}.pg.annot\",col.names=F,row.names=F,quote=F,sep=\"\\t\")
 ";
 close OUT;
-system("$Rscript $opt{'O'}.phenograph.R");
+system("$Rscript $opt{'O'}.k$opt{'k'}.phenograph.R");
 
 if (defined $opt{'X'}) {
-	system("rm -f $opt{'O'}.phenograph.R");
+	system("rm -f $opt{'O'}.k$opt{'k'}.phenograph.R");
 }
 
 }
