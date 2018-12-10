@@ -53,6 +53,7 @@ sub load_defaults {
 	%REF; %VAR; %LOG_DIR;
 	if (-e "$_[0]") {
 		open DEF, "$_[0]";
+		print STDERR "DEBUG: opening $_[0] as the config file!\n";
 		while ($def = <DEF>) {
 			if ($def !~ /^#/) {
 				chomp $def;
@@ -65,6 +66,7 @@ sub load_defaults {
 					$log_check = "T";
 					$projectID = $var; $projectID =~ s/^LOG_//;
 					$LOG_DIR{$val} = $projectID;
+					print STDERR "LOG VAR FOUND!\n";
 				} else {
 					if ($var eq "gzip") {$gzip = $val}
 					elsif ($var eq "zcat") {$zcat = $val}
