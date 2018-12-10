@@ -36,6 +36,7 @@ load_gradient_defaults();
 
 # PULL WD AND CHECK FOR LOGGING
 if ($log_check =~ /T/) {
+	print STDERR "DEBUG: LOG CHECK TRUE!\n";
 	$cwd = getcwd();
 	foreach $project_dir (keys %LOG_DIR) {
 		if ($cwd =~ /$project_dir/) {
