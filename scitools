@@ -42,7 +42,11 @@ if ($log_check =~ /T/) {
 		print STDERR "DEBUG:\t\tchecking $project_dir\n";
 		if ($cwd =~ /$project_dir/) {
 			($head,$tail) = split(/$project_dir/, $cwd);
-			print STDERR "$head\t$tail\t$project_dir\n";
+			print STDERR "raw: $head\t$tail\t$project_dir\n";
+			$head =~ s/\/$//; $tail =~ s/\/$//; $tail =~ s/^\///;
+			print STDERR "trimmed: $head\t$tail\t$project_dir\n";
+			$log_file = "$head/$tail/$LOG_DIR{$project_dir}.scitools.log";
+			print STDERR "LOG FILE: $log_file\n";
 		}
 	}
 }
