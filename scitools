@@ -39,6 +39,7 @@ if ($log_check =~ /T/) {
 	print STDERR "DEBUG: LOG CHECK TRUE!\n";
 	$cwd = getcwd();
 	foreach $project_dir (keys %LOG_DIR) {
+		print STDERR "DEBUG:\t\tchecking $project_dir\n";
 		if ($cwd =~ /$project_dir/) {
 			($head,$tail) = split(/$project_dir/, $cwd);
 			print STDERR "$head\t$tail\t$project_dir\n";
