@@ -54,7 +54,7 @@ if (defined $opt{'P'}) {$permCT = $opt{'P'}};
 if (defined $opt{'B'}) {$binCT = $opt{'B'}};
 if (defined $opt{'S'}) {$TSS_flanking = $opt{'S'}};
 if (!defined $opt{'G'} && $ARGV[1] !~ /\.bed$/) {
-	die "ERROR: if a bed file is not provided, a gene list is assumes and -G must be specified.\n";
+	die "ERROR: if a bed file is not provided, a gene list is assumed and -G must be specified.\n";
 }
 if (defined $opt{'c'}) {$corr_cutoff = $opt{'c'}};
 if (defined $opt{'b'}) {$bedtools = $opt{'b'}};
@@ -97,7 +97,7 @@ print LOG "$ts\tMatrix read:
 \t\t\t\t$siteCT sites
 \t\t\t\t$sum_all_sites_all_cells total signal\n";
 
-if (defined $opt{'G'}) {
+if (defined $opt{'G'} && $ARGV[1] !~ /\.bed$/) {
 	$genes_found = 0; $geneCT = 0; $genes_missing = 0;
 	$ts = localtime(time);
 	print LOG "$ts\tGene file specified - reading in refgene file.\n";

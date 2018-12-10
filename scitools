@@ -15,6 +15,7 @@ $version = "0.1.2";
 );
 
 # LOAD MODULES
+use Cwd;
 use Getopt::Std; %opt = ();
 use sci_utils::general;
 use Exporter "import";
@@ -32,6 +33,17 @@ if (-e "$ENV{'HOME'}/.scitools.cfg") {
 }
 load_defaults($SCITOOLS_DEFAULTS,$RealBin);
 load_gradient_defaults();
+
+# PULL WD AND CHECK FOR LOGGING
+if ($log_check =~ /T/) {
+	$cwd = getcwd();
+	foreach $project_dir (keys %LOG_DIR) {
+		if ($cwd =~ /$project_dir/) {
+			($head,$tail) = split(/$project_dir/, $cwd);
+			print STDERR "$head\t$tail\t$project_dir\n";
+		}
+	}
+}
 
 # LOAD COMMANDS DIRECTLY FROM MODULE FILES
 opendir CMDS, "$RealBin/sci_commands" || die "ERROR: Cannot locate the commands directory.\nERROR: It should be present in the same directory as the scitools executable: $RealBin\n";

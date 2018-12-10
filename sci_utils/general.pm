@@ -8,7 +8,7 @@ use Exporter "import";
 	"load_defaults",
 		qw($color_mapping),qw($ref_shortcuts),qw(@BASES),qw(%REF),qw(%VAR),qw($gzip),qw($zcat),
 		qw($bwa),qw($samtools),qw($scitools),qw($macs2),qw($bedtools),qw($Rscript),qw($Pscript),
-		qw($bismark),qw($bowtie2),
+		qw($bismark),qw($bowtie2),qw($log_check),qw(%LOG_DIR),
 	"read_annot",
 		qw(%CELLID_annot),qw(%ANNOT_count),qw($annot_count),qw(@ANNOT_FILES),
 	"read_complexity",
@@ -48,8 +48,9 @@ sub load_defaults {
 	# Some global ones that are not configured
 	$color_mapping = "none";
 	$ref_shortcuts = "";
+	$log_check = "F";
 	@BASES = ("A", "C", "G", "T", "N");
-	%REF; %VAR;
+	%REF; %VAR; %LOG_DIR;
 	if (-e "$_[0]") {
 		open DEF, "$_[0]";
 		while ($def = <DEF>) {
@@ -60,6 +61,10 @@ sub load_defaults {
 					$refID = $var; $refID =~ s/_ref$//;
 					$REF{$refID} = $val;
 					$ref_shortcuts .= "\t$refID = $val\n";
+				} elsif ($var =~ /^LOG/) {
+					$log_check = "T";
+					$projectID = $var; $projectID =~ s/^LOG_//;
+					$LOG_DIR{$val} = $projectID;
 				} else {
 					if ($var eq "gzip") {$gzip = $val}
 					elsif ($var eq "zcat") {$zcat = $val}
