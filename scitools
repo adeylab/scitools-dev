@@ -92,25 +92,6 @@ if (defined $ARGV[0]) {
 		$called_command = (shift(@ARGV));
 		$called_command =~ s/-/_/g;
 		
-		# CHECK FOR LOGGING IF EXECUTION IS REAL
-		if ($log_check =~ /T/ && $ARGV[0] !~ //) {
-			print STDERR "DEBUG: LOG CHECK TRUE!\n";
-			$cwd = getcwd();
-			foreach $project_dir (keys %LOG_DIR) {
-				$project_dir =~ s/\/$//;
-				$projectID = $LOG_DIR{$project_dir};
-				print STDERR "DEBUG:\t\tchecking $project_dir ID = $projectID\n";
-				if ($cwd =~ /$project_dir/) {
-					($head,$tail) = split(/$project_dir/, $cwd);
-					print STDERR "raw: $head\t$tail\n";
-					$head =~ s/\/$//; $project_dir =~ s/^\///;
-					print STDERR "trimmed: $head\t$project_dir\n";
-					$log_file = "$head/$project_dir/$projectID.scitools.log";
-					print STDERR "LOG FILE: $log_file\n";
-				}
-			}
-		}
-		
 		if (defined $COMMAND_ALIAS{$called_command}) {
 			$command = $COMMAND_ALIAS{$called_command};
 		} elsif (defined $COMMAND_ALIAS{lc($called_command)}) {
@@ -120,6 +101,26 @@ if (defined $ARGV[0]) {
 			$command = lc($command);
 		}
 		if (defined $COMMAND_NAMES{$command}) {
+		
+			# CHECK FOR LOGGING IF EXECUTION IS REAL
+			if ($log_check =~ /T/ && $ARGV[0] !~ //) {
+				print STDERR "DEBUG: LOG CHECK TRUE!\n";
+				$cwd = getcwd();
+				foreach $project_dir (keys %LOG_DIR) {
+					$project_dir =~ s/\/$//;
+					$projectID = $LOG_DIR{$project_dir};
+					print STDERR "DEBUG:\t\tchecking $project_dir ID = $projectID\n";
+					if ($cwd =~ /$project_dir/) {
+						($head,$tail) = split(/$project_dir/, $cwd);
+						print STDERR "raw: $head\t$tail\n";
+						$head =~ s/\/$//; $project_dir =~ s/^\///;
+						print STDERR "trimmed: $head\t$project_dir\n";
+						$log_file = "$head/$project_dir/$projectID.scitools.log";
+						print STDERR "LOG FILE: $log_file\n";
+					}
+				}
+			}
+		
 			if (defined $IS_DEV{$command}) {
 				print STDERR "\nWARNING: Command $command is considered to be in development.\n";
 			}
