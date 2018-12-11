@@ -15,6 +15,7 @@ $version = "0.1.2";
 );
 
 # LOAD MODULES
+use Cwd;
 use Getopt::Std; %opt = ();
 use sci_utils::general;
 use Exporter "import";
@@ -90,6 +91,7 @@ if (defined $ARGV[0]) {
 	} else {
 		$called_command = (shift(@ARGV));
 		$called_command =~ s/-/_/g;
+		
 		if (defined $COMMAND_ALIAS{$called_command}) {
 			$command = $COMMAND_ALIAS{$called_command};
 		} elsif (defined $COMMAND_ALIAS{lc($called_command)}) {
@@ -99,6 +101,26 @@ if (defined $ARGV[0]) {
 			$command = lc($command);
 		}
 		if (defined $COMMAND_NAMES{$command}) {
+		
+			# CHECK FOR LOGGING IF EXECUTION IS REAL
+			if ($log_check =~ /T/ && ($#ARGV+1)>0) {
+				$cwd = getcwd();
+				foreach $project_dir (keys %LOG_DIR) {
+					$project_dir =~ s/\/$//;
+					$projectID = $LOG_DIR{$project_dir};
+					if ($cwd =~ /$project_dir/) {
+						($head,$tail) = split(/$project_dir/, $cwd);
+						$head =~ s/\/$//; $project_dir =~ s/^\///;
+						$log_file = "$head/$project_dir/$projectID.scitools.log";
+						$log_ts = localtime(time);
+						$log_args = join(" ",@ARGV);
+						open PLOG, ">>$log_file";
+						print PLOG "$log_ts\tscitools $command $log_args\n";
+						close PLOG;
+					}
+				}
+			}
+		
 			if (defined $IS_DEV{$command}) {
 				print STDERR "\nWARNING: Command $command is considered to be in development.\n";
 			}
