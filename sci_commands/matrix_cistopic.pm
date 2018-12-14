@@ -105,7 +105,7 @@ colnames(Modeldf)<-cisTopicObject\@cell.names
 row.names(Modeldf)<-paste0(\"Topic_\",row.names(Modeldf))
 write.table(Modeldf,file=\"$opt{'O'}.cistopic.matrix\",col.names=T,row.names=T,quote=F,sep=\"\\t\")
 #adding part where the contribution matrix is calculated, we use a binarization method to select for peaks that contribute to each topic
-cisTopicObject <- getRegionsScores(cisTopicObject, method='Zscore', scale=TRUE)
+cisTopicObject <- getRegionsScores(cisTopicObject, method='Z-score', scale=TRUE)
 cisTopicObject <- binarizecisTopics(cisTopicObject, thrP=0.975, plot=FALSE)
 getBedFiles(cisTopicObject, path='$opt{'O'}')
 saveRDS(cisTopicObject,\"$opt{'O'}.cistopicObject.rds\")
@@ -117,9 +117,9 @@ cisTopicObject <- runPCA(cisTopicObject)
 coordinates <- cisTopicObject\@dr[[\'PCA\']]\$ind.coord
 write.table(coordinates,file=\"$opt{'O'}.PCA.internal.dims\",col.names=T,row.names=T,quote=F,sep=\"\\t\")
 png(file=\"PCA_cistopic.png\",width=12,height=12,units=\"in\",res=300)
-plotCellStates(cisTopicObject, method=\'Biplot\', topic_contr=\'Zscore\',topics=\'all\', colorBy=c(\'LineType\'))
+plotCellStates(cisTopicObject, method=\'Biplot\', topic_contr=\'Z-score\',topics=\'all\', colorBy=c(\'LineType\'))
 dev.off()
-plotCellStates(cisTopicObject, method=\'Biplot\', topic_contr=\'Zscore\', topics=\'all\', colorBy=c(\'LineType\'))
+plotCellStates(cisTopicObject, method=\'Biplot\', topic_contr=\'Z-score\', topics=\'all\', colorBy=c(\'LineType\'))
 ";
 }
 
