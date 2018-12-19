@@ -85,7 +85,7 @@ for ($bamID = 1; $bamID < @ARGV; $bamID++) {
 						$match = 0; # signal found match and looking for new first read
 						($orphanSeq,$orphanQual) = split(/\t/, $ORPHAN{$readID});
 						$readNumber++;
-						$outID = sprintf("%012d", $readNumber)
+						$outID = sprintf("%012d", $readNumber);
 						if ($P[1] & 64) { # first
 							print O1 "\@$outID#0/1\n$P[9]\n\+\n$P[10]\n";
 							print O2 "\@$outID#0/2\n$orphanSeq\n\+\n$orphanQual\n";
