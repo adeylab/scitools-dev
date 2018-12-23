@@ -48,7 +48,7 @@ for ($i = 1; $i < @ARGV; $i++) {
 	}
 	$name = $ARGV[$i]; $name =~ s/\.bed$//;
 	system("cat $files | $bedtools sort -i - | $bedtools merge -i - > $ARGV[0].$name.inv_tmp.bed");
-	system("$bedtools intersect -v -b $ARGV[0].$name.tmp.bed -a $ARGV[$i] > $ARGV[0].$name.spc_tmp.bed");
+	system("$bedtools intersect -v -b $ARGV[0].$name.inv_tmp.bed -a $ARGV[$i] > $ARGV[0].$name.spc_tmp.bed");
 	open IN, "$bedtools intersect -b $ARGV[0].merged.bed -a $ARGV[0].$name.spc_tmp.bed |";
 	while ($l = <IN>) {
 		chomp $l;
