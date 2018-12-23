@@ -34,8 +34,11 @@ for ($i = 1; $i < @ARGV; $i++) {
 		}
 	}
 	$name = $ARGV[$i]; $name =~ s/\.bed$//;
-	system("cat $files | $bedtools sort -i - | $bedtools merge -i - > $ARGV[0].$i.tmp.bed");
-	system("$bedtools intersect -v -b $ARGV[0].$i.tmp.bed -a $ARGV[$i] > $ARGV[0].$name.specific.bed");
+	system("cat $files | $bedtools sort -i - | $bedtools merge -i - > $ARGV[0].$name.tmp.bed");
+	system("$bedtools intersect -v -b $ARGV[0].$name.tmp.bed -a $ARGV[$i] > $ARGV[0].$name.specific.bed");
+	if (!defined $opt{'X'}) {
+		system("rm -f $ARGV[0].$name.tmp.bed");
+	}
 }
 
 
