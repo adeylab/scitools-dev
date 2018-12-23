@@ -30,7 +30,7 @@ if (defined $opt{'b'}) {$bedtools = $opt{'b'}};
 
 $files = "";
 for ($i = 1; $i < @ARGV; $i++) {$files .= "$ARGV[$i] "};
-open OUT, ">$ARGV[0].merged.bed";
+open OUT, ">$ARGV[0].group_specific.merged.bed";
 open IN, "cat $files | $bedtools sort -i - | $bedtools merge -i - |";
 while ($l = <IN>) {
 	chomp $l;
@@ -57,7 +57,7 @@ for ($i = 1; $i < @ARGV; $i++) {
 	} close IN;
 	
 	if (!defined $opt{'X'}) {
-		system("rm -f $ARGV[0].$name.tmp.bed");
+		system("rm -f $ARGV[0].*_tmp.bed");
 	}
 } close OUT;
 
