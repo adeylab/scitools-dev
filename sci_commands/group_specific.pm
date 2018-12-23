@@ -34,7 +34,7 @@ for ($i = 1; $i < @ARGV; $i++) {
 		}
 	}
 	$name = $ARGV[$i]; $name =~ s/\.bed$//;
-	system("cat $files | $bedtools sort -i - | $bedtools mege -i - > $ARGV[0].$i.tmp.bed");
+	system("cat $files | $bedtools sort -i - | $bedtools merge -i - > $ARGV[0].$i.tmp.bed");
 	system("$bedtools intersect -v -b $ARGV[0].$i.tmp.bed -a $ARGV[$i] > $ARGV[0].$name.specific.bed");
 }
 
