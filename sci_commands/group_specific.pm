@@ -26,6 +26,7 @@ Options:
 if (!defined $ARGV[2]) {die $die2};
 if (defined $opt{'b'}) {$bedtools = $opt{'b'}};
 
+open OUT, ">$ARGV[0].group_specific.bed";
 for ($i = 1; $i < @ARGV; $i++) {
 	$files = "";
 	for ($j = 1; $j < @ARGV; $j++) {
@@ -35,11 +36,16 @@ for ($i = 1; $i < @ARGV; $i++) {
 	}
 	$name = $ARGV[$i]; $name =~ s/\.bed$//;
 	system("cat $files | $bedtools sort -i - | $bedtools merge -i - > $ARGV[0].$name.tmp.bed");
-	system("$bedtools intersect -v -b $ARGV[0].$name.tmp.bed -a $ARGV[$i] > $ARGV[0].$name.specific.bed");
+	open IN, "$bedtools intersect -v -b $ARGV[0].$name.tmp.bed -a $ARGV[$i] |";
+	while ($l = <IN>) {
+		chomp $l;
+		print OUT "$l\t$name\_specific\n";
+	} close IN;
+	
 	if (!defined $opt{'X'}) {
 		system("rm -f $ARGV[0].$name.tmp.bed");
 	}
-}
+} close OUT;
 
 
 }
