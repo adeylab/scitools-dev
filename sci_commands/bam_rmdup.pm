@@ -77,7 +77,7 @@ for ($bamID = 0; $bamID < @ARGV; $bamID++) {
 				$filt_chrom+=10;
 			} elsif ($opt{'e'} ne "none") {
 				foreach $pattern (@CHR_FILT) {
-					if ($P[2] ~ /$pattern/i) {
+					if ($P[2] =~ /$pattern/i) {
 						$filt_chrom+=10;
 					}
 				}
