@@ -48,7 +48,7 @@ if (defined $opt{'f'}) {
 	} close FAI;
 }
 
-system("$macs2 callpeak -t $ARGV[0] -n $opt{'O'} >> $opt{'O'}.macs2.log 2>> $opt{'O'}.macs2.log");
+system("$macs2 callpeak --keep-dup all -t $ARGV[0] -n $opt{'O'} >> $opt{'O'}.macs2.log 2>> $opt{'O'}.macs2.log");
 
 open IN, "$bedtools merge -i $opt{'O'}_peaks.narrowPeak 2>/dev/null |";
 open OUT, "| $bedtools sort -i - 2>/dev/null | $bedtools merge -i - > $opt{'O'}.$min_feature_size.tmp 2>/dev/null";

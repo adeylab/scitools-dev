@@ -91,6 +91,7 @@ for ($bamID = 0; $bamID < @ARGV; $bamID++) {
 					print OUT "$l\n";
 					$BARC_kept{$barc}++;
 					$total_kept++;
+					$BAMID_included{$bamID}++;
 				}
 				$OBSERVED{$P[0]} = 1;
 			} else {
@@ -117,7 +118,14 @@ $args = join(" ", @ARGV);
 $ts = localtime(time);
 $pct_off = sprintf("%.2f", ($reads_q10_to_other_chr/$q10_reads)*100);
 $pct_kept = sprintf("%.2f", ($total_kept/$q10_reads)*100);
-print OUT "$ts bam-rmdup completed. Args:\n\t$args\nQ10 reads = $q10_reads\nAligning to other chroms: $reads_q10_to_other_chr ($pct_off %)\nTotal reads kept: $total_kept ($pct_kept %)\n";
+print OUT "$ts bam-rmdup completed. Args:\t$args
+Q10 reads = $q10_reads
+Aligning to other chroms: $reads_q10_to_other_chr ($pct_off %)
+Total reads kept: $total_kept ($pct_kept %)
+By Bam\n";
+for ($bamID = 0; $bamID < @ARGV; $bamID++) {
+	print OUT "\tBAMID=$bamID\t$ARGV[$bamID]\t$BAMID_included{$bamID} included reads.\n";
+}
 close OUT;
 
 }
