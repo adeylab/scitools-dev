@@ -8,7 +8,7 @@ use Exporter "import";
 sub bam_rmdup {
 
 @ARGV = @_;
-getopts("s:O:xm:H:", \%opt);
+getopts("s:O:xm:H:e:", \%opt);
 
 $memory = "2G";
 
@@ -29,6 +29,8 @@ Options:
                  It is highly recommended to specify -O if
                  multiple bams are used as the input.
    -x           If multiple bams, do not include BAMID field
+   -e   [PAT]   Patterns for chromosomes to exclude (comma sep)
+                (def = M,Y,L,K,G,Un,Random,Alt  can be set to 'none')
    -m   [MEM]   Samtools sort mex memory K/M/G (def = $memory)
                  (only for multiple bams)
    -H   [BAM]   Use header from this bam instead.
@@ -41,6 +43,7 @@ if (!defined $opt{'O'}) {$opt{'O'} = $ARGV[0]; $opt{'O'} =~ s/\.bam$//};
 if (defined $opt{'s'}) {$samtools = $opt{'s'}};
 if (defined $opt{'m'}) {$memory = $opt{'m'}};
 if (!defined $ARGV[1]) {$opt{'x'} = 1};
+if (defined $opt{'e'}) {@CHR_FILT = split(/,/, $opt{'e'})};
 
 if (!defined $ARGV[1]) {
 	open OUT, "| $samtools view -bS - > $opt{'O'}.bbrd.q10.bam 2>/dev/null";
@@ -69,7 +72,18 @@ for ($bamID = 0; $bamID < @ARGV; $bamID++) {
 			$BARC_kept{$barc}++;
 			$total_kept++;
 		} elsif ($P[1] & 4) {} else {
-			if ($P[2] !~ /(M|Y|L|K|G|Un|Random|Alt)/i) {
+			$filt_chrom = 0;
+			if (!defined $opt{'e'} && $P[2] ~ /(M|Y|L|K|G|Un|Random|Alt)/i) {
+				$filt_chrom+=10;
+			} elsif ($opt{'e'} ne "none") {
+				foreach $pattern (@CHR_FILT) {
+					if ($P[2] ~ /$pattern/i) {
+						$filt_chrom+=10;
+					}
+				}
+			}
+			
+			if ($filt_chrom < 1) {
 				$BARC_total{$barc}++;
 				if (!defined $BARC_POS_ISIZE{$barc}{"$P[2]:$P[3]:$P[8]"} && !defined $OBSERVED{$P[0]}) {
 					$BARC_POS_ISIZE{$barc}{"$P[2]:$P[3]:$P[8]"} = 1;
