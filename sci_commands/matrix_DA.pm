@@ -78,6 +78,8 @@ if (defined $opt{'A'}) {
    read_annot($ARGV[1]);
    for my $aggannot (sort keys %ANNOT_count){
       @annotagg = split(/_/, $aggannot);
+	  pop(@annotagg);
+	  $aggannotID = join("_", @annotagg);
       push(@{$ANNOT_AGGID{$annotagg[0]}},$aggannot);
    }
    } else {die $die2}
