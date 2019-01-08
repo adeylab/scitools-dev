@@ -114,7 +114,7 @@ print R "
 
 human.hg38.genome<-read.table(\"/home/groups/oroaklab/refs/hg38/hg38.bedtools.genome\",header=F)
 conns <- run_cicero(cds, human.hg38.genome)
-gene_annotation<-read.table(\"/home/groups/oroaklab/refs/hg38/hg38.refGene.bed\",header=F)
+gene_annotation<-read.table(\"/home/groups/oroaklab/refs/hg38/gencode.v29.Gene.annotation.bed\",header=F)
 colnames(gene_annotation)<-c(\"chr\",\"start\",\"end\",\"gene\")
 ";
 } else {
@@ -145,8 +145,14 @@ message(\"Sample CCANs Output:\")
 input_cds <- annotate_cds_by_site(input_cds, gene_annotation)
 # generate unnormalized gene activity matrix
 unnorm_ga <- build_gene_activity_matrix(input_cds, conns)
-saveRDS(unnorm_ga,\"$opt{'O'}/cicero.gene_acitivity_matrix.rds\")
-write.table(as.data.frame(as.matrix(unnorm_ga)),file=\"$opt{'O'}/cicero.gene_activity_matrix.txt\",row.names=T,col.names=T,sep=\"\\t\",quote=F)
+
+#set up peak count per cell
+num_genes<-pData(input_cds)$num_genes_expressed
+names(num_genes) <- row.names(pData(input_cds))
+
+cicero_gene_activities<-normalize_gene_activities(unnorm_ga,num_genes)
+write.table(as.data.frame(as.matrix(cicero_gene_activities)),file=\"$opt{'O'}/cicero.gene_activity_matrix.txt\",row.names=T,col.names=T,sep=\"\\t\",quote=F)
+
 ";
 
 close R;
