@@ -214,6 +214,8 @@ sub load_aliases {
 	foreach $alias ("matrix_pull", "pull_matrix") {$COMMAND_ALIAS{$alias} = "matrix_pull"};
 	foreach $alias ("counts2tsne", "atac_tsne", "counts_tsne") {$COMMAND_ALIAS{$alias} = "counts2tsne"};
 	foreach $alias ("matrix_da", "da_matrix", "atac_da", "da_atac", "diff_access") {$COMMAND_ALIAS{$alias} = "matrix_DA"};
+	foreach $alias ("matrix_sparse", "make_sparse", "sparse") {$COMMAND_ALIAS{$alias} = "matrix_sparse"};
+	foreach $alias ("matrix_unsparse", "make_unsparse", "unsparse") {$COMMAND_ALIAS{$alias} = "matrix_unsparse"};
 	
 	# Dimensions Commands
 	foreach $alias ("dims_kmeans", "kmeans") {$COMMAND_ALIAS{$alias} = "dims_kmeans"};
