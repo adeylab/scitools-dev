@@ -12,7 +12,7 @@ getopts("O:z", \%opt);
 
 $die2 = "
 
-scitools matrix-unsparse (options) [sparse_matrix] [cellIDs.txt] [rowIDs.txt]
+scitools matrix-unsparse (options) [sparse_matrix] [cellIDs.txt] [rowIDs.txt or bed]
    or    unsparse
          make-unsparse
 
@@ -54,7 +54,13 @@ if ($ARGV[2] =~ /\.gz$/) {
 @ROWIDs = (); push @ROWIDs, "null";
 while ($l = <RID>) {
 	chomp $l;
-	push @ROWIDs, $l;
+	if ($ARGV[2] =~ /bed/) {
+		@P = split(/\t/, $l);
+		$rowName = $P[0]."_".$P[1]."_".$P[2];
+		push @ROWIDs, $rowName;
+	} else {
+		push @ROWIDs, $l;
+	}
 } close RID;
 
 if ($ARGV[0] =~ /\.gz$/) {
