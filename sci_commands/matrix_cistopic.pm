@@ -8,10 +8,12 @@ use Exporter "import";
 sub matrix_cistopic {
 
 @ARGV = @_;
-getopts("O:A:c:r:n:T:SXR:", \%opt);
+getopts("O:A:c:r:n:T:SXR:P:", \%opt);
+
+$thrP = 0.975;
 
 $die2 = "
-scitools matrix-cistopic [options] [input matrix]
+scitools matrix-cistopic [options] [input matrix (or rds for topic bed output only)]
    or    cistopic
 
 [input matrix] =	A counts matrix generated from atac_count. 
@@ -20,7 +22,7 @@ scitools matrix-cistopic [options] [input matrix]
 
 cisTopic serves as an alternative textmining algorithm to TFIDF-LSI processing.
 It is to be run on a sciATAC counts matrix. For more information see:
-https://github.com/aertslab/cisTopic/
+https://github.com/aertslab/cisTopic/;
 
 Outputs a matrix file similar to matrix-irlba function call. To be processed through
 [matrix_tsne|matrix_umap|matrix_PCA|matrix_SWNE]
@@ -42,7 +44,7 @@ Options:
                   and use log-liklihood estimators to select the best.
                   Specification can be a single number of a comma separated list.
                   Will use a core for each number supplied (DO NOT EXCEED A LIST LENGTH OF 10)
-   -S			If defined CDS will be retained in RDS format for further analysis			
+   -P   [FLT]   ThrP (def = $thrP)			
    -X           Retain intermediate files (def = delete)
    -R   [STR]   Rscript call (def = $Rscript)
 
@@ -55,8 +57,34 @@ if (!defined $opt{'O'}) {$opt{'O'} = $ARGV[0]; $opt{'O'} =~ s/\.matrix$//};
 if (!defined $opt{'c'}) {$opt{'c'} = 1};
 if (!defined $opt{'r'}) {$opt{'r'} = 1};
 if (!defined $opt{'n'}) {$opt{'n'} = 1};
+if (defined $opt{'P'}) {$thrP = $opt{'P'}};
 if (!defined $opt{'T'}) {$opt{'T'} = "15,20,25,30,50,65,100"};
 if (defined $opt{'R'}) {$Rscript = $opt{'R'}};
+
+if ($ARGV[0] =~ /\.rds$/i) {
+
+if (!defined $opt{'O'}) {$opt{'O'} = $ARGV[0]; $opt{'O'} =~ s/\.rds$//i};
+
+open R, ">$opt{'O'}.output_topics.r";
+print R "
+library(plyr)
+library(cisTopic)
+
+readRDS(\"$ARGV[0]\")
+cisTopicObject <- getRegionsScores(cisTopicObject, method='Z-score', scale=TRUE)
+cisTopicObject <- binarizecisTopics(cisTopicObject, thrP=$thrP, plot=FALSE)
+getBedFiles(cisTopicObject, path='$opt{'O'}.topics')
+";
+
+close R;
+
+system("$Rscript $opt{'O'}.output_topics.r");
+
+if (!defined $opt{'X'}) {
+	system("rm -f $opt{'O'}.output_topics.r");
+}
+
+} else {
 
 open R, ">$opt{'O'}.cistopic.r";
 print R "
@@ -107,7 +135,7 @@ write.table(Modeldf,file=\"$opt{'O'}.cistopic.matrix\",col.names=T,row.names=T,q
 saveRDS(cisTopicObject,\"$opt{'O'}.cistopicObject.rds\")
 #adding part where the contribution matrix is calculated, we use a binarization method to select for peaks that contribute to each topic
 cisTopicObject <- getRegionsScores(cisTopicObject, method='Z-score', scale=TRUE)
-cisTopicObject <- binarizecisTopics(cisTopicObject, thrP=0.975, plot=FALSE)
+cisTopicObject <- binarizecisTopics(cisTopicObject, thrP=$thrP, plot=FALSE)
 getBedFiles(cisTopicObject, path='$opt{'O'}.topics')
 ";
 
@@ -129,6 +157,8 @@ system("$Rscript $opt{'O'}.cistopic.r");
 
 if (!defined $opt{'X'}) {
 	system("rm -f $opt{'O'}.cistopic.r");
+}
+
 }
 
 }
