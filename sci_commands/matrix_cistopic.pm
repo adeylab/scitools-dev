@@ -107,7 +107,7 @@ write.table(Modeldf,file=\"$opt{'O'}.cistopic.matrix\",col.names=T,row.names=T,q
 #adding part where the contribution matrix is calculated, we use a binarization method to select for peaks that contribute to each topic
 cisTopicObject <- getRegionsScores(cisTopicObject, method='Z-score', scale=TRUE)
 cisTopicObject <- binarizecisTopics(cisTopicObject, thrP=0.975, plot=FALSE)
-getBedFiles(cisTopicObject, path='$opt{'O'}')
+getBedFiles(cisTopicObject, path='$opt{'O'}.topics')
 saveRDS(cisTopicObject,\"$opt{'O'}.cistopicObject.rds\")
 ";
 
