@@ -24,7 +24,7 @@ $panel_pass_color = "black";
 $width = 5;
 $height = 4;
 
-getopts("O:A:a:C:c:R:x:y:T:V:M:XS:s:G:p:f:Bb:k:w:h:m:", \%opt);
+getopts("O:A:a:C:c:R:x:y:T:V:M:XS:s:G:p:f:Bb:k:w:h:m:W", \%opt);
 
 $die2 = "
 scitools plot-dims [options] [dimensions file(s), comma sep]
