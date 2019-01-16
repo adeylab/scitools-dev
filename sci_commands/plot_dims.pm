@@ -18,13 +18,16 @@ $gradient_def = "BuG90Rd";
 $ptSize = 1;
 $alpha = 1;
 $binary_thresh = 4;
+$panel_neg_color = "#e0e0e0";
+$panel_pos_color = "#08115a";
+$panel_nrow = 1;
 $binary_fail_color = "gray75";
 $binary_pass_color = "red3";
 $panel_pass_color = "black";
 $width = 5;
 $height = 4;
 
-getopts("O:A:a:C:c:R:x:y:T:V:M:XS:s:G:p:f:Bb:k:w:h:m:W", \%opt);
+getopts("O:A:a:C:c:R:x:y:T:V:M:XS:s:G:p:f:Bb:k:w:h:m:Wr:", \%opt);
 
 $die2 = "
 scitools plot-dims [options] [dimensions file(s), comma sep]
@@ -50,9 +53,9 @@ Plotting by annotations:
                   Annot=#hexColor,Annot2=#hexColor
    -W           Wrap panels, one panel per annotation, each with all
                   other annotations grayed out.
-   -k   [NEG,POS] Colors if -W is specified, pos can be set to 'annot'
-                  to use the provided annotation colors
-                  (def = $binary_fail_color,$panel_pass_color)
+   -k   [NEG,POS] Colors for false and true annotation assignments.
+                  (def = $panel_neg_color,$panel_pos_color)
+   -r   [INT]   Number of rows for panel wrapping (def = $panel_nrow)
 
 Plotting by values:				  
    -V   [STR]   Values file. tab-delimited, cellID (tab) value
@@ -72,6 +75,7 @@ To plot multiple values specified in a matrix file:
                   Will create a folder as -O option and produce
                   a plot for each row of the matrix. Overrides -V.
                   Only includes rows with at least one non-zero value.
+				  
 To plot Monocle output branch points:
    -m 	[STR] 	Monocle branchpoints.txt file to be plotted underneath 
 				the point plots. Generated through cds_monocle command call.
@@ -96,6 +100,11 @@ if (defined $opt{'p'}) {$ptSize = $opt{'p'}};
 if (defined $opt{'f'}) {$alpha = $opt{'f'}};
 if (defined $opt{'h'}) {$height = $opt{'h'}};
 if (defined $opt{'w'}) {$width = $opt{'w'}};
+if (defined $opt{'M'} && defined $opt{'W'}) {die "\nERROR: Panel wrapping and matrix plotting are not currently compatible.\n"};
+if (defined $opt{'M'} && !defined $opt{'A'}) {die "\nERROR: An annotaiton file must be provided for panel wrapping.\n"};
+if (defined $opt{'M'} && defined $opt{'k'}) {
+	($panel_neg_color,$panel_pos_color) = split(/,/, $opt{'k'});
+}
 
 read_dims($ARGV[0]);
 
@@ -214,7 +223,77 @@ foreach $cellID (keys %CELLID_DIMS) {
 
 open R, ">$opt{'O'}.plot.r";
 
-if (!defined $opt{'W'}) { # all modes other than panel plotting
+if (defined $opt{'W'}) { # panel plotting
+
+print R "
+library(ggplot2)
+library(gridExtra)
+library(grid)
+library(ggplot2)
+library(lattice)
+
+IN<-read.table(\"$opt{'O'}.plot.txt\")\n";
+
+$panel_levels = "c("; $panel_values = "";
+foreach $annot (%ANNOT_include) {
+	$panel_levels .= "\"$annot\",";
+	$panel_values .= "\"$panel_pos_color\",";
+}
+$panel_levels =~ s/,$//; $panel_levels .= ")";
+
+print R "IN\$V2<-factor(IN\$V2, levels = $panel_levels)
+
+PLT<-ggplot() +
+	geom_point(aes(IN\$V3,IN\$V4,color=IN\$V2),size=$ptSize,alpha=$alpha,shape=16) +
+	guides(colour = guide_legend(override.aes = list(size=4,alpha=1))) +";
+
+if ($theme =~ /Clean/i) {
+	print R "
+	theme_bw() +
+	theme(panel.border=element_blank(),
+		  panel.grid=element_blank(),
+		  axis.line=element_blank(),
+		  axis.ticks=element_blank(),
+		  legend.background=element_blank(),
+		  legend.title=element_blank(),
+		  panel.background=element_blank(),
+		  axis.text=element_blank(),
+		  axis.title.x=element_blank(),
+		  axis.title.y=element_blank(),
+		  plot.background=element_blank(),
+		  plot.margin=unit(c(0,0,0,0),\"pt\"))\n";
+} else {
+	print R "
+	theme_bw()\n";
+}
+
+$panel_values =~ s/,$//;
+print R "
+ALL<-PLT + scale_color_manual(values=c($panel_values))\n";
+$grid_list = "ALL";
+for ($plotID = 0; $plotID < @value_list; $plotID++) {
+	$panel_values = "";
+	for ($valID = 0; $valID < @value_list; $valID++) {
+		if ($valID == $plotID) {
+			$panel_values .= "\"$panel_pos_color\",";
+		} else {
+			$panel_values .= "\"$panel_neg_color\",";
+		}
+	}
+	$panel_values =~ s/,$//;
+	print R "PLT_$plotID<-scale_color_manual(values=c($panel_values))\n";
+	$grid_list .= ",PLT_$plotID";
+}
+
+print R "
+PLT_grid<-grid.arrange($grid_list,nrow=$panel_nrow)
+
+ggsave(plot=PLT_grid,filename=\"$opt{'O'}.plot.png\",width=$width,height=$height,dpi=900)
+ggsave(plot=PLT_grid,filename=\"$opt{'O'}.plot.pdf\",width=$width,height=$height)
+";
+
+} else {
+
 
 print R "
 library(ggplot2)
@@ -334,10 +413,6 @@ ggsave(plot=Violin,filename=\"$opt{'O'}.violin.pdf\",width=7,height=3)
 folder<-strsplit(\"$opt{'O'}\", \"\/\")[[1]]
 feature<-strsplit(\"$opt{'O'}\", \"\/\")[[1]]
 
-
-
-
-
 fit <- aov(V2 ~ V5, data=IN)
 F<-summary(fit)[[1]][[\"F value\"]][1]
 P<-summary(fit)[[1]][[\"Pr(>F)\"]][1]
@@ -350,16 +425,10 @@ comp<-TukeyHSD(fit)
 write.table(as.matrix(comp\$V5),file=\"./$opt{'O'}.TukeyHSD.txt\",quote=FALSE,sep=\"\\t\",row.names=T,col.names=T)";
 
 }
-} else { # Panel plotting mode
 
-print R "
-library(ggplot2)
-IN<-read.table(\"$opt{'O'}.plot.txt\")";
-
-##################################################### Add this in here
+close R;
 
 }
-close R;
 
 system("$Rscript $opt{'O'}.plot.r");
 
