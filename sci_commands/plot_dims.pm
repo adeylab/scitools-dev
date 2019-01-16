@@ -325,7 +325,7 @@ print R "
 
 	guides(fill=FALSE,colour=FALSE) +
 	xlab(\"Annot\") +
-	ylab(\"Feature value\") 
+	ylab(\"Feature value\") + theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ggsave(plot=Violin,filename=\"$opt{'O'}.violin.png\",width=7,height=3,dpi=900)
 ggsave(plot=Violin,filename=\"$opt{'O'}.violin.pdf\",width=7,height=3)
 
