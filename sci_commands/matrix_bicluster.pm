@@ -43,6 +43,7 @@ Options:
    -S 	      Based on silhuette plot do row clustering with optimal number of clusters
    -P 			Do not show column names
    -p 			Do not show row names
+   -L 			List of names that are part of the row annotation (eg tf name) it will plot them in the heatmap 
    -X           Do not delete intermediate files (def = delete)
    
 ";
@@ -127,6 +128,7 @@ $gradient_function
 IN <- read.table(\"$ARGV[0]\");
 IN_ch<-read.delim(\"$ARGV[0]\")\n";
 
+
 if ($imageType =~ /pdf/i) {
 	print R "$imageType(\"$opt{'O'}.silhouette.$imageType\",width=$width,height=$height)\n";
 } else {
@@ -188,6 +190,25 @@ ha_row<-HeatmapAnnotation(Type = annot_ch_row\$V2,col=color_ch_row,which = \"row
 };
 
 
+if (defined $opt{'L'})
+{
+$string=join(",",qw(split(/,/,$opt{'L'})));
+print R "
+names<-$string
+aloc<-sapply(names,function(x) grep(x,rownames(IN_ch)))
+aloc<-unlist(aloc)
+alabel<-rownames(IN_ch)[aloc]
+labels<-alabel
+ha_row_script<-rowAnnotation(link = row_anno_link(at = subset, labels = labels),width = unit(1, \"cm\") + max_text_width(labels))\n";
+
+}
+
+
+
+
+
+
+
 if ($imageType =~ /pdf/i) {
 	print R "$imageType(\"$opt{'O'}.complexheatmap.$imageType\",width=$width,height=$height)\n";
 } else {
@@ -225,6 +246,13 @@ if (defined $opt{'r'} && (defined $opt{'n'} || defined $opt{'N'})) {
 	print R "
 	+ha_row";
 }
+
+if (defined $opt{'L'})
+{
+	print R "
+	+ha_row_script";	
+}
+
 
 
 print R "\nH\n dev.off()\n";
