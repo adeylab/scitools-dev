@@ -202,6 +202,7 @@ aloc<-sapply(names,function(x) grep(x,rownames(IN_ch)))
 aloc<-unlist(aloc)
 alabel<-rownames(IN_ch)[aloc]
 labels<-alabel
+subset<-aloc
 ha_row_script<-rowAnnotation(link = row_anno_link(at = subset, labels = labels),width = unit(1, \"cm\") + max_text_width(labels))\n";
 
 }
