@@ -14,14 +14,14 @@ $gradient_def = "BuRd";
 $imageType = "png";
 
 @ARGV = @_;
-getopts("O:d:t:s:A:a:C:c:r:N:n:G:R:VvPXpS:", \%opt);
+getopts("O:d:t:s:A:a:C:c:r:N:n:G:L:R:VvPXpS:", \%opt);
 
 $die2 = "
 scitools matrix-bicluster [options] [input matrix]
    or    bicluster-matrix
    or    bicluster
 
-Produces a sorted bam file with read name and RG barcodes.
+Biclusters matrix and plots with heatmap2 and complexheatmap
 
 Options:
    -O   [STR]   Output (default is matrix file prefix)
@@ -43,7 +43,7 @@ Options:
    -S 	      Based on silhuette plot do row clustering with optimal number of clusters
    -P 			Do not show column names
    -p 			Do not show row names
-   -L 			List of names that are part of the row annotation (eg tf name) it will plot them in the heatmap 
+   -L 			List of names that are part of the row annotation (eg tf name) it will plot them in the heatmap eg Rfx,Jun will mark all the tfs with this name
    -X           Do not delete intermediate files (def = delete)
    
 ";
