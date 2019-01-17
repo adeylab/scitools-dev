@@ -248,13 +248,13 @@ print R ")";
 
 if (defined $opt{'r'} && (defined $opt{'n'} || defined $opt{'N'})) {
 	print R "
-	+ha_row";
+	H=H+ha_row";
 }
 
 if (defined $opt{'L'})
 {
 	print R "
-	+ha_row_script";	
+	H=H+ha_row_script";	
 }
 
 
