@@ -193,8 +193,9 @@ ha_row<-HeatmapAnnotation(Type = annot_ch_row\$V2,col=color_ch_row,which = \"row
 if (defined $opt{'L'})
 {
 
-$string=join(' ',split(',',$opt{'L'}));
-#$string=qw($string);
+@input=split(',',$opt{'L'}));
+@qinput=map{"'$_'"} @input;
+$string="c(".join(',',@qinput).")";
 print R "
 names <- $string
 aloc<-sapply(names,function(x) grep(x,rownames(IN_ch)))
