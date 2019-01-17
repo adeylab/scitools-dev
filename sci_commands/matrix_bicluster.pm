@@ -193,7 +193,7 @@ ha_row<-HeatmapAnnotation(Type = annot_ch_row\$V2,col=color_ch_row,which = \"row
 if (defined $opt{'L'})
 {
 
-@input=split(',',$opt{'L'}));
+@input=split(',',$opt{'L'});
 @qinput=map{"'$_'"} @input;
 $string="c(".join(',',@qinput).")";
 print R "
