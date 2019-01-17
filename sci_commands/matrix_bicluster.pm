@@ -194,9 +194,9 @@ if (defined $opt{'L'})
 {
 
 $string=join(' ',split(',',$opt{'L'}));
-$string=qw($string);
+#$string=qw($string);
 print R "
-names<-$string
+names <- $string
 aloc<-sapply(names,function(x) grep(x,rownames(IN_ch)))
 aloc<-unlist(aloc)
 alabel<-rownames(IN_ch)[aloc]
