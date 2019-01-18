@@ -201,6 +201,7 @@ foreach $cellID (keys %CELLID_DIMS) {
 	}
 	
 	if ($annot !~ /Exclude/i) {
+		$ANNOT_include{$annot} = 1;
 		if (!defined $opt{'V'}) { # qualitative annotations
 			print DATA "$cellID\t$annot\t$CELLID_DIMS{$cellID}[$xdim]\t$CELLID_DIMS{$cellID}[$ydim]\n";
 		} else { # value annotations
