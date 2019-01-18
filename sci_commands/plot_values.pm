@@ -16,7 +16,7 @@ $panel_nrow = 1;
 $alpha = 0.5;
 
 @ARGV = @_;
-getopts("O:A:a:C:c:R:T:M:Xs:p:f:w:h:W", \%opt);
+getopts("O:A:a:C:c:R:T:M:Xs:p:f:w:h:Wr:", \%opt);
 
 $die2 = "
 scitools plot-values [options] [values file]
