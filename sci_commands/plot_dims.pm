@@ -294,7 +294,7 @@ for ($plotID = 0; $plotID < @value_list; $plotID++) {
 	$grid_list .= ",PLT_$plotID";
 }
 
-$panel_ncol = int((@value_list+1)/$panel_nrow)+1;
+$panel_ncol = int((@value_list+1)/$panel_nrow);
 $grid_width = $width*$panel_ncol;
 $grid_height = $height*$panel_nrow;
 
