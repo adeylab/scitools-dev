@@ -13,7 +13,7 @@ $height = 4;
 $ptSize = 0.5;
 $color_mapping = "none";
 $panel_nrow = 1;
-$alpha = 1;
+$alpha = 0.5;
 
 @ARGV = @_;
 getopts("O:A:a:C:c:R:T:M:Xs:p:f:w:h:W", \%opt);
@@ -29,7 +29,7 @@ Options - general:
                       histogram/hist/h
                       density/dens/d
    -p   [FLT]   Point size (def = $ptSize)
-   -f   [FLT]   Alpha for plotting points (def = $alpha)
+   -f   [FLT]   Alpha for fill (def = $alpha)
    -w   [FLT]   Plot width (inches, def = $width)
    -h   [FLT]   Plot height (inches, def = $height)
    -W           If multiple types, plot in same file.
@@ -160,7 +160,7 @@ for ($typeID = 0; $typeID < @TYPES; $typeID++) {
 	# VIOLIN
 	if ($TYPES[$typeID] =~ /^v/) {
 print R "VLN<-ggplot() + theme_bw() +
-	geom_violin(aes(IN\$V2,IN\$V3,fill=IN\$V2),alpha=0.5,color=\"gray30\",size=0.5) +
+	geom_violin(aes(IN\$V2,IN\$V3,fill=IN\$V2),alpha=$alpha,color=\"gray30\",size=0.5) +
 	geom_jitter(aes(IN\$V2,IN\$V3),color=\"gray30\",size=0.15) +";
 if ($color_mapping !~ /none/i) {
 	print R "
@@ -203,7 +203,7 @@ ggsave(plot=BOX,filename=\"$opt{'O'}.boxplot.pdf\",width=$width,height=$height)
 	# HISTOGRAM
 	} elsif ($TYPES[$typeID] =~ /^h/) {
 print R "HIST<-ggplot() + theme_bw() +
-	geom_histogram(aes(IN\$V3,fill=IN\$V2),size=0.5) +";
+	geom_histogram(aes(IN\$V3,fill=IN\$V2),size=0.5,alpha=$alpha) +";
 if ($color_mapping !~ /none/i) {
 	print R "
 	scale_fill_manual(values = c($color_mapping)) +";
