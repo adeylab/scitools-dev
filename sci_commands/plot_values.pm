@@ -257,6 +257,8 @@ if (defined $opt{'W'}) {
 	$grid_width = $width*$panel_ncol;
 	$grid_height = $height*$panel_nrow;
 	
+	$grid_list =~ s/,$//;
+	
 	print R "\nPLT_grid<-grid.arrange($grid_list,nrow=$panel_nrow)
 ggsave(plot=PLT_grid,filename=\"$opt{'O'}.plot.png\",width=$grid_width,height=$grid_height,dpi=900)
 ggsave(plot=PLT_grid,filename=\"$opt{'O'}.plot.pdf\",width=$grid_width,height=$grid_height)
