@@ -13,6 +13,7 @@ $height = 4;
 $ptSize = 0.5;
 $color_mapping = "none";
 $panel_nrow = 1;
+$alpha = 1;
 
 @ARGV = @_;
 getopts("O:A:a:C:c:R:T:M:Xs:p:f:w:h:W", \%opt);
