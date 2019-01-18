@@ -231,6 +231,7 @@ sub load_aliases {
 	foreach $alias ("plot_3ddims", "plot_dims_3d", "dims_plot3d", "dims_plot_3d") {$COMMAND_ALIAS{$alias} = "plot_3ddims"};
 	foreach $alias ("plot_pcurve", "pcurve_plot") {$COMMAND_ALIAS{$alias} = "plot_pcurve"};
 	foreach $alias ("plot_reads", "reads_plot") {$COMMAND_ALIAS{$alias} = "plot_reads"};
+	foreach $alias ("plot_values", "values_plot") {$COMMAND_ALIAS{$alias} = "plot_values"};
 	
 	# Data Comamnds
 	foreach $alias ("combine_data", "data_combine") {$COMMAND_ALIAS{$alias} = "data_combine"};
@@ -324,6 +325,7 @@ sub load_descriptions {
 	$COMMAND_DESCRIPTOR{"plot_3ddims"} = "Plot a dimensions file in 3d, uses a monocle CDS.rds file";
 	$COMMAND_DESCRIPTOR{"plot_pcurve"} = "Genrate multiple princurve plots";
 	$COMMAND_DESCRIPTOR{"plot_reads"} = "Plot reads as points in genomic window";
+	$COMMAND_DESCRIPTOR{"plot_values"} = "Plot values file";
 	$COMMAND_DESCRIPTOR{"index_performance"} = "Index performance on fastq or bam";
 	$COMMAND_DESCRIPTOR{"data_combine"} = "Combine matrixes, annotations, dims to a table";
 	$COMMAND_DESCRIPTOR{"data_split"} = "Breaks a combined data file into component files";
