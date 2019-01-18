@@ -226,7 +226,6 @@ open R, ">$opt{'O'}.plot.r";
 if (defined $opt{'W'}) { # panel plotting
 
 print R "
-library(ggplot2)
 library(gridExtra)
 library(grid)
 library(ggplot2)
@@ -235,12 +234,11 @@ library(lattice)
 IN<-read.table(\"$opt{'O'}.plot.txt\")\n";
 
 $panel_levels = "c("; $panel_values = "";
-foreach $annot (@ANNOT_LIST) {
-	if (defined $ANNOT_include{$annot}) {
-		$panel_levels .= "\"$annot\",";
-		$panel_values .= "\"$panel_pos_color\",";
-		push @level_list, $annot; 
-	}
+
+foreach $annot (keys %ANNOT_include) {
+	$panel_levels .= "\"$annot\",";
+	$panel_values .= "\"$panel_pos_color\",";
+	push @level_list, $annot; 
 }
 $panel_levels =~ s/,$//; $panel_levels .= ")";
 
