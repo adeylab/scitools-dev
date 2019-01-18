@@ -235,9 +235,12 @@ library(lattice)
 IN<-read.table(\"$opt{'O'}.plot.txt\")\n";
 
 $panel_levels = "c("; $panel_values = "";
-foreach $annot (%ANNOT_include) {
-	$panel_levels .= "\"$annot\",";
-	$panel_values .= "\"$panel_pos_color\",";
+foreach $annot (@ANNOT_LIST) {
+	if (defined $ANNOT_include{$annot}) {
+		$panel_levels .= "\"$annot\",";
+		$panel_values .= "\"$panel_pos_color\",";
+		push @level_list, $annot; 
+	}
 }
 $panel_levels =~ s/,$//; $panel_levels .= ")";
 
@@ -271,6 +274,7 @@ $panel_values =~ s/,$//;
 print R "
 ALL<-PLT + scale_color_manual(values=c($panel_values))\n";
 $grid_list = "ALL";
+@value_list = split(/,/, $panel_values);
 for ($plotID = 0; $plotID < @value_list; $plotID++) {
 	$panel_values = "";
 	for ($valID = 0; $valID < @value_list; $valID++) {
@@ -281,7 +285,12 @@ for ($plotID = 0; $plotID < @value_list; $plotID++) {
 		}
 	}
 	$panel_values =~ s/,$//;
-	print R "PLT_$plotID<-scale_color_manual(values=c($panel_values))\n";
+	# reorder so select annot is plotted on top
+	print R "SELECT<-subset(IN, \$V2==\"$level_list[$plotID]\")
+OTHER<-subset(IN, \$V2==\"$level_list[$plotID]\")
+IN<-rbind(OTHER,SELECT)\n";
+	# plot
+	print R "PLT_$plotID<-PLT + scale_color_manual(values=c($panel_values))\n";
 	$grid_list .= ",PLT_$plotID";
 }
 
