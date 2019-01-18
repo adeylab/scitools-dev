@@ -53,6 +53,7 @@ Plotting by annotations:
                   Annot=#hexColor,Annot2=#hexColor
    -W           Wrap panels, one panel per annotation, each with all
                   other annotations grayed out.
+				Note: width and height (-w and -h) will be per-panel
    -k   [NEG,POS] Colors for false and true annotation assignments.
                   (def = $panel_neg_color,$panel_pos_color)
    -r   [INT]   Number of rows for panel wrapping (def = $panel_nrow)
@@ -293,11 +294,15 @@ for ($plotID = 0; $plotID < @value_list; $plotID++) {
 	$grid_list .= ",PLT_$plotID";
 }
 
+$panel_ncol = int((@value_list+1)/$panel_nrow)+1;
+$grid_width = $width*$panel_ncol;
+$grid_height = $height*$panel_nrow;
+
 print R "
 PLT_grid<-grid.arrange($grid_list,nrow=$panel_nrow)
 
-ggsave(plot=PLT_grid,filename=\"$opt{'O'}.plot.png\",width=$width,height=$height,dpi=900)
-ggsave(plot=PLT_grid,filename=\"$opt{'O'}.plot.pdf\",width=$width,height=$height)
+ggsave(plot=PLT_grid,filename=\"$opt{'O'}.plot.png\",width=$grid_width,height=$grid_height,dpi=900)
+ggsave(plot=PLT_grid,filename=\"$opt{'O'}.plot.pdf\",width=$grid_width,height=$grid_height)
 ";
 
 } else {
