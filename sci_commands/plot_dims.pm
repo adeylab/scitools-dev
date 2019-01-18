@@ -106,6 +106,7 @@ if (defined $opt{'M'} && !defined $opt{'A'}) {die "\nERROR: An annotaiton file m
 if (defined $opt{'M'} && defined $opt{'k'}) {
 	($panel_neg_color,$panel_pos_color) = split(/,/, $opt{'k'});
 }
+if (defined $opt{'r'}) {$panel_nrow = $opt{'r'}};
 
 read_dims($ARGV[0]);
 
