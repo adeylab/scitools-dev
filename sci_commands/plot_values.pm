@@ -202,7 +202,7 @@ ggsave(plot=BOX,filename=\"$opt{'O'}.boxplot.pdf\",width=$width,height=$height)
 	# HISTOGRAM
 	} elsif ($TYPES[$typeID] =~ /^h/) {
 print R "HIST<-ggplot() + theme_bw() +
-	geom_histogram(aes(IN\$V3,fill=IN\$V2),size=0.5,alpha=$alpha) +";
+	geom_histogram(aes(IN\$V3,fill=IN\$V2),size=0.5,alpha=1) +";
 if ($color_mapping !~ /none/i) {
 	print R "
 	scale_fill_manual(values = c($color_mapping)) +";
@@ -232,7 +232,7 @@ if ($color_mapping !~ /none/i) {
 print R "
 	guides(fill=FALSE,colour=FALSE) +
 	xlab(\"Feature value\") +
-	ylab(\"Count\")
+	ylab(\"Density\")
 ";
 if (!defined $opt{'W'}) {
 print R "ggsave(plot=DENS,filename=\"$opt{'O'}.density.png\",width=$width,height=$height,dpi=900)
