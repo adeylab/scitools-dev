@@ -20,7 +20,6 @@ $alpha = 1;
 $binary_thresh = 4;
 $panel_neg_color = "#e0e0e0";
 $panel_pos_color = "#08115a";
-$panel_nrow = 1;
 $binary_fail_color = "gray75";
 $binary_pass_color = "red3";
 $panel_pass_color = "black";
@@ -293,6 +292,10 @@ for ($plotID = 0; $plotID < @value_list; $plotID++) {
 	# plot
 	print R "PLT_$plotID<-PLT + scale_color_manual(values=c($panel_values))\n";
 	$grid_list .= ",PLT_$plotID";
+}
+
+if (!defined $opt{'r'}) {
+	$panel_nrow = int(sqrt(@TYPES));
 }
 
 $ncol_factor = (@value_list+1)/$panel_nrow;

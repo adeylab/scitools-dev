@@ -12,7 +12,6 @@ $width = 5;
 $height = 4;
 $ptSize = 0.5;
 $color_mapping = "none";
-$panel_nrow = 1;
 $alpha = 0.5;
 
 @ARGV = @_;
@@ -34,7 +33,7 @@ Options - general:
    -h   [FLT]   Plot height (inches, def = $height)
    -W           If multiple types, plot in same file.
                  Note: width is for each individual panel
-   -r   [INT]   Panel row number (def = $panel_nrow)
+   -r   [INT]   Panel row number (def = sqrt(types))
 
 Plotting by annotations:
    -A   [STR]   Annotation file (to color code points)
@@ -251,6 +250,11 @@ ggsave(plot=DENS,filename=\"$opt{'O'}.density.pdf\",width=$width,height=$height)
 
 # PLOT PANELS
 if (defined $opt{'W'}) {
+	
+	if (!defined $opt{'r'}) {
+		$panel_nrow = int(sqrt(@TYPES));
+	}
+	
 	$ncol_factor = (@TYPES+1)/$panel_nrow;
 	$panel_ncol = int($ncol_factor);
 	if ($ncol_factor>$panel_ncol) {$panel_ncol++};
