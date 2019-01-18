@@ -285,9 +285,9 @@ for ($plotID = 0; $plotID < @value_list; $plotID++) {
 	}
 	$panel_values =~ s/,$//;
 	# reorder so select annot is plotted on top
-	print R "SELECT<-subset(IN, V2==\"$level_list[$plotID]\")
-OTHER<-subset(IN, V2==\"$level_list[$plotID]\")
-IN<-rbind(OTHER,SELECT)\n";
+#	print R "SELECT<-subset(IN, V2==\"$level_list[$plotID]\")
+#OTHER<-subset(IN, V2==\"$level_list[$plotID]\")
+#IN<-rbind(OTHER,SELECT)\n";
 	# plot
 	print R "PLT_$plotID<-PLT + scale_color_manual(values=c($panel_values))\n";
 	$grid_list .= ",PLT_$plotID";
