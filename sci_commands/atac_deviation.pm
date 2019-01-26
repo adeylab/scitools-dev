@@ -270,8 +270,12 @@ if (!defined $opt{'I'}) {
 	open OUT, ">$opt{'O'}.dev/feature_peak_counts.txt";
 	print OUT "#TF\tIntersectSites\tFracTFinPeaks\tFracPeaksInTF\n";
 	foreach $TF (sort {$TF_siteCT{$b}<=>$TF_siteCT{$a}} keys %TF_siteCT) {
-		$frac1 = sprintf("%.2f", ($TF_siteCT{$TF}/$siteCT)*100);
-		$frac2 = sprintf("%.2f", ($TF_siteCT{$TF}/$TF_count{$TF})*100);
+		if ($siteCT > 0) {
+			$frac1 = sprintf("%.2f", ($TF_siteCT{$TF}/$siteCT)*100);
+		}
+		if ($TF_count{$TF} > 0) {
+			$frac2 = sprintf("%.2f", ($TF_siteCT{$TF}/$TF_count{$TF})*100);
+		}
 		print OUT "$TF\t$TF_siteCT{$TF}\t$frac1\t$frac2\n";
 	} close OUT;
 	%TF_siteCT = (); %SITEID_TF_ct = ();
