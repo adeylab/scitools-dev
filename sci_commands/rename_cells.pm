@@ -47,6 +47,7 @@ if (defined $opt{'O'}) {
 } else {
 	$out = $ARGV[0];
 	$out =~ s/(\.fq\.gz|\.fq|\.fastq|\.fastq\.gz|\.bam|\.sam|\.matrix|\.tfidf|\.tf|\.values|\.annot|\.annotation|\.dims|\.LSI)$//i;
+	$out =~ s/\.renamed//;
 }
 
 if (defined $opt{'R'} && defined $opt{'A'}) {die "ERROR: Both -R and -A cannot be defined. -R should be used as the only option (other than -O if used).\n"};
@@ -192,6 +193,27 @@ for ($in_file = 0; $in_file < @ARGV; $in_file++) {
 			$newID = $ORIGINAL_newID{$origID};
 			if (!defined $opt{'D'} && $newID !~ /00EXCL00/) {
 				$P[0] = $newID;
+				$out_line = join("\t", @P);
+				print OUT "$out_line\n";
+			}
+		} close IN;
+		if (!defined $opt{'D'}) {close OUT};
+	} elsif ($ARGV[$in_file] =~ /\.complexity\.txt$/i) { # complexity
+		open IN, "$ARGV[$in_file]";
+		$out =~ s/\.complexity\.txt$//;
+		if (!defined $opt{'D'}) {
+			open OUT, ">$out.renamed.complexity.txt";
+		}
+		while ($l = <IN>) {
+			chomp $l;
+			@P = split(/\t/, $l);
+			$origID = $P[1];
+			if (!defined $ORIGINAL_newID{$origID}) {
+				$ORIGINAL_newID{$origID} = rename_cell($origID);
+			}
+			$newID = $ORIGINAL_newID{$origID};
+			if (!defined $opt{'D'} && $newID !~ /00EXCL00/) {
+				$P[1] = $newID;
 				$out_line = join("\t", @P);
 				print OUT "$out_line\n";
 			}
