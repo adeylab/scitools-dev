@@ -220,7 +220,7 @@ for ($in_file = 0; $in_file < @ARGV; $in_file++) {
 		} close IN;
 		if (!defined $opt{'D'}) {close OUT};
 	} else {
-		print STDERR "ERROR: Cannot determine input file type of $ARGV[$in_file] based ont he file extension.\n";
+		print STDERR "ERROR: Cannot determine input file type of $ARGV[$in_file] based on the file extension.\n";
 	}
 }
 
