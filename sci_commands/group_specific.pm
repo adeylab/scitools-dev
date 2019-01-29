@@ -38,7 +38,7 @@ while ($l = <IN>) {
 	print OUT "$P[0]\t$P[1]\t$P[2]\t$P[0]_$P[1]_$P[2]\n";
 } close IN; close OUT;
 
-open OUT, ">$ARGV[0].group_specific.bed";
+open OUT, "| $bedtools sort - > $ARGV[0].group_specific.bed";
 for ($i = 1; $i < @ARGV; $i++) {
 	$files = "";
 	for ($j = 1; $j < @ARGV; $j++) {
