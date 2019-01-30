@@ -22,7 +22,7 @@ scitools matrix-cistopic [options] [input matrix (or rds for topic bed output on
 
 cisTopic serves as an alternative textmining algorithm to TFIDF-LSI processing.
 It is to be run on a sciATAC counts matrix. For more information see:
-https://github.com/aertslab/cisTopic/;
+https://github.com/aertslab/cisTopic/
 
 Outputs a matrix file similar to matrix-irlba function call. To be processed through
 [matrix_tsne|matrix_umap|matrix_PCA|matrix_SWNE]
@@ -42,12 +42,12 @@ Options:
    -C   [STR]  color file 
    -S   [STR]  color string
    -T   [INT]  User defined number of Topics to use. 
-                  If unspecified: will generate 15, 20, 25, 30, 50, 65, 100 Topics, 
+                  If unspecified: will generate 15,20,25,30,50,65,100 Topics,
                   and use log-liklihood estimators to select the best.
                   Specification can be a single number of a comma separated list.
                   Will use a core for each number supplied (DO NOT EXCEED A LIST LENGTH OF 10)
    -P   [FLT]  ThrP (def = $thrP)
-   -G	  [STR]  Genome and genes to use to annotate regions	
+   -G   [STR]  Genome and genes to use to annotate regions	
    -X          Retain intermediate files (def = delete)
    -R   [STR]  Rscript call (def = $Rscript)
 

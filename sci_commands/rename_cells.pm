@@ -47,7 +47,6 @@ if (defined $opt{'O'}) {
 } else {
 	$out = $ARGV[0];
 	$out =~ s/(\.fq\.gz|\.fq|\.fastq|\.fastq\.gz|\.bam|\.sam|\.matrix|\.tfidf|\.tf|\.values|\.annot|\.annotation|\.dims|\.LSI)$//i;
-	$out =~ s/\.renamed//;
 }
 
 if (defined $opt{'R'} && defined $opt{'A'}) {die "ERROR: Both -R and -A cannot be defined. -R should be used as the only option (other than -O if used).\n"};
