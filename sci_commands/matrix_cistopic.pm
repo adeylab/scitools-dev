@@ -8,7 +8,7 @@ use Exporter "import";
 sub matrix_cistopic {
 
 @ARGV = @_;
-getopts("O:A:c:C:S:r:n:T:XR:P:", \%opt);
+getopts("O:A:c:C:S:G:r:n:T:XR:P:", \%opt);
 
 $thrP = 0.975;
 
