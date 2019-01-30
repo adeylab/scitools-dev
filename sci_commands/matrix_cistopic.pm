@@ -8,7 +8,7 @@ use Exporter "import";
 sub matrix_cistopic {
 
 @ARGV = @_;
-getopts("O:A:c:r:n:T:SXR:P:", \%opt);
+getopts("O:A:c:C:S:r:n:T:XR:P:", \%opt);
 
 $thrP = 0.975;
 
@@ -34,19 +34,21 @@ cisTopic consists of 4 main steps:
 (4) exploration of the region-topic distributions.
 
 Options:
-   -O   [STR]   Output prefix (default is [input].cistopic.dims)
-   -c   [INT]   Number of nonZero sites per column (cell) to retain (def = 1)
-   -r   [INT]   Number of nonZero sites per row (peak) to retain (def = 1)
-   -n 	[INT] 	Number of cores for parallel processing. (def=1)
-   -A   [STR]   Annotation file is useful. cisTopic will provide a PCA with the influence of Topics
-   -T    [INT]    User defined number of Topics to use. 
+   -O   [STR]  Output prefix (default is [input].cistopic.dims)
+   -c   [INT]  Number of nonZero sites per column (cell) to retain (def = 1)
+   -r   [INT]  Number of nonZero sites per row (peak) to retain (def = 1)
+   -n   [INT] 	Number of cores for parallel processing. (def=1)
+   -A   [STR]  Annotation file is useful. cisTopic will provide a PCA with the influence of and the heatmap of Topics
+   -C   [STR]  color file 
+   -S   [STR]  color string
+   -T   [INT]  User defined number of Topics to use. 
                   If unspecified: will generate 15, 20, 25, 30, 50, 65, 100 Topics, 
                   and use log-liklihood estimators to select the best.
                   Specification can be a single number of a comma separated list.
                   Will use a core for each number supplied (DO NOT EXCEED A LIST LENGTH OF 10)
-   -P   [FLT]   ThrP (def = $thrP)			
-   -X           Retain intermediate files (def = delete)
-   -R   [STR]   Rscript call (def = $Rscript)
+   -P   [FLT]  ThrP (def = $thrP)			
+   -X          Retain intermediate files (def = delete)
+   -R   [STR]  Rscript call (def = $Rscript)
 
 Note: Requires cisTopic R package
 
@@ -60,6 +62,12 @@ if (!defined $opt{'n'}) {$opt{'n'} = 1};
 if (defined $opt{'P'}) {$thrP = $opt{'P'}};
 if (!defined $opt{'T'}) {$opt{'T'} = "15,20,25,30,50,65,100"};
 if (defined $opt{'R'}) {$Rscript = $opt{'R'}};
+if (defined $opt{'C'}) {read_color_file($opt{'C'})};
+if (defined $opt{'S'}) {read_color_string($opt{'S'})};
+
+
+
+
 
 if ($ARGV[0] =~ /\.rds$/i) {
 
@@ -137,18 +145,33 @@ saveRDS(cisTopicObject,\"$opt{'O'}.cistopicObject.rds\")
 cisTopicObject <- getRegionsScores(cisTopicObject, method='Z-score', scale=TRUE)
 cisTopicObject <- binarizecisTopics(cisTopicObject, thrP=$thrP, plot=FALSE)
 getBedFiles(cisTopicObject, path='$opt{'O'}.topics')
+cisTopicObject <- annotateRegions(cisTopicObject, txdb=TxDb.Hsapiens.UCSC.hg38.knownGene,annoDb='org.Hs.eg.db')
+saveRDS(cisTopicObject,\"$opt{'O'}.cistopicObject.rds\")
 ";
 
 if (defined $opt{'A'}){
-print R "
-cisTopicObject <- runPCA(cisTopicObject)
-coordinates <- cisTopicObject\@dr[[\'PCA\']]\$ind.coord
-write.table(coordinates,file=\"$opt{'O'}.PCA.internal.dims\",col.names=T,row.names=T,quote=F,sep=\"\\t\")
-png(file=\"PCA_cistopic.png\",width=12,height=12,units=\"in\",res=300)
-plotCellStates(cisTopicObject, method=\'Biplot\', topic_contr=\'Z-score\',topics=\'all\', colorBy=c(\'LineType\'))
-dev.off()
-plotCellStates(cisTopicObject, method=\'Biplot\', topic_contr=\'Z-score\', topics=\'all\', colorBy=c(\'LineType\'))
-";
+   print R "
+   cisTopicObject <- runPCA(cisTopicObject)
+   coordinates <- cisTopicObject\@dr[[\'PCA\']]\$ind.coord
+   write.table(coordinates,file=\"$opt{'O'}.PCA.internal.dims\",col.names=T,row.names=T,quote=F,sep=\"\\t\")
+   png(file=\"$opt{'O'}.PCA_cistopic.png\",width=12,height=12,units=\"in\",res=300)
+   plotCellStates(cisTopicObject, method=\'Biplot\', topic_contr=\'Z-score\',topics=\'all\', colorBy=c(\'LineType\'))
+   dev.off()
+   pdf(file=\"$opt{'O'}.PCA_cistopic.pdf\",width=12,height=12)
+   plotCellStates(cisTopicObject, method=\'Biplot\', topic_contr=\'Z-score\', topics=\'all\', colorBy=c(\'LineType\'))
+   dev.off()
+   ";
+    if (defined $opt{'S'} || defined $opt{'C'}))  
+   {
+   print R "
+
+   png(\".png\",width=12,height=12,units=\"in\",res=600)
+   color_ch<-list(Type=c($color_mapping))
+   ha_col<-HeatmapAnnotation(Type = annot$Annot,col=color_ch)
+   cellTopicHeatmap(cisTopicObject, method='Probability',bottom_annotation=ha_col)
+   signaturesHeatmap(cisTopicObject, selected.signatures = 'annotation')
+   ";
+   }
 }
 
 close R;
