@@ -146,6 +146,7 @@ cisTopicObject <- getRegionsScores(cisTopicObject, method='Z-score', scale=TRUE)
 cisTopicObject <- binarizecisTopics(cisTopicObject, thrP=$thrP, plot=FALSE)
 getBedFiles(cisTopicObject, path='$opt{'O'}.topics')
 cisTopicObject <- annotateRegions(cisTopicObject, txdb=TxDb.Hsapiens.UCSC.hg38.knownGene,annoDb='org.Hs.eg.db')
+signaturesHeatmap(cisTopicObject, selected.signatures = 'annotation')
 saveRDS(cisTopicObject,\"$opt{'O'}.cistopicObject.rds\")
 ";
 
@@ -164,14 +165,24 @@ if (defined $opt{'A'}){
     if (defined $opt{'S'} || defined $opt{'C'}))  
    {
    print R "
-
-   png(\".png\",width=12,height=12,units=\"in\",res=600)
    color_ch<-list(Type=c($color_mapping))
    ha_col<-HeatmapAnnotation(Type = annot$Annot,col=color_ch)
-   cellTopicHeatmap(cisTopicObject, method='Probability',bottom_annotation=ha_col)
-   signaturesHeatmap(cisTopicObject, selected.signatures = 'annotation')
    ";
    }
+   else
+   {
+
+   }
+}
+else 
+{
+print R 
+"
+png(\"$opt{'O'}.Heatmap_prob_cistopic..png\",width=12,height=12,units=\"in\",res=600)
+cellTopicHeatmap(cisTopicObject, method='Probability',bottom_annotation=ha_col)
+dev.off()
+";
+
 }
 
 close R;
