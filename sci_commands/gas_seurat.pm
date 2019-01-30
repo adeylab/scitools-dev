@@ -1,11 +1,11 @@
-package sci_commands::gas-seurat;
+package sci_commands::gas_seurat;
 
 use sci_utils::general;
 use Getopt::Std; %opt = ();
 use Exporter "import";
-@EXPORT = ("gas-seurat");
+@EXPORT = ("gas_seurat");
 
-sub gas-seurat {
+sub gas_seurat {
 
 @ARGV = @_;
 # Defaults
@@ -13,7 +13,7 @@ sub gas-seurat {
 getopts("O:R:X", \%opt);
 
 $die2 = "
-scitools gas-seurat [options] [directory containing gene gene_activity_matrixes]
+scitools gas_seurat [options] [directory containing gene gene_activity_matrixes]
 
 
 
