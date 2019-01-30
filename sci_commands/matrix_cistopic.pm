@@ -166,13 +166,29 @@ if (defined $opt{'A'}){
    {
    print R "
    color_ch<-list(Type=c($color_mapping))
-   ha_col<-HeatmapAnnotation(Type = annot$Annot,col=color_ch)
+   ha_col<-HeatmapAnnotation(Type = annot\$LineType,col=color_ch)
    ";
    }
    else
    {
-
+   print R "
+   ha_col<-HeatmapAnnotation(Type = annot\$LineType)
+   ";
    }
+print R "
+   png(\"$opt{'O'}.Heatmap_prob_cistopic.png\",width=12,height=12,units=\"in\",res=600)
+   cellTopicHeatmap(cisTopicObject, method=\'Probability\',bottom_annotation=ha_col)
+   dev.off()
+   pdf(\"$opt{'O'}.Heatmap_prob_cistopic.pdf\",width=12,height=12)
+   cellTopicHeatmap(cisTopicObject, method=\'Probability\',bottom_annotation=ha_col)
+   dev.off()
+   png(\"$opt{'O'}.Heatmap_zscore_cistopic.png\",width=12,height=12,units=\"in\",res=600)
+   cellTopicHeatmap(cisTopicObject, method=\'Z-score\',bottom_annotation=ha_col)
+   dev.off()
+   pdf(\"$opt{'O'}.Heatmap_zscore_cistopic.pdf\",width=12,height=12)
+   cellTopicHeatmap(cisTopicObject, method=\'Z-score\',bottom_annotation=ha_col)
+   dev.off()
+   ";
 }
 else 
 {
