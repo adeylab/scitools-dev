@@ -46,7 +46,8 @@ Options:
                   and use log-liklihood estimators to select the best.
                   Specification can be a single number of a comma separated list.
                   Will use a core for each number supplied (DO NOT EXCEED A LIST LENGTH OF 10)
-   -P   [FLT]  ThrP (def = $thrP)			
+   -P   [FLT]  ThrP (def = $thrP)
+   -G	  [STR]  Genome and genes to use to annotate regions	
    -X          Retain intermediate files (def = delete)
    -R   [STR]  Rscript call (def = $Rscript)
 
@@ -64,7 +65,7 @@ if (!defined $opt{'T'}) {$opt{'T'} = "15,20,25,30,50,65,100"};
 if (defined $opt{'R'}) {$Rscript = $opt{'R'}};
 if (defined $opt{'C'}) {read_color_file($opt{'C'})};
 if (defined $opt{'S'}) {read_color_string($opt{'S'})};
-
+if (!defined $opt{'G'}) {$opt{'G'} = "hg38"};
 
 
 
@@ -77,6 +78,7 @@ open R, ">$opt{'O'}.output_topics.r";
 print R "
 library(plyr)
 library(cisTopic)
+
 
 readRDS(\"$ARGV[0]\")
 cisTopicObject <- getRegionsScores(cisTopicObject, method='Z-score', scale=TRUE)
@@ -145,8 +147,7 @@ saveRDS(cisTopicObject,\"$opt{'O'}.cistopicObject.rds\")
 cisTopicObject <- getRegionsScores(cisTopicObject, method='Z-score', scale=TRUE)
 cisTopicObject <- binarizecisTopics(cisTopicObject, thrP=$thrP, plot=FALSE)
 getBedFiles(cisTopicObject, path='$opt{'O'}.topics')
-cisTopicObject <- annotateRegions(cisTopicObject, txdb=TxDb.Hsapiens.UCSC.hg38.knownGene,annoDb='org.Hs.eg.db')
-signaturesHeatmap(cisTopicObject, selected.signatures = 'annotation')
+
 saveRDS(cisTopicObject,\"$opt{'O'}.cistopicObject.rds\")
 ";
 
@@ -194,12 +195,34 @@ else
 {
 print R 
 "
-png(\"$opt{'O'}.Heatmap_prob_cistopic..png\",width=12,height=12,units=\"in\",res=600)
-cellTopicHeatmap(cisTopicObject, method='Probability',bottom_annotation=ha_col)
-dev.off()
+   png(\"$opt{'O'}.Heatmap_prob_cistopic.png\",width=12,height=12,units=\"in\",res=600)
+   cellTopicHeatmap(cisTopicObject, method=\'Probability\')
+   dev.off()
+   pdf(\"$opt{'O'}.Heatmap_prob_cistopic.pdf\",width=12,height=12)
+   cellTopicHeatmap(cisTopicObject, method=\'Probability\')
+   dev.off()
+   png(\"$opt{'O'}.Heatmap_zscore_cistopic.png\",width=12,height=12,units=\"in\",res=600)
+   cellTopicHeatmap(cisTopicObject, method=\'Z-score\')
+   dev.off()
+   pdf(\"$opt{'O'}.Heatmap_zscore_cistopic.pdf\",width=12,height=12)
+   cellTopicHeatmap(cisTopicObject, method=\'Z-score\')
+   dev.off()
 ";
 
 }
+if ($opt{'G'} eq "hg38") {
+print R"
+#adding annotation to regions
+library(\"org.Hs.eg.db\")
+library(\"TxDb.Hsapiens.UCSC.hg38.knownGene\")
+cisTopicObject <- annotateRegions(cisTopicObject, txdb=TxDb.Hsapiens.UCSC.hg38.knownGene,annoDb='org.Hs.eg.db')
+#will add more
+#signaturesHeatmap(cisTopicObject, selected.signatures = 'annotation')
+write.table(cisTopicObject\@region.data,file=\"$opt{'O'}.annotationregionsandscores.matrix\",col.names=T,row.names=T,quote=F,sep=\"\\t\")
+saveRDS(cisTopicObject,\"$opt{'O'}.cistopicObject.rds\")
+";
+}
+
 
 close R;
 
