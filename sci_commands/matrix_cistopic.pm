@@ -222,6 +222,10 @@ write.table(cisTopicObject\@region.data,file=\"$opt{'O'}.annotationregionsandsco
 saveRDS(cisTopicObject,\"$opt{'O'}.cistopicObject.rds\")
 ";
 }
+else
+{
+#other genomes coming later
+}
 
 
 close R;
