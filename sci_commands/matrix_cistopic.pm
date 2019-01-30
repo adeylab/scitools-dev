@@ -163,7 +163,7 @@ if (defined $opt{'A'}){
    plotCellStates(cisTopicObject, method=\'Biplot\', topic_contr=\'Z-score\', topics=\'all\', colorBy=c(\'LineType\'))
    dev.off()
    ";
-    if (defined $opt{'S'} || defined $opt{'C'}))  
+    if (defined $opt{'S'} || defined $opt{'C'})  
    {
    print R "
    color_ch<-list(Type=c($color_mapping))
@@ -193,8 +193,7 @@ print R "
 }
 else 
 {
-print R 
-"
+print R "
    png(\"$opt{'O'}.Heatmap_prob_cistopic.png\",width=12,height=12,units=\"in\",res=600)
    cellTopicHeatmap(cisTopicObject, method=\'Probability\')
    dev.off()
