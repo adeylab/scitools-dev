@@ -8,9 +8,10 @@ use Exporter "import";
 sub bam_rmdup {
 
 @ARGV = @_;
-getopts("s:O:xm:H:e:", \%opt);
+getopts("s:O:xm:H:e:c:C", \%opt);
 
 $memory = "2G";
+$chr_list = "chr1,chr2,chr3,chr4,chr5,chr6,chr7,chr8,chr9,chr10,chr11,chr12,chr13,chr14,chr15,chr16,chr17,chr18,chr19,chr20,chr21,chr22";
 
 $die2 = "
 scitools bam-rmdup [options] [sorted bam file] (additonal sorted bam file(s)) ...
@@ -33,6 +34,11 @@ Options:
                 (def = M,Y,L,K,G,Un,Random,Alt  can be set to 'none')
    -m   [MEM]   Samtools sort mex memory K/M/G (def = $memory)
                  (only for multiple bams)
+   -C           By chromosome (for large files)
+                 Bams must be idnexed (if not will make index)
+   -c   [STR]   List chr to include:
+                 def is chr1 to chr22 and chrX
+                 provide as a comma sep list, eg: chr1,chr2,...
    -H   [BAM]   Use header from this bam instead.
    -s   [STR]   Samtools call (def = $samtools)
 
@@ -57,6 +63,8 @@ open H, "$samtools view -H $opt{'H'} |";
 while ($l = <H>) {print OUT $l};
 close H;
 $reads_q10_to_other_chr = 0;
+
+
 
 for ($bamID = 0; $bamID < @ARGV; $bamID++) {
 	open IN, "$samtools view -q 10 $ARGV[$bamID] |";
