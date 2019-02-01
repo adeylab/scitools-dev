@@ -69,9 +69,11 @@ open OUT, ">$opt{'O'}.log10_unique_reads.values";
 while ($l = <IN>) {
 	chomp $l;
 	@P = split(/\t/, $l);
-	if ($P[3] >= $read_thresh && $P[4] <= $max_comp && $P[4] >= $min_comp) {
-		$log10ur = sprintf("%.4f", log($P[4])/log(10));
-		print OUT "$P[1]\t$log10ur\n";
+	if (!defined $opt{'L'} || defined $CELLID_inList{$P[0]}) {
+		if ($P[3] >= $read_thresh && $P[4] <= $max_comp && $P[4] >= $min_comp) {
+			$log10ur = sprintf("%.4f", log($P[4])/log(10));
+			print OUT "$P[1]\t$log10ur\n";
+		}
 	}
 } close IN; close OUT;
 
