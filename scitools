@@ -179,6 +179,7 @@ sub load_aliases {
 	foreach $alias ("bam_aggregate", "aggregate_bam") {$COMMAND_ALIAS{$alias} = "bam_aggregate"};
 	foreach $alias ("index_performance", "index_perform") {$COMMAND_ALIAS{$alias} = "index_performance"};
 	foreach $alias ("bam2sra", "bam2geo") {$COMMAND_ALIAS{$alias} = "bam2sra"};
+	foreach $alias ("complexity2log10", "log10complexity", "log10_unique") {$COMMAND_ALIAS{$alias} = "complexity2log10"};
 	
 	# Signal Commands
 	foreach $alias ("signal_make", "make_signal") {$COMMAND_ALIAS{$alias} = "signal_make"};
@@ -281,6 +282,7 @@ sub load_descriptions {
 	$COMMAND_DESCRIPTOR{"bam_bulk2sci"} = "Merge multiple bulk bam files to one SCI bam";
 	$COMMAND_DESCRIPTOR{"bam_addrg"} = "Add RG lines to bam";
 	$COMMAND_DESCRIPTOR{"bam_rmdup"} = "Barcode-based duplicate removal";
+	$COMMAND_DESCRIPTOR{"complexity2log10"} = "Complexity to log10 unique reads values file";
 	$COMMAND_DESCRIPTOR{"bam_filter"} = "Filter bam based on a variety of options";
 	$COMMAND_DESCRIPTOR{"bam_split"} = "Split bam by annotation file";
 	$COMMAND_DESCRIPTOR{"bam_merge"} = "Merges one or more bam files";
