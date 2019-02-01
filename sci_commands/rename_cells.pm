@@ -116,7 +116,8 @@ for ($in_file = 0; $in_file < @ARGV; $in_file++) {
 					$out_line = $l;
 				}
 			} else {
-				($origID,$tail_info) = split(/:/, $P[0]);
+				$origID = $P[0]; $origID =~ s/:.+$//;
+				$tail_info = $P[0]; $tail_info =~ s/^.+://;
 				if ($RG_lines eq "TRUE" && !defined $ORIGINAL_newID{$origID}) {
 					$out_line = "00EXCL00";
 				} else {
