@@ -36,6 +36,7 @@ Options:
                  (only for multiple bams)
    -C           By chromosome (for large files)
                  Bams must be idnexed (if not will make index)
+                 Will ignore -e and just use chroms in list -c
    -c   [STR]   List chr to include:
                  def is chr1 to chr22 and chrX
                  provide as a comma sep list, eg: chr1,chr2,...
@@ -50,6 +51,7 @@ if (defined $opt{'s'}) {$samtools = $opt{'s'}};
 if (defined $opt{'m'}) {$memory = $opt{'m'}};
 if (!defined $ARGV[1]) {$opt{'x'} = 1};
 if (defined $opt{'e'}) {@CHR_FILT = split(/,/, $opt{'e'})};
+if (defined $opt{'c'}) {$chr_list = $opt{'c'}};
 
 if (!defined $ARGV[1]) {
 	open OUT, "| $samtools view -bS - > $opt{'O'}.bbrd.q10.bam 2>/dev/null";
@@ -64,54 +66,97 @@ while ($l = <H>) {print OUT $l};
 close H;
 $reads_q10_to_other_chr = 0;
 
+if (defined $opt{'C'}) {
+	for ($bamID = 0; $bamID < @ARGV; $bamID++) {
+		if (-e "$ARGV[$bamID].bai") {
+			print STDERR "INFO: Bam $ARGV[$bamID] index found!\n";
+		} else {
+			print STDERR "INFO: Indexing $ARGV[$bamID] ...\n";
+			system("$samtools index $ARGV[$bamID]");
+		}
+	}
+}
 
-
-for ($bamID = 0; $bamID < @ARGV; $bamID++) {
-	open IN, "$samtools view -q 10 $ARGV[$bamID] |";
-	while ($l = <IN>) {
-		$q10_reads++;
-		chomp $l;
-		@P = split(/\t/, $l);
-		if (!defined $opt{'x'}) {$P[0] .= ":BAMID=$bamID"; $l = join("\t", @P)};
-		$barc = $P[0]; $barc =~ s/:.+$//;
-		if (defined $KEEP{$P[0]}) {
-			print OUT "$l\n";
-			$BARC_total{$barc}++;
-			$BARC_kept{$barc}++;
-			$total_kept++;
-		} elsif ($P[1] & 4) {} else {
-			$filt_chrom = 0;
-			if (!defined $opt{'e'} && $P[2] =~ /(M|Y|L|K|G|Un|Random|Alt)/i) {
-				$filt_chrom+=10;
-			} elsif ($opt{'e'} ne "none") {
-				foreach $pattern (@CHR_FILT) {
-					if ($P[2] =~ /$pattern/i) {
-						$filt_chrom+=10;
-					}
-				}
-			}
-			
-			if ($filt_chrom < 1) {
-				$BARC_total{$barc}++;
-				if (!defined $BARC_POS_ISIZE{$barc}{"$P[2]:$P[3]:$P[8]"} && !defined $OBSERVED{$P[0]}) {
-					$BARC_POS_ISIZE{$barc}{"$P[2]:$P[3]:$P[8]"} = 1;
-					$KEEP{$P[0]} = 1;
+if (defined $opt{'C'}) {
+	@CHR_LIST = split(/,/, $chr_list);
+	for ($chrID = 0; $chrID < @CHR_LIST; $chrID++) {
+		%KEEP = (); %BARC_POS_ISIZE = (); %OBSERVED = ();
+		for ($bamID = 0; $bamID < @ARGV; $bamID++) {
+			open IN, "$samtools view -q 10 $ARGV[$bamID] $CHR_LIST[$chrID] |";
+			while ($l = <IN>) {
+				$q10_reads++;
+				chomp $l;
+				@P = split(/\t/, $l);
+				if (!defined $opt{'x'}) {$P[0] .= ":BAMID=$bamID"; $l = join("\t", @P)};
+				$barc = $P[0]; $barc =~ s/:.+$//;
+				if (defined $KEEP{$P[0]}) {
 					print OUT "$l\n";
+					$BARC_total{$barc}++;
 					$BARC_kept{$barc}++;
 					$total_kept++;
-					$BAMID_included{$bamID}++;
+				} else {
+					$BARC_total{$barc}++;
+					if (!defined $BARC_POS_ISIZE{$barc}{"$P[3]:$P[8]"} && !defined $OBSERVED{$P[0]}) {
+						$BARC_POS_ISIZE{$barc}{"$P[3]:$P[8]"} = 1;
+						$KEEP{$P[0]} = 1;
+						print OUT "$l\n";
+						$BARC_kept{$barc}++;
+						$total_kept++;
+						$BAMID_included{$bamID}++;
+					}
+					$OBSERVED{$P[0]} = 1;
 				}
-				$OBSERVED{$P[0]} = 1;
-			} else {
-				$reads_q10_to_other_chr++;
-			}
+			} close IN;
+			%KEEP = ();
 		}
-	} close IN;
-	%KEEP = ();
+	}
+} else {
+	for ($bamID = 0; $bamID < @ARGV; $bamID++) {
+		open IN, "$samtools view -q 10 $ARGV[$bamID] |";
+		while ($l = <IN>) {
+			$q10_reads++;
+			chomp $l;
+			@P = split(/\t/, $l);
+			if (!defined $opt{'x'}) {$P[0] .= ":BAMID=$bamID"; $l = join("\t", @P)};
+			$barc = $P[0]; $barc =~ s/:.+$//;
+			if (defined $KEEP{$P[0]}) {
+				print OUT "$l\n";
+				$BARC_total{$barc}++;
+				$BARC_kept{$barc}++;
+				$total_kept++;
+			} elsif ($P[1] & 4) {} else {
+				$filt_chrom = 0;
+				if (!defined $opt{'e'} && $P[2] =~ /(M|Y|L|K|G|Un|Random|Alt)/i) {
+					$filt_chrom+=10;
+				} elsif ($opt{'e'} ne "none") {
+					foreach $pattern (@CHR_FILT) {
+						if ($P[2] =~ /$pattern/i) {
+							$filt_chrom+=10;
+						}
+					}
+				}
+				
+				if ($filt_chrom < 1) {
+					$BARC_total{$barc}++;
+					if (!defined $BARC_POS_ISIZE{$barc}{"$P[2]:$P[3]:$P[8]"} && !defined $OBSERVED{$P[0]}) {
+						$BARC_POS_ISIZE{$barc}{"$P[2]:$P[3]:$P[8]"} = 1;
+						$KEEP{$P[0]} = 1;
+						print OUT "$l\n";
+						$BARC_kept{$barc}++;
+						$total_kept++;
+						$BAMID_included{$bamID}++;
+					}
+					$OBSERVED{$P[0]} = 1;
+				} else {
+					$reads_q10_to_other_chr++;
+				}
+			}
+		} close IN;
+		%KEEP = ();
+	}
 }
 
 close OUT;
-
 
 open OUT, ">$opt{'O'}.complexity.txt";
 $rank = 1;
