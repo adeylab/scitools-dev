@@ -14,10 +14,19 @@ $neigh = 30;
 $mdist=0.1;
 $metric="euclidean";
 
-getopts("O:n:d:m:D:XP:", \%opt);
+getopts("O:n:d:m:D:XP:pR:", \%opt);
 
 $die2 = "
 scitools umap [options] [matrix]
+UMAP is an alternative dimensionality reduction technique to [tsne|pca|swne]. 
+There are two implementations available, both R and python versions. 
+R takes longer to run and is less memory efficient
+but does not require a conda environment set up.
+R implementation also has added features.
+
+To run the python implementation:
+  1. Enter into the command line: \"conda activate py3\"
+  2. Run scitools umap with the -p flag.
 
 Options:
    -O   [STR]   Output prefix (default is matrix file prefix)
@@ -26,7 +35,10 @@ Options:
    -d   [INT]   min distance for mapping (def = $mdist)
    -m   [STR]   metric to use (def = $metric)
    -X           Retain intermediate files (def = delete)
+   -p           Run the Python version of UMAP (faster but requires conda environment)
    -P   [STR]   python script call (def = $Pscript)
+   -R   [STR]   R script call (def = $Rscript)
+
    
 Note: Requires python, numpy, and umap to be installed and callable
       This command is a wrapper for executing the python code.
@@ -43,6 +55,7 @@ if (defined $opt{'m'}) {$metric = $opt{'m'}};
 if (defined $opt{'P'}) {$Pscript = $opt{'P'}};
 read_matrix($ARGV[0]);
 
+if (defined $opt{'p'}){
 open OUT, ">$opt{'O'}.UMAP.py";
 print OUT"
 import numpy
@@ -84,6 +97,19 @@ $counter++;
 close(IN);
 close OUT;
 
+} else {
+open OUT, ">$opt{'O'}.UMAP.R";
+print OUT "
+library(umap)
+
+dat<-read.table(\"$ARGV[0]\",row.names=1,header=T)
+umap_dims<-umap(as.data.frame(t(dat)),method=c(\"naive\"))
+saveRDS(umap_dims,file=\"$opt{'O'}.UMAP.rds\")
+write.table(umap_dims$layout,file=\"$opt{'O'}.UMAP.rds\",col.names=F,row.names=T,sep=\"\t\",quote=F)";
+
+close OUT;
+system("$Rscript $opt{'O'}.UMAP.R");
+}
 
 
 if (!defined $opt{'X'}) {
