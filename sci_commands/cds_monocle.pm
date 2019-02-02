@@ -103,7 +103,10 @@ print R "
 FM <- exprs(cds)
 cds\@auxOrderingData\$normalize_expr_data <- FM
 irlba_pca_res<-t(read.table(\"$opt{'i'}\",header=T,row.names=1))
-irlba_pca_res = irlba_pca_res[match(rownames(irlba_pca_res),colnames(cds)),]
+#irlba_pca_res = irlba_pca_res[match(rownames(irlba_pca_res),colnames(cds)),]
+#added in matching, better than match 
+matchnum<-rownames(irlba_pca_res) %in% colnames(cds)
+irlba_pca_res = irlba_pca_res[matchnum,]
 num_dim<-ncol(irlba_pca_res)
 cds\@normalized_data_projection <- as.matrix(irlba_pca_res)
 
