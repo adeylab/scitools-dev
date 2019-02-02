@@ -153,15 +153,16 @@ saveRDS(cisTopicObject,\"$opt{'O'}.cistopicObject.rds\")
 
 if (defined $opt{'A'}){
    print R "
-   cisTopicObject <- runPCA(cisTopicObject)
-   coordinates <- cisTopicObject\@dr[[\'PCA\']]\$ind.coord
-   write.table(coordinates,file=\"$opt{'O'}.PCA.internal.dims\",col.names=T,row.names=T,quote=F,sep=\"\\t\")
-   png(file=\"$opt{'O'}.PCA_cistopic.png\",width=12,height=12,units=\"in\",res=300)
-   plotCellStates(cisTopicObject, method=\'Biplot\', topic_contr=\'Z-score\',topics=\'all\', colorBy=c(\'LineType\'))
-   dev.off()
-   pdf(file=\"$opt{'O'}.PCA_cistopic.pdf\",width=12,height=12)
-   plotCellStates(cisTopicObject, method=\'Biplot\', topic_contr=\'Z-score\', topics=\'all\', colorBy=c(\'LineType\'))
-   dev.off()
+   #temporarily disabled
+   #cisTopicObject <- runPCA(cisTopicObject)
+   #coordinates <- cisTopicObject\@dr[[\'PCA\']]\$ind.coord
+   #write.table(coordinates,file=\"$opt{'O'}.PCA.internal.dims\",col.names=T,row.names=T,quote=F,sep=\"\\t\")
+   #png(file=\"$opt{'O'}.PCA_cistopic.png\",width=12,height=12,units=\"in\",res=300)
+   #plotCellStates(cisTopicObject, method=\'Biplot\', topic_contr=\'Z-score\',topics=\'all\', colorBy=c(\'LineType\'))
+   #dev.off()
+   #pdf(file=\"$opt{'O'}.PCA_cistopic.pdf\",width=12,height=12)
+   #plotCellStates(cisTopicObject, method=\'Biplot\', topic_contr=\'Z-score\', topics=\'all\', colorBy=c(\'LineType\'))
+   #dev.off()
    ";
     if (defined $opt{'S'} || defined $opt{'C'})  
    {
