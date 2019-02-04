@@ -105,7 +105,7 @@ library(umap)
 dat<-read.table(\"$ARGV[0]\",row.names=1,header=T)
 umap_dims<-umap(as.data.frame(t(dat)),method=c(\"naive\"))
 saveRDS(umap_dims,file=\"$opt{'O'}.UMAP.rds\")
-write.table(umap_dims$layout,file=\"$opt{'O'}.UMAP.rds\",col.names=F,row.names=T,sep=\"\t\",quote=F)";
+write.table(as.matrix(umap_dims\$layout),file=\"$opt{'O'}.UMAP.dims\",col.names=F,row.names=T,sep=\"\\t\",quote=F)";
 
 close OUT;
 system("$Rscript $opt{'O'}.UMAP.R");
