@@ -32,23 +32,23 @@ open IN, $ARGV[0];
 $header = <IN>; chomp $header;
 @CELLIDs = split(/\s/, $header);
 if (defined $opt{'z'}) {
-	open OUT, "| $gzip > $opt{'O'}.cellIDs.txt.gz";
+	open OUT, "| $gzip > $opt{'O'}.sparseMatrix.cols.gz";
 } else {
-	open OUT, ">$opt{'O'}.cellIDs.txt";
+	open OUT, ">$opt{'O'}.sparseMatrix.cols";
 }
 for ($i = 0; $i < @CELLIDs; $i++) {
 	print OUT "$CELLIDs[$i]\n";
 } close OUT;
 $rowNum = 0;
 if (defined $opt{'z'}) {
-	open ROW, "| $gzip > $opt{'O'}.rowIDs.txt.gz";
+	open ROW, "| $gzip > $opt{'O'}.sparseMatrix.rows.gz";
 } else {
-	open ROW, ">$opt{'O'}.rowIDs.txt";
+	open ROW, ">$opt{'O'}.sparseMatrix.rows..rows";
 }
 if (defined $opt{'z'}) {
-	open MTX, "| $gzip > $opt{'O'}.sparse_matrix.gz";
+	open MTX, "| $gzip > $opt{'O'}.sparseMatrix.values.gz";
 } else {
-	open MTX, ">$opt{'O'}.sparse_matrix";
+	open MTX, ">$opt{'O'}.sparseMatrix.values";
 }
 print MTX "rowID\tcellID\tvalue\n";
 while ($l = <IN>) {
