@@ -100,6 +100,9 @@ close(IN);
 close OUT;
 
 } else {
+
+# R version (default)
+
 open OUT, ">$opt{'O'}.UMAP.R";
 print OUT "
 library(umap)
@@ -116,11 +119,13 @@ write.table(as.matrix(umap_dims\$layout),file=\"$opt{'O'}.UMAP.dims\",col.names=
 
 close OUT;
 system("$Rscript $opt{'O'}.UMAP.R");
+
 }
 
+}
 
 if (!defined $opt{'X'}) {
-	system("rm -f $opt{'O'}.temp.UMAP.dims $opt{'O'}.UMAP.py");
+	system("rm -f $opt{'O'}.temp.UMAP.dims $opt{'O'}.UMAP.py $opt{'O'}.UMAP.R");
 }
 
 }
