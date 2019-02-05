@@ -39,7 +39,7 @@ Options:
 if (!defined $ARGV[1]) {die $die2};
 if (!defined $opt{'O'}) {$opt{'O'} = $ARGV[1]; $opt{'O'} =~ s/\.bed//};
 if (defined $opt{'F'}) {$format = $opt{'F'}};
-if ($format !~ /(S|D)/i) {die "ERRROR: Formats must be S or D\n$die2";
+if ($format !~ /(S|D)/i) {die "ERRROR: Formats must be S or D\n$die2"};
 
 #if ends in .matrix then uses peaks from matrix to do counts or binary
 if ($ARGV[1] =~ /\.matrix$/) {
