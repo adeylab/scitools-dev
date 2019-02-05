@@ -52,13 +52,13 @@ ggsave(\"$opt{'O'}.irlba_variance.png\")
 df<-as.data.frame(I\$v)
 PCA_colnames<-c()
 for (i in 1:$dims) {
-  p<-paste(\"PCA\",i, sep = \"\")
+  p<-paste(\"DIM\",i, sep = \"\")
   PCA_colnames <- append(PCA_colnames, p)
 }
 colnames(df)<-PCA_colnames
 dft<-t(df)
 
-write.table(dft, file=\"$opt{'O'}.irlba_$dims.dims\", quote=FALSE, sep=\"\\t\")
+write.table(dft, file=\"$opt{'O'}.irlba_$dims.matrix\", quote=FALSE, sep=\"\\t\")
 
 ";
 close R;
