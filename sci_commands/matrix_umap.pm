@@ -109,7 +109,7 @@ library(umap)
 ";
 if ($ARGV[0] =~ /\.dims$/) {
 	print OUT "dat<-t(read.table(\"$ARGV[0]\",row.names=1,header=F))";
-else {
+} else {
 	print OUT "dat<-read.table(\"$ARGV[0]\",row.names=1,header=T)";
 }
 print OUT "
