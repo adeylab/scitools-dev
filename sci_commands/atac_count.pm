@@ -42,28 +42,27 @@ if (defined $opt{'F'}) {$format = $opt{'F'}};
 if ($format !~ /(S|D)/i) {die "ERRROR: Formats must be S or D\n$die2";
 
 #if ends in .matrix then uses peaks from matrix to do counts or binary
-if ($ARGV[1] =~ /\.matrix$/)
-{
+if ($ARGV[1] =~ /\.matrix$/) {
 
-if ($format =~ /S/i) {
-	die "ERROR: Sparse matrix functionality not supported if matrix is input.\n";
-}
+	if ($format =~ /S/i) {
+		die "ERROR: Sparse matrix functionality not supported if matrix is input.\n";
+	}
 
-print "USING MATRIX FILE, ADDING CELLS: \n";
-#read in matrix
-read_matrix($ARGV[1]);
-$opt{'O'} = $ARGV[1]; $opt{'O'} =~ s/\.binary.matrix//; $opt{'O'} =~ s/\.counts.matrix//; $opt{'O'} =~ s/\.matrix//;
-# create temporary bed file from matrix pre defined peaks
-$tembedfilename=$ARGV[0];
-$tembedfilename=~ s/\.bam//;
-$tembedfilename=~ s/.*\///;
-open OUT, ">$tembedfilename.temp.bed";
-foreach $peak (@MATRIX_ROWNAMES) 
-{
-	print OUT join("\t",split("_",$peak))."\n"}; 
-close(OUT);
+	print "USING MATRIX FILE, ADDING CELLS: \n";
+	#read in matrix
+	read_matrix($ARGV[1]);
+	$opt{'O'} = $ARGV[1]; $opt{'O'} =~ s/\.binary.matrix//; $opt{'O'} =~ s/\.counts.matrix//; $opt{'O'} =~ s/\.matrix//;
+	# create temporary bed file from matrix pre defined peaks
+	$tembedfilename=$ARGV[0];
+	$tembedfilename=~ s/\.bam//;
+	$tembedfilename=~ s/.*\///;
+	open OUT, ">$tembedfilename.temp.bed";
+	foreach $peak (@MATRIX_ROWNAMES) {
+		print OUT join("\t",split("_",$peak))."\n";
+	}
+	close(OUT);
 
-#create options string
+	#create options string
 	$common_opts = "";
 	if (defined $opt{'b'}) {$common_opts .= "-b $opt{'b'} "};
 	if (defined $opt{'s'}) {$common_opts .= "-s $opt{'s'} "};
@@ -76,143 +75,138 @@ close(OUT);
 	#join matrixes and remove temp matrix and bed file if X is not defined
 	#DEV: merging matrix files if overlap in cell names see notes in merge-matrix
 	if (defined $opt{'B'}) {
-	system("scitools matrix-merge -O $opt{'O'}_$tembedfilename $ARGV[1] $tembedfilename.temp.binary.matrix");
-	if (!defined $opt{'X'}) {system("rm -f $tembedfilename.temp.bed $tembedfilename.binary.temp.matrix")};
+		system("scitools matrix-merge -O $opt{'O'}_$tembedfilename $ARGV[1] $tembedfilename.temp.binary.matrix");
+		if (!defined $opt{'X'}) {system("rm -f $tembedfilename.temp.bed $tembedfilename.binary.temp.matrix")};
+	} else {
+		system("scitools matrix-merge -O $opt{'O'}_$tembedfilename $ARGV[1] $tembedfilename.temp.counts.matrix");
+		if (!defined $opt{'X'}) {system("rm -f $tembedfilename.temp.bed $tembedfilename.counts.temp.matrix")};
 	}
-	else
-	{
-	system("scitools matrix-merge -O $opt{'O'}_$tembedfilename $ARGV[1] $tembedfilename.temp.counts.matrix");
-	if (!defined $opt{'X'}) {system("rm -f $tembedfilename.temp.bed $tembedfilename.counts.temp.matrix")};
-	}
-}
-else
-{
-
-if (defined $opt{'C'}) {
-	read_complexity($opt{'C'});
+	
 } else {
-	open IN, "$samtools view $ARGV[0] |";
+
+	if (defined $opt{'C'}) {
+		read_complexity($opt{'C'});
+	} else {
+		open IN, "$samtools view $ARGV[0] |";
+		while ($l = <IN>) {
+			chomp $l;
+			@P = split(/\t/, $l);
+			if ($P[2] !~ /(M|Y|L|K|G|Un|Random|Alt)/i) {
+				($cellID,$null) = split(/:/, $P[0]);
+				$CELLID_uniq_reads{$cellID}++;
+			}
+		} close IN;
+	}
+
+	open IN, "$bedtools intersect -abam $ARGV[0] -b $ARGV[1] -bed -wa -wb -u |";
 	while ($l = <IN>) {
 		chomp $l;
 		@P = split(/\t/, $l);
-		if ($P[2] !~ /(M|Y|L|K|G|Un|Random|Alt)/i) {
-			($cellID,$null) = split(/:/, $P[0]);
-			$CELLID_uniq_reads{$cellID}++;
-		}
-	} close IN;
-}
-
-open IN, "$bedtools intersect -abam $ARGV[0] -b $ARGV[1] -bed -wa -wb -u |";
-while ($l = <IN>) {
-	chomp $l;
-	@P = split(/\t/, $l);
-	$cellID = $P[3]; $cellID =~ s/:.+$//;
-	$siteID = $P[12]."_".$P[13]."_".$P[14];
-	if (!defined $SITE_CELL_STATUS{$siteID}{$cellID}) {
-		$SITE_CELL_STATUS{$siteID}{$cellID} = 1;
-	} else {
-		if (defined $opt{'B'}) {
+		$cellID = $P[3]; $cellID =~ s/:.+$//;
+		$siteID = $P[12]."_".$P[13]."_".$P[14];
+		if (!defined $SITE_CELL_STATUS{$siteID}{$cellID}) {
 			$SITE_CELL_STATUS{$siteID}{$cellID} = 1;
 		} else {
-			$SITE_CELL_STATUS{$siteID}{$cellID}++;
-		}
-	}
-	$CELLID_onTarget{$cellID}++;
-	if (!defined $CELL_IDS{$cellID}) {
-		push @CELL_ID_LIST, $cellID;
-		$CELL_IDS{$cellID} = 1;
-	}
-} close IN;
-
-if ($format =~ /D/i) {
-
-	if (defined $opt{'z'}) {
-		if (defined $opt{'B'}) {
-			open OUT, "| $gzip > $opt{'O'}.binary.matrix.gz";
-		} else {
-			open OUT, "| $gzip > $opt{'O'}.counts.matrix.gz";
-		}
-	} else {
-		if (defined $opt{'B'}) {
-			open OUT, ">$opt{'O'}.binary.matrix";
-		} else {
-			open OUT, ">$opt{'O'}.counts.matrix";
-		}
-	}
-	
-	print OUT "$CELL_ID_LIST[0]";
-	for ($i = 1; $i < @CELL_ID_LIST; $i++) {
-		print OUT "\t$CELL_ID_LIST[$i]";
-	} print OUT "\n";
-	
-	foreach $siteID (sort keys %SITE_CELL_STATUS) {
-		print OUT "$siteID";
-		for ($i = 0; $i < @CELL_ID_LIST; $i++) {
-			if ($SITE_CELL_STATUS{$siteID}{$CELL_ID_LIST[$i]}>0.5) {
-				if (defined $opt{'B'}) {
-					print OUT "\t1";
-				} else {
-					print OUT "\t$SITE_CELL_STATUS{$siteID}{$CELL_ID_LIST[$i]}";
-				}
+			if (defined $opt{'B'}) {
+				$SITE_CELL_STATUS{$siteID}{$cellID} = 1;
 			} else {
-				print OUT "\t0";
+				$SITE_CELL_STATUS{$siteID}{$cellID}++;
 			}
+		}
+		$CELLID_onTarget{$cellID}++;
+		if (!defined $CELL_IDS{$cellID}) {
+			push @CELL_ID_LIST, $cellID;
+			$CELL_IDS{$cellID} = 1;
+		}
+	} close IN;
+
+	if ($format =~ /D/i) {
+
+		if (defined $opt{'z'}) {
+			if (defined $opt{'B'}) {
+				open OUT, "| $gzip > $opt{'O'}.binary.matrix.gz";
+			} else {
+				open OUT, "| $gzip > $opt{'O'}.counts.matrix.gz";
+			}
+		} else {
+			if (defined $opt{'B'}) {
+				open OUT, ">$opt{'O'}.binary.matrix";
+			} else {
+				open OUT, ">$opt{'O'}.counts.matrix";
+			}
+		}
+		
+		print OUT "$CELL_ID_LIST[0]";
+		for ($i = 1; $i < @CELL_ID_LIST; $i++) {
+			print OUT "\t$CELL_ID_LIST[$i]";
 		} print OUT "\n";
-	} close OUT;
-	
-} elsif ($format =~ /S/i) {
+		
+		foreach $siteID (sort keys %SITE_CELL_STATUS) {
+			print OUT "$siteID";
+			for ($i = 0; $i < @CELL_ID_LIST; $i++) {
+				if ($SITE_CELL_STATUS{$siteID}{$CELL_ID_LIST[$i]}>0.5) {
+					if (defined $opt{'B'}) {
+						print OUT "\t1";
+					} else {
+						print OUT "\t$SITE_CELL_STATUS{$siteID}{$CELL_ID_LIST[$i]}";
+					}
+				} else {
+					print OUT "\t0";
+				}
+			} print OUT "\n";
+		} close OUT;
+		
+	} elsif ($format =~ /S/i) {
 
-	if (defined $opt{'z'}) {
-		if (defined $opt{'B'}) {
-			open CELLS, "| $gzip > $opt{'O'}.binary.sparseMatrix.cols.gz";
-			open SITES, "| $gzip > $opt{'O'}.binary.sparseMatrix.rows.gz";
-			open VALS, "| $gzip > $opt{'O'}.binary.sparseMatrix.values.gz";
+		if (defined $opt{'z'}) {
+			if (defined $opt{'B'}) {
+				open CELLS, "| $gzip > $opt{'O'}.binary.sparseMatrix.cols.gz";
+				open SITES, "| $gzip > $opt{'O'}.binary.sparseMatrix.rows.gz";
+				open VALS, "| $gzip > $opt{'O'}.binary.sparseMatrix.values.gz";
+			} else {
+				open CELLS, "| $gzip > $opt{'O'}.counts.sparseMatrix.cols.gz";
+				open SITES, "| $gzip > $opt{'O'}.counts.sparseMatrix.rows.gz";
+				open VALS, "| $gzip > $opt{'O'}.counts.sparseMatrix.values.gz";
+			}
 		} else {
-			open CELLS, "| $gzip > $opt{'O'}.counts.sparseMatrix.cols.gz";
-			open SITES, "| $gzip > $opt{'O'}.counts.sparseMatrix.rows.gz";
-			open VALS, "| $gzip > $opt{'O'}.counts.sparseMatrix.values.gz";
-		}
-	} else {
-		if (defined $opt{'B'}) {
-			open CELLS, ">$opt{'O'}.binary.sparseMatrix.cols";
-			open SITES, ">$opt{'O'}.binary.sparseMatrix.rows";
-			open VALS, ">$opt{'O'}.binary.sparseMatrix.values";
-		} else {
-			open CELLS, ">$opt{'O'}.counts.sparseMatrix.cols";
-			open SITES, ">$opt{'O'}.counts.sparseMatrix.rows";
-			open VALS, ">$opt{'O'}.counts.sparseMatrix.values";
-		}
-	}
-	
-	for ($i = 0; $i < @CELL_ID_LIST; $i++) {
-		print CELLS "$CELL_ID_LIST[$i]\n";
-		$CELLID_number{$$CELL_ID_LIST[$i]} = $i;
-	} close CELLS;
-	
-	$siteNumber = 0;
-	foreach $siteID (sort keys %SITE_CELL_STATUS) {
-		print SITES "$siteID\n";
-		$siteNumber++;
-		for ($i = 0; $i < @CELL_ID_LIST; $i++) {
-			if ($SITE_CELL_STATUS{$siteID}{$CELL_ID_LIST[$i]}>0.5) {
-				if (defined $opt{'B'}) {$val = 1} else {$val = $SITE_CELL_STATUS{$siteID}{$CELL_ID_LIST[$i]}};
-				print VALS "$siteNumber\t$i\t$val\n";
+			if (defined $opt{'B'}) {
+				open CELLS, ">$opt{'O'}.binary.sparseMatrix.cols";
+				open SITES, ">$opt{'O'}.binary.sparseMatrix.rows";
+				open VALS, ">$opt{'O'}.binary.sparseMatrix.values";
+			} else {
+				open CELLS, ">$opt{'O'}.counts.sparseMatrix.cols";
+				open SITES, ">$opt{'O'}.counts.sparseMatrix.rows";
+				open VALS, ">$opt{'O'}.counts.sparseMatrix.values";
 			}
 		}
-	} close VALS; close SITES;
-	
-}
+		
+		for ($i = 0; $i < @CELL_ID_LIST; $i++) {
+			print CELLS "$CELL_ID_LIST[$i]\n";
+			$CELLID_number{$$CELL_ID_LIST[$i]} = $i;
+		} close CELLS;
+		
+		$siteNumber = 0;
+		foreach $siteID (sort keys %SITE_CELL_STATUS) {
+			print SITES "$siteID\n";
+			$siteNumber++;
+			for ($i = 0; $i < @CELL_ID_LIST; $i++) {
+				if ($SITE_CELL_STATUS{$siteID}{$CELL_ID_LIST[$i]}>0.5) {
+					if (defined $opt{'B'}) {$val = 1} else {$val = $SITE_CELL_STATUS{$siteID}{$CELL_ID_LIST[$i]}};
+					print VALS "$siteNumber\t$i\t$val\n";
+				}
+			}
+		} close VALS; close SITES;
+		
+	}
 
-
-
-open OUT, ">$opt{'O'}.fracOnTarget.values";
-for ($i = 0; $i < @CELL_ID_LIST; $i++) {
-	if ($CELLID_uniq_reads{$cellID}>0) {
-		$cellID = $CELL_ID_LIST[$i];
-		$frac = sprintf("%.3f", $CELLID_onTarget{$cellID}/$CELLID_uniq_reads{$cellID});
-		print OUT "$cellID\t$frac\n";
-	} 
-} close OUT;
+	open OUT, ">$opt{'O'}.fracOnTarget.values";
+	for ($i = 0; $i < @CELL_ID_LIST; $i++) {
+		if ($CELLID_uniq_reads{$cellID}>0) {
+			$cellID = $CELL_ID_LIST[$i];
+			$frac = sprintf("%.3f", $CELLID_onTarget{$cellID}/$CELLID_uniq_reads{$cellID});
+			print OUT "$cellID\t$frac\n";
+		} 
+	} close OUT;
 }
 
 }
