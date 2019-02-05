@@ -8,7 +8,7 @@ use Exporter "import";
 sub atac_count {
 
 @ARGV = @_;
-getopts("s:b:O:BC:X:", \%opt);
+getopts("s:b:O:BC:XS", \%opt);
 
 $die2 = "
 scitools atac-count [options] [bam file] [peaks bed file or matrix]
@@ -26,7 +26,8 @@ Options:
    -B           Make it a binary matrix instead of counts matrix
                 (file name will end in .binary.matrix)
    -C   [STR]   Complexity file (speeds up on-target calc)
-   -X 		Remove temp files
+   -S           Save as sparse matrix
+   -X           Remove temp files
 
 ";
 
@@ -56,6 +57,7 @@ close(OUT);
 	if (defined $opt{'s'}) {$common_opts .= "-s $opt{'s'} "};
 	if (defined $opt{'B'}) {$common_opts .= "-B $opt{'B'} "};
 	if (defined $opt{'C'}) {$common_opts .= "-C $opt{'C'} "};
+	if (defined $opt{'S'}) {$common_opts .= "-S "};
 	$common_opts =~ s/\s$//;
 	#call same script but on temp bed
 	system("scitools atac-count $common_opts $ARGV[0] $tembedfilename.temp.bed");
@@ -88,7 +90,7 @@ if (defined $opt{'C'}) {
 	} close IN;
 }
 
-open IN, "$bedtools intersect -abam $ARGV[0] -b $ARGV[1] -bed -wa -wb |";
+open IN, "$bedtools intersect -abam $ARGV[0] -b $ARGV[1] -bed -wa -wb -u |";
 while ($l = <IN>) {
 	chomp $l;
 	@P = split(/\t/, $l);
@@ -110,27 +112,66 @@ while ($l = <IN>) {
 	}
 } close IN;
 
-if (defined $opt{'B'}) {
-	open OUT, ">$opt{'O'}.binary.matrix";
+if (!defined $opt{'S'}) {
+
+	if (defined $opt{'B'}) {
+		open OUT, ">$opt{'O'}.binary.matrix";
+	} else {
+		open OUT, ">$opt{'O'}.counts.matrix";
+	}
+	
+	print OUT "$CELL_ID_LIST[0]";
+	for ($i = 1; $i < @CELL_ID_LIST; $i++) {
+		print OUT "\t$CELL_ID_LIST[$i]";
+	} print OUT "\n";
+	
+	foreach $siteID (sort keys %SITE_CELL_STATUS) {
+		print OUT "$siteID";
+		for ($i = 0; $i < @CELL_ID_LIST; $i++) {
+			if ($SITE_CELL_STATUS{$siteID}{$CELL_ID_LIST[$i]}>0.5) {
+				if (defined $opt{'B'}) {
+					print OUT "\t1";
+				} else {
+					print OUT "\t$SITE_CELL_STATUS{$siteID}{$CELL_ID_LIST[$i]}";
+				}
+			} else {
+				print OUT "\t0";
+			}
+		} print OUT "\n";
+	} close OUT;
+	
 } else {
-	open OUT, ">$opt{'O'}.counts.matrix";
+
+	if (defined $opt{'B'}) {
+		open CELLS, ">$opt{'O'}.binary.sparseMatrix.cols";
+		open SITES, ">$opt{'O'}.binary.sparseMatrix.rows";
+		open VALS, ">$opt{'O'}.binary.sparseMatrix.values";
+	} else {
+		open CELLS, ">$opt{'O'}.counts.sparseMatrix.cols";
+		open SITES, ">$opt{'O'}.counts.sparseMatrix.rows";
+		open VALS, ">$opt{'O'}.counts.sparseMatrix.values";
+	}
+	
+	for ($i = 0; $i < @CELL_ID_LIST; $i++) {
+		print CELLS "$CELL_ID_LIST[$i]\n";
+		$CELLID_number{$$CELL_ID_LIST[$i]} = $i;
+	} close CELLS;
+	
+	$siteNumber = 0;
+	foreach $siteID (sort keys %SITE_CELL_STATUS) {
+		print SITES "$siteID\n";
+		$siteNumber++;
+		for ($i = 0; $i < @CELL_ID_LIST; $i++) {
+			if ($SITE_CELL_STATUS{$siteID}{$CELL_ID_LIST[$i]}>0.5) {
+				if (defined $opt{'B'}) {$val = 1} else {$val = $SITE_CELL_STATUS{$siteID}{$CELL_ID_LIST[$i]}};
+				print VALS "$siteNumber\t$i\t$val\n";
+			}
+		}
+	} close VALS; close SITES;
+	
 }
 
-print OUT "$CELL_ID_LIST[0]";
-for ($i = 1; $i < @CELL_ID_LIST; $i++) {
-	print OUT "\t$CELL_ID_LIST[$i]";
-} print OUT "\n";
 
-foreach $siteID (sort keys %SITE_CELL_STATUS) {
-	print OUT "$siteID";
-	for ($i = 0; $i < @CELL_ID_LIST; $i++) {
-		if ($SITE_CELL_STATUS{$siteID}{$CELL_ID_LIST[$i]}>0.5) {
-			print OUT "\t$SITE_CELL_STATUS{$siteID}{$CELL_ID_LIST[$i]}";
-		} else {
-			print OUT "\t0";
-		}
-	} print OUT "\n";
-} close OUT;
 
 open OUT, ">$opt{'O'}.fracOnTarget.values";
 for ($i = 0; $i < @CELL_ID_LIST; $i++) {
