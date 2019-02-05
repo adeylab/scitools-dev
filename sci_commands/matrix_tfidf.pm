@@ -9,17 +9,20 @@ sub matrix_tfidf {
 
 @ARGV = @_;
 
-getopts("O:L:F:", \%opt);
+getopts("O:L:z", \%opt);
 
 $die2 = "
 scitools matrix-tfidf [options] [counts matrix or sparseMatrix values file]
    or    tfidf
 
+If a regular or a sparseMatrix is provided, the optput will be in the same
+format as the input.
+
 Options:
    -O   [STR]   Output prefix (default is [input].tfidf)
    -L   [BASE]  Log norm with base specified.
                 N for natural, def = no additional log norm
-   -F   [S/D]   Format to output: D = dense, S = sparse (def = input)
+   -z           Gzip output
 
 ";
 
@@ -31,8 +34,18 @@ if ($ARGV[0] =~ /\.matrix/ || $ARGV[0] =~ /\.matrix\.gz/) {
 
 	read_matrix_stats($ARGV[0]);
 
-	open IN, "$ARGV[0]";
-	open OUT, ">$opt{'O'}.tfidf";
+	if ($ARGV[0] =~ /\.gz$/) {
+		open IN, "$zcat $ARGV[0] |";
+	} else {
+		open IN, "$ARGV[0]";
+	}
+	
+	if (defined $opt{'z'}) {
+		open OUT, "| $gzip > $opt{'O'}.tfidf.gz";
+	} else {
+		open OUT, ">$opt{'O'}.tfidf";
+	}
+	
 	$h = <IN>; print OUT "$h";
 	while ($l = <IN>) {
 		chomp $l;
@@ -64,7 +77,11 @@ if ($ARGV[0] =~ /\.matrix/ || $ARGV[0] =~ /\.matrix\.gz/) {
 	
 	if (!defined $opt{'O'}) {$opt{'O'} = $ARGV[0]; $opt{'O'} =~ s/\.gz$//; $opt{'O'} =~ s/\.sparseMatrix.values$//};
 	
-	open IN, "$ARGV[0]";
+	if ($ARGV[0] =~ /\.gz$/) {
+		open IN, "$zcat $ARGV[0] |";
+	} else {
+		open IN, "$ARGV[0]";
+	}
 	while ($l = <IN>) {
 		chomp $l;
 		($row,$col,$val) = split(/\s/, $l);
@@ -73,8 +90,17 @@ if ($ARGV[0] =~ /\.matrix/ || $ARGV[0] =~ /\.matrix\.gz/) {
 		$COLID_sum{$col}+=$val;
 	} close IN;
 	
-	open OUT, ">$opt{'O'}.sparseMatrix.tfidf";
-	open IN, "$ARGV[0]";
+	if (defined $opt{'z'}) {
+		open OUT, "| $gzip > $opt{'O'}.sparseMatrix.tfidf.gz";
+	} else {
+		open OUT, ">$opt{'O'}.sparseMatrix.tfidf";
+	}
+	
+	if ($ARGV[0] =~ /\.gz$/) {
+		open IN, "$zcat $ARGV[0] |";
+	} else {
+		open IN, "$ARGV[0]";
+	}
 	while ($l = <IN>) {
 		chomp $l;
 		($row,$col,$val) = split(/\s/, $l);

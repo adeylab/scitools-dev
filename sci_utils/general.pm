@@ -140,7 +140,11 @@ sub read_matrix {
 	%MATRIX_CellID_nonZero = (); %MATRIX_feature_nonZero = ();
 	%MATRIX_CellID_signal = (); %MATRIX_feature_signal = ();
 	$matrix_colNum = 0; $matrix_rowNum = 0;
-	open MAT, "$_[0]";
+	if ($_[0] =~ /\.gz$/) {
+		open MAT, "zcat $_[0] |";
+	} else {
+		open MAT, "$_[0]";
+	}
 	$column_line = <MAT>; chomp $column_line; @MATRIX_COLNAMES = split(/\t/, $column_line);
 	foreach $column (@MATRIX_COLNAMES) {$matrix_colNum++};
 	while ($matrix_line = <MAT>) {
