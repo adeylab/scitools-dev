@@ -17,7 +17,7 @@ $metric="euclidean";
 getopts("O:n:d:m:D:XP:pR:", \%opt);
 
 $die2 = "
-scitools umap [options] [matrix]
+scitools umap [options] [matrix/dims]
 UMAP is an alternative dimensionality reduction technique to [tsne|pca|swne]. 
 There are two implementations available, both R and python versions. 
 R takes longer to run and is less memory efficient
@@ -47,7 +47,7 @@ Note: Requires python, numpy, and umap to be installed and callable
 
 if (!defined $ARGV[0]) {die $die2};
 if (!defined $opt{'O'}) {$opt{'O'} = $ARGV[0]};
-$opt{'O'} =~ s/\.matrix$//;
+$opt{'O'} =~ s/\.matrix$//; $opt{'O'} =~ s/\.dims$//;
 if (defined $opt{'D'}) {$dims = $opt{'D'}};
 if (defined $opt{'n'}) {$neigh = $opt{'n'}};
 if (defined $opt{'d'}) {$mdist = $opt{'d'}};
@@ -56,6 +56,8 @@ if (defined $opt{'P'}) {$Pscript = $opt{'P'}};
 read_matrix($ARGV[0]);
 
 if (defined $opt{'p'}){
+
+
 open OUT, ">$opt{'O'}.UMAP.py";
 print OUT"
 import numpy
@@ -101,8 +103,13 @@ close OUT;
 open OUT, ">$opt{'O'}.UMAP.R";
 print OUT "
 library(umap)
-
-dat<-read.table(\"$ARGV[0]\",row.names=1,header=T)
+";
+if ($ARGV[0] =~ /\.dims$/) {
+	print OUT "dat<-t(read.table(\"$ARGV[0]\",row.names=1,header=F))";
+else {
+	print OUT "dat<-read.table(\"$ARGV[0]\",row.names=1,header=T)";
+}
+print OUT "
 umap_dims<-umap(as.data.frame(t(dat)),method=c(\"naive\"))
 saveRDS(umap_dims,file=\"$opt{'O'}.UMAP.rds\")
 write.table(as.matrix(umap_dims\$layout),file=\"$opt{'O'}.UMAP.dims\",col.names=F,row.names=T,sep=\"\\t\",quote=F)";
