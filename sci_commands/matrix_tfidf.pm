@@ -64,8 +64,33 @@ if ($ARGV[0] =~ /\.matrix/ || $ARGV[0] =~ /\.matrix\.gz/) {
 	
 	if (!defined $opt{'O'}) {$opt{'O'} = $ARGV[0]; $opt{'O'} =~ s/\.gz$//; $opt{'O'} =~ s/\.sparseMatrix.values$//};
 	
-	############
-	die "ERROR: Sparse matrix support currently in progress!\n";
+	open IN, "$ARGV[0]";
+	while ($l = <IN>) {
+		chomp $l;
+		($row,$col,$val) = split(/\s/, $l);
+		if (!defined $COLID_sum{$col}) {$colNum++};
+		$ROWID_sum{$row}+=$val;
+		$COLID_sum{$col}+=$val;
+	} close IN;
+	
+	open OUT, ">$opt{'O'}.sparseMatrix.tfidf";
+	open IN, "$ARGV[0]";
+	while ($l = <IN>) {
+		chomp $l;
+		($row,$col,$val) = split(/\s/, $l);
+		$tf = ($val/$COLID_sum{$col});
+		$idf = (log(1+($colNum/($ROWID_sum{$row}+1))));
+		$raw_score = $tf*$idf;
+		if (defined $opt{'L'}) {
+			if ($opt{'L'} =~ /N/i) {
+				$raw_score = log($raw_score);
+			} else {
+				$raw_score = log($raw_score)/log($opt{'L'})
+			}
+		}
+		$score = sprintf("%.6f", $raw_score);
+		print OUT "$row\t$col\t$score\n";
+	} close IN; close OUT;
 	
 }
 
