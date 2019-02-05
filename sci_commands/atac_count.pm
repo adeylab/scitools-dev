@@ -7,8 +7,11 @@ use Exporter "import";
 
 sub atac_count {
 
+#defaults
+$format = "D";
+
 @ARGV = @_;
-getopts("s:b:O:BC:XSz", \%opt);
+getopts("s:b:O:BC:XF:z", \%opt);
 
 $die2 = "
 scitools atac-count [options] [bam file] [peaks bed file or matrix]
@@ -17,6 +20,7 @@ scitools atac-count [options] [bam file] [peaks bed file or matrix]
 Creates a counts or binary matrix file and a values file
 with the fraction of reads on target for each cell. In addition if matrix defined instead of bed file
 can add cells to counts matrix if cells are new (at moment merge bam if cell names do not overlap).
+Using a matrix as input is not currently compatible with the sparse matrix option.
 
 Options:
    -O   [STR]   Output prefix (default is peaks prefix)
@@ -26,7 +30,7 @@ Options:
    -B           Make it a binary matrix instead of counts matrix
                 (file name will end in .binary.matrix)
    -C   [STR]   Complexity file (speeds up on-target calc)
-   -S           Save as sparse matrix
+   -F   [S/D]   Format: D = dense, S = sparse (def = $format)
    -z           Gzip output
    -X           Remove temp files
 
@@ -34,10 +38,17 @@ Options:
 
 if (!defined $ARGV[1]) {die $die2};
 if (!defined $opt{'O'}) {$opt{'O'} = $ARGV[1]; $opt{'O'} =~ s/\.bed//};
+if (defined $opt{'F'}) {$format = $opt{'F'}};
+if ($format !~ /(S|D)/i) {die "ERRROR: Formats must be S or D\n$die2";
 
 #if ends in .matrix then uses peaks from matrix to do counts or binary
 if ($ARGV[1] =~ /\.matrix$/)
 {
+
+if ($format =~ /S/i) {
+	die "ERROR: Sparse matrix functionality not supported if matrix is input.\n";
+}
+
 print "USING MATRIX FILE, ADDING CELLS: \n";
 #read in matrix
 read_matrix($ARGV[1]);
@@ -58,7 +69,6 @@ close(OUT);
 	if (defined $opt{'s'}) {$common_opts .= "-s $opt{'s'} "};
 	if (defined $opt{'B'}) {$common_opts .= "-B $opt{'B'} "};
 	if (defined $opt{'C'}) {$common_opts .= "-C $opt{'C'} "};
-	if (defined $opt{'S'}) {$common_opts .= "-S "};
 	if (defined $opt{'z'}) {$common_opts .= "-z "};
 	$common_opts =~ s/\s$//;
 	#call same script but on temp bed
@@ -114,7 +124,7 @@ while ($l = <IN>) {
 	}
 } close IN;
 
-if (!defined $opt{'S'}) {
+if ($format =~ /D/i) {
 
 	if (defined $opt{'z'}) {
 		if (defined $opt{'B'}) {
@@ -150,7 +160,7 @@ if (!defined $opt{'S'}) {
 		} print OUT "\n";
 	} close OUT;
 	
-} else {
+} elsif ($format =~ /S/i) {
 
 	if (defined $opt{'z'}) {
 		if (defined $opt{'B'}) {
