@@ -8,7 +8,7 @@ use Exporter "import";
 sub atac_count {
 
 @ARGV = @_;
-getopts("s:b:O:BC:XS", \%opt);
+getopts("s:b:O:BC:XSz", \%opt);
 
 $die2 = "
 scitools atac-count [options] [bam file] [peaks bed file or matrix]
@@ -27,6 +27,7 @@ Options:
                 (file name will end in .binary.matrix)
    -C   [STR]   Complexity file (speeds up on-target calc)
    -S           Save as sparse matrix
+   -z           Gzip output
    -X           Remove temp files
 
 ";
@@ -58,6 +59,7 @@ close(OUT);
 	if (defined $opt{'B'}) {$common_opts .= "-B $opt{'B'} "};
 	if (defined $opt{'C'}) {$common_opts .= "-C $opt{'C'} "};
 	if (defined $opt{'S'}) {$common_opts .= "-S "};
+	if (defined $opt{'z'}) {$common_opts .= "-z "};
 	$common_opts =~ s/\s$//;
 	#call same script but on temp bed
 	system("scitools atac-count $common_opts $ARGV[0] $tembedfilename.temp.bed");
@@ -114,10 +116,18 @@ while ($l = <IN>) {
 
 if (!defined $opt{'S'}) {
 
-	if (defined $opt{'B'}) {
-		open OUT, ">$opt{'O'}.binary.matrix";
+	if (defined $opt{'z'}) {
+		if (defined $opt{'B'}) {
+			open OUT, "| $gzip > $opt{'O'}.binary.matrix.gz";
+		} else {
+			open OUT, "| $gzip > $opt{'O'}.counts.matrix.gz";
+		}
 	} else {
-		open OUT, ">$opt{'O'}.counts.matrix";
+		if (defined $opt{'B'}) {
+			open OUT, ">$opt{'O'}.binary.matrix";
+		} else {
+			open OUT, ">$opt{'O'}.counts.matrix";
+		}
 	}
 	
 	print OUT "$CELL_ID_LIST[0]";
@@ -142,14 +152,26 @@ if (!defined $opt{'S'}) {
 	
 } else {
 
-	if (defined $opt{'B'}) {
-		open CELLS, ">$opt{'O'}.binary.sparseMatrix.cols";
-		open SITES, ">$opt{'O'}.binary.sparseMatrix.rows";
-		open VALS, ">$opt{'O'}.binary.sparseMatrix.values";
+	if (defined $opt{'z'}) {
+		if (defined $opt{'B'}) {
+			open CELLS, "| $gzip > $opt{'O'}.binary.sparseMatrix.cols.gz";
+			open SITES, "| $gzip > $opt{'O'}.binary.sparseMatrix.rows.gz";
+			open VALS, "| $gzip > $opt{'O'}.binary.sparseMatrix.values.gz";
+		} else {
+			open CELLS, "| $gzip > $opt{'O'}.counts.sparseMatrix.cols.gz";
+			open SITES, "| $gzip > $opt{'O'}.counts.sparseMatrix.rows.gz";
+			open VALS, "| $gzip > $opt{'O'}.counts.sparseMatrix.values.gz";
+		}
 	} else {
-		open CELLS, ">$opt{'O'}.counts.sparseMatrix.cols";
-		open SITES, ">$opt{'O'}.counts.sparseMatrix.rows";
-		open VALS, ">$opt{'O'}.counts.sparseMatrix.values";
+		if (defined $opt{'B'}) {
+			open CELLS, ">$opt{'O'}.binary.sparseMatrix.cols";
+			open SITES, ">$opt{'O'}.binary.sparseMatrix.rows";
+			open VALS, ">$opt{'O'}.binary.sparseMatrix.values";
+		} else {
+			open CELLS, ">$opt{'O'}.counts.sparseMatrix.cols";
+			open SITES, ">$opt{'O'}.counts.sparseMatrix.rows";
+			open VALS, ">$opt{'O'}.counts.sparseMatrix.values";
+		}
 	}
 	
 	for ($i = 0; $i < @CELL_ID_LIST; $i++) {
@@ -179,7 +201,7 @@ for ($i = 0; $i < @CELL_ID_LIST; $i++) {
 		$cellID = $CELL_ID_LIST[$i];
 		$frac = sprintf("%.3f", $CELLID_onTarget{$cellID}/$CELLID_uniq_reads{$cellID});
 		print OUT "$cellID\t$frac\n";
-	}
+	} 
 } close OUT;
 }
 
