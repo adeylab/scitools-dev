@@ -50,7 +50,7 @@ if (defined $opt{'z'}) {
 } else {
 	open MTX, ">$opt{'O'}.sparseMatrix.values";
 }
-print MTX "rowID\tcellID\tvalue\n";
+#print MTX "rowID\tcellID\tvalue\n";
 while ($l = <IN>) {
 	chomp $l;
 	@P = split(/\t/, $l);
