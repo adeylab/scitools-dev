@@ -9,7 +9,7 @@ sub matrix_tfidf {
 
 @ARGV = @_;
 
-getopts("O:", \%opt);
+getopts("O:L:", \%opt);
 
 $die2 = "
 scitools matrix-tfidf [options] [counts matrix]
@@ -17,6 +17,8 @@ scitools matrix-tfidf [options] [counts matrix]
 
 Options:
    -O   [STR]   Output prefix (default is [input].tfidf)
+   -L   [BASE]  Log norm with base specified.
+                N for natural, def = no additional log norm
 
 ";
 
@@ -37,7 +39,15 @@ while ($l = <IN>) {
 		if ($P[$i]>0) {
 			$tf = ($P[$i]/$MATRIX_CellID_signal{$MATRIX_COLNAMES[$i]});
 			$idf = (log(1+($matrix_colNum/($MATRIX_feature_signal{$rowID}+1))));
-			$score = sprintf("%.6f", $tf*$idf);
+			$raw_score = $tf*$idf;
+			if (defined $opt{'L'}) {
+				if ($opt{'L'} =~ /N/i) {
+					$raw_score = log($raw_score);
+				} else {
+					$raw_score = log($raw_score)/log($opt{'L'})
+				}
+			}
+			$score = sprintf("%.6f", $raw_score);
 		} else {
 			$score = "0";
 		}
