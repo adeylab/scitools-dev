@@ -122,8 +122,6 @@ system("$Rscript $opt{'O'}.UMAP.R");
 
 }
 
-}
-
 if (!defined $opt{'X'}) {
 	system("rm -f $opt{'O'}.temp.UMAP.dims $opt{'O'}.UMAP.py $opt{'O'}.UMAP.R");
 }
