@@ -13,7 +13,7 @@ sub matrix_filter {
 $colMin = 1;
 $rowMin = 1;
 
-getopts("O:C:R:c:r:A:a:B:vb:f:", \%opt);
+getopts("O:C:R:c:r:A:a:B:vb:f:V:G:", \%opt);
 
 $die2 = "
 scitools matrix-filter [options] [counts matrix]
@@ -30,6 +30,8 @@ Options:
    -f   [STR]   If -B has annotations, just consider those with the name -f
    -A   [STR]   Annotation file
    -a   [STR]   Comma separated list of annotations to include (requires -A)
+   -V   [STR]   Values file to filter on (e.g. FRIP)
+   -G   [MIN,MAX] Min and max values to include from values file (required if -V)
    -b   [STR]   Bedtools call (for -B filtering; def = $bedtools)
 
 Note: -C and -R filters are applied after all other filtering.
@@ -39,6 +41,7 @@ Note: -C and -R filters are applied after all other filtering.
 if (!defined $ARGV[0]) {die $die2};
 if (defined $opt{'C'}) {$colMin = $opt{'C'}};
 if (defined $opt{'R'}) {$rowMin = $opt{'R'}};
+if (defined $opt{'V'} && !defined $opt{'G'}) {die "ERROR: if a values fiel si provided (-V), a range must be provided as well (-R)\n"};
 if (!defined $opt{'O'}) {
 	$opt{'O'} = $ARGV[0];
 	$opt{'O'} =~ s/\.matrix$//;
@@ -60,6 +63,18 @@ if (defined $opt{'c'}) {
 	while ($cellID = <IN>) {
 		chomp $cellID;
 		$CELLID_list_include{$cellID} = 1;
+	} close IN;
+}
+
+if (defined $opt{'V'}) {
+	($minV,$maxV) = split(/,/, $opt{'G'});
+	open IN, "$opt{'V'}";
+	while ($l = <IN>) {
+		chomp $l;
+		($cellID,$value) = split(/\t/, $l);
+		if ($value >= $minV && $value <= $maxV) {
+			$CELLID_values_include{$cellID} = 1;
+		}
 	} close IN;
 }
 
@@ -132,7 +147,8 @@ while ($l = <MATRIX>) {
 		for ($cellNum = 0; $cellNum < @P; $cellNum++) {
 			$cellID = $MATRIX_COLNAMES[$cellNum];
 			if ((!defined $opt{'c'} || defined $CELLID_list_include{$cellID}) &&
-				(!defined $opt{'a'} || defined $ANNOT_include{$CELLID_annot{$cellID}})) {
+				(!defined $opt{'a'} || defined $ANNOT_include{$CELLID_annot{$cellID}}) &&
+				(!defined $opt{'V'} || defined $CELLID_values_include{$cellID})) {
 				if (abs($P[$cellNum]) > 0) {
 					$COLNAME_nonzero{$cellID}++;
 					$ROWNAME_nonzero{$rowID}++;
