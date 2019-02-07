@@ -173,7 +173,7 @@ for ($in_file = 0; $in_file < @ARGV; $in_file++) {
 						$out_line .= "\t$P[$i]";
 					}
 				}
-				print OUT "$new_header\n";
+				print OUT "$out_line\n";
 			}
 			close OUT;
 		} close IN;
