@@ -75,7 +75,7 @@ if ($ARGV[0] =~ /\.matrix/ || $ARGV[0] =~ /\.matrix\.gz/) {
 
 } elsif ($ARGV[0] =~ /(sparseMatrix|values)/) {
 	
-	if (!defined $opt{'O'}) {$opt{'O'} = $ARGV[0]; $opt{'O'} =~ s/\.gz$//; $opt{'O'} =~ s/\.sparseMatrix.values$//};
+	if (!defined $opt{'O'}) {$opt{'O'} = $ARGV[0]; $opt{'O'} =~ s/\.gz$//; $opt{'O'} =~ s/\.values$//}; $opt{'O'} =~ s/\.sparseMatrix$//};
 	
 	if ($ARGV[0] =~ /\.gz$/) {
 		open IN, "$zcat $ARGV[0] |";
