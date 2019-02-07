@@ -164,7 +164,7 @@ if (defined $opt{'B'}) {
 		system("rm -f $opt{'O'}.selected_features.bed");
 	}
 } elsif (defined $opt{'M'}) {
-	$opt{'B'} = 1; # trigger to use same filtering mechanism
+	$opt{'B'} = "toggled via -M $opt{'M'}"; # trigger to use same filtering mechanism
 	if ($sparse == 0) {
 		if ($ARGV[0] =~ /\.gz$/) {
 			open MATRIX, "$zcat $ARGV[0] |"; $null = <MATRIX>;
