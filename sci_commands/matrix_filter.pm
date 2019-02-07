@@ -13,10 +13,10 @@ sub matrix_filter {
 $colMin = 1;
 $rowMin = 1;
 
-getopts("O:C:R:c:r:A:a:B:vb:f:V:G:", \%opt);
+getopts("O:C:R:c:r:A:a:B:vb:f:V:G:z", \%opt);
 
 $die2 = "
-scitools matrix-filter [options] [counts matrix]
+scitools matrix-filter [options] [matrix OR sparseMatrix values/tfidf file]
    or    filter-matrix
    
 Options:
@@ -32,6 +32,7 @@ Options:
    -a   [STR]   Comma separated list of annotations to include (requires -A)
    -V   [STR]   Values file to filter on (e.g. FRIP)
    -G   [MIN,MAX] Min and max values to include from values file (required if -V)
+   -z           Gzip output (def = no)
    -b   [STR]   Bedtools call (for -B filtering; def = $bedtools)
 
 Note: -C and -R filters are applied after all other filtering.
@@ -42,9 +43,24 @@ if (!defined $ARGV[0]) {die $die2};
 if (defined $opt{'C'}) {$colMin = $opt{'C'}};
 if (defined $opt{'R'}) {$rowMin = $opt{'R'}};
 if (defined $opt{'V'} && !defined $opt{'G'}) {die "ERROR: if a values fiel si provided (-V), a range must be provided as well (-R)\n"};
+if ($ARGV[0] =~ /sparse/i) {
+	$sparse = 1;
+	$sparse_prefix = $ARGV[0]; $sparse_prefix =~ s/\.gz$//; $sparse_prefix =~ s/\.(values|tfidf)$//;
+	$rowID_file = "na";
+	if (-e "$sparse_prefix.rows.gz") {$rowID_file = "$sparse_prefix.rows.gz"};
+	if (-e "$sparse_prefix.rows") {$rowID_file = "$sparse_prefix.rows"};
+	if ($rowID_file eq "na") {die "ERROR: SParse matrix provided ($ARGV[0]) but the rows file ($sparse_prefix.rows(.gz)) cannot be found!\n"};
+	$colID_file = "na";
+	if (-e "$sparse_prefix.cols.gz") {$colID_file = "$sparse_prefix.cols.gz"};
+	if (-e "$sparse_prefix.cols") {$colID_file = "$sparse_prefix.cols"};
+	if ($colID_file eq "na") {die "ERROR: SParse matrix provided ($ARGV[0]) but the cols file ($sparse_prefix.cols(.gz)) cannot be found!\n"};
+} else {
+	$sparse = 0;
+}
 if (!defined $opt{'O'}) {
 	$opt{'O'} = $ARGV[0];
-	$opt{'O'} =~ s/\.matrix$//;
+	$opt{'O'} =~ s/\.gz$//;
+	$opt{'O'} =~ s/\.(matrix|values|tfidf)$//;
 	$opt{'O'} .= ".filt";
 }
 if (defined $opt{'a'} && !defined $opt{'A'}) {die "\nMust provide an annotaiton file (-A) if specifying annotations to filter (-a)!\n$die2"};
@@ -87,11 +103,23 @@ if (defined $opt{'r'}) {
 }
 
 if (defined $opt{'B'}) {
-	open MATRIX, "$ARGV[0]"; $null = <MATRIX>;
+	if ($sparse == 0) {
+		if ($ARGV[0] =~ /\.gz$/) {
+			open MATRIX, "$zcat $ARGV[0] |"; $null = <MATRIX>;
+		} else {
+			open MATRIX, "$ARGV[0]"; $null = <MATRIX>;
+		}
+	} else {
+		if ($rowID_file =~ /\.gz$/) {
+			open MATRIX, "$zcat $rowID_file |";
+		} else {
+			open MATRIX, "$rowID_file";
+		}
+	}
 	open BED, "| $bedtools sort -i - > $opt{'O'}.matrix_rows.bed";
 	while ($l = <MATRIX>) {
 		chomp $l; @P = split(/\t/, $l);
-		($chr,$start,$end) = split(/_/, $l);
+		($chr,$start,$end) = split(/_/, $P[0]);
 		print BED "$chr\t$start\t$end\n";
 	}
 	close MATRIX; close BED;
@@ -121,7 +149,7 @@ if (defined $opt{'B'}) {
 		chomp $l;
 		@P = split(/\t/, $l);
 		$rowID = "$P[0]_$P[1]_$P[2]";
-		$ROWID_list_include{$rowID} = 1;
+		$ROWID_bed_include{$rowID} = 1;
 	} close INT;
 	system("rm -f $opt{'O'}.matrix_rows.bed");
 	if (defined $opt{'f'}) {
@@ -129,64 +157,202 @@ if (defined $opt{'B'}) {
 	}
 }
 
-open MATRIX, "$ARGV[0]";
-$h = <MATRIX>; chomp $h; @MATRIX_COLNAMES = split(/\t/, $h);
-$matrix_colNum = @MATRIX_COLNAMES;
-for ($cellNum = 0; $cellNum < @MATRIX_COLNAMES; $cellNum++) {
-	$cellID = $MATRIX_COLNAMES[$cellNum];
-	$COLNAME_nonzero{$cellID} = 0;
+
+if ($sparse < 0.5) {
+	if ($ARGV[0] =~ /\.gz$/) {
+		open MATRIX, "$zcat $ARGV[0] |"; $null = <MATRIX>;
+	} else {
+		open MATRIX, "$ARGV[0]"; $null = <MATRIX>;
+	}
+	$h = <MATRIX>; chomp $h; @MATRIX_COLNAMES = split(/\t/, $h);
+	$matrix_colNum = @MATRIX_COLNAMES;
+	for ($cellNum = 0; $cellNum < @MATRIX_COLNAMES; $cellNum++) {
+		$cellID = $MATRIX_COLNAMES[$cellNum];
+		$COLNAME_nonzero{$cellID} = 0;
+	}
+	$matrix_rowNum = 0;
+} else {
+	if ($rowID_file =~ /\.gz$/) {
+		open ROWS, "$zcat $rowID_file |";
+	} else {
+		open ROWS, "$rowID_file";
+	}
+	$rowNum = 1;
+	while ($rowID = <ROWS>) {
+		chomp $rowID;
+		$ROWnum_ROWname{$rowNum} = $rowID;
+		$rowNum++;
+	} close ROWS;
+	$matrix_rowNum = $rowNum;
+	
+	if ($colID_file =~ /\.gz$/) {
+		open COLS, "$zcat $colID_file |";
+	} else {
+		open COLS, "$colID_file";
+	}
+	$colNum = 1;
+	while ($colID = <COLS>) {
+		chomp $colID;
+		$COLnum_COLname{$colNum} = $colID;
+		$colNum++;
+	} close COLS;
+	$matrix_colNum = $colNum;
+	
+	if ($ARGV[0] =~ /\.gz$/) {
+		open MATRIX, "$zcat $ARGV[0] |";
+	} else {
+		open MATRIX, "$ARGV[0]";
+	}
 }
-$matrix_rowNum = 0;
+
 while ($l = <MATRIX>) {
-	$matrix_rowNum++;
 	chomp $l;
-	@P = split(/\t/, $l);
-	$rowID = shift(@P);
-	$ROWNAME_nonzero{$rowID} = 0;
-	if (((defined $opt{'r'} || defined $opt{'B'}) && defined $ROWID_list_include{$rowID}) || (!defined $opt{'r'} && !defined $opt{'B'})) {
-		for ($cellNum = 0; $cellNum < @P; $cellNum++) {
-			$cellID = $MATRIX_COLNAMES[$cellNum];
-			if ((!defined $opt{'c'} || defined $CELLID_list_include{$cellID}) &&
-				(!defined $opt{'a'} || defined $ANNOT_include{$CELLID_annot{$cellID}}) &&
-				(!defined $opt{'V'} || defined $CELLID_values_include{$cellID})) {
-				if (abs($P[$cellNum]) > 0) {
+	if ($sparse < 0.5) {
+		$matrix_rowNum++;
+		@P = split(/\t/, $l);
+		$rowID = shift(@P);
+		$ROWNAME_nonzero{$rowID} = 0;
+		if ((!defined $opt{'r'} && !defined $opt{'B'}) ||
+			(defined $opt{'r'} && defined $ROWID_list_include{$rowID}) ||
+			(defined $opt{'B'} && defined $ROWID_bed_include{$rowID})) {
+			for ($cellNum = 0; $cellNum < @P; $cellNum++) {
+				$cellID = $MATRIX_COLNAMES[$cellNum];
+				if ((!defined $opt{'c'} || defined $CELLID_list_include{$cellID}) &&
+					(!defined $opt{'a'} || defined $ANNOT_include{$CELLID_annot{$cellID}}) &&
+					(!defined $opt{'V'} || defined $CELLID_values_include{$cellID})) {
+					if (abs($P[$cellNum]) > 0) {
+						$COLNAME_nonzero{$cellID}++;
+						$ROWNAME_nonzero{$rowID}++;
+					}
+				}
+			}
+		}
+	} else {
+		($rowNum,$colNum,$value) = split(/\s/, $l);
+		$rowID = $ROWnum_ROWname{$rowNum};
+		$cellID = $COLnum_COLname{$colNum};
+		if (!defined $COLNAME_nonzero{$cellID}) {$COLNAME_nonzero{$cellID} = 0};
+		if (!defined $ROWNAME_nonzero{$rowID}) {$ROWNAME_nonzero{$rowID} = 0};
+		if ((!defined $opt{'c'} || defined $CELLID_list_include{$cellID}) &&
+			(!defined $opt{'a'} || defined $ANNOT_include{$CELLID_annot{$cellID}}) &&
+			(!defined $opt{'V'} || defined $CELLID_values_include{$cellID})) {
+				if (abs($value)>0) {
 					$COLNAME_nonzero{$cellID}++;
 					$ROWNAME_nonzero{$rowID}++;
 				}
-			}
 		}
 	}
 } close MATRIX;
 
-open OUT, ">$opt{'O'}.matrix";
-
-$out_header = ""; $included_cells = 0; $included_rows = 0;
-for ($cellNum = 0; $cellNum < @MATRIX_COLNAMES; $cellNum++) {
-	$cellID = $MATRIX_COLNAMES[$cellNum];
-	if ($COLNAME_nonzero{$cellID}>=$colMin) {
-		$out_header .= "$cellID\t";
-		$included_cells++;
+if ($sparse < 0.5) {
+	if (defined $opt{'z'}) {
+		open OUT, "| $gzip > $opt{'O'}.matrix.gz";
+	} else {
+		open OUT, ">$opt{'O'}.matrix";
 	}
-} $out_header =~ s/\t$//;
-print OUT "$out_header\n";
-
-open MATRIX, "$ARGV[0]"; $null = <MATRIX>;
-while ($l = <MATRIX>) {
-	chomp $l;
-	@P = split(/\t/, $l);
-	$rowID = shift(@P);
-	if ($ROWNAME_nonzero{$rowID}>=$rowMin) {
-		$included_rows++;
-		print OUT "$rowID";
-		for ($cellNum = 0; $cellNum < @P; $cellNum++) {
-			$cellID = $MATRIX_COLNAMES[$cellNum];
-			if ($COLNAME_nonzero{$cellID}>=$colMin) {
-				print OUT "\t$P[$cellNum]";
-			}
+	$out_header = ""; $included_cells = 0; $included_rows = 0;
+	for ($cellNum = 0; $cellNum < @MATRIX_COLNAMES; $cellNum++) {
+		$cellID = $MATRIX_COLNAMES[$cellNum];
+		if ($COLNAME_nonzero{$cellID}>=$colMin) {
+			$out_header .= "$cellID\t";
+			$included_cells++;
 		}
-		print OUT "\n";
+	} $out_header =~ s/\t$//;
+	print OUT "$out_header\n";
+	if ($ARGV[0] =~ /\.gz$/) {
+		open MATRIX, "$zcat $ARGV[0] |"; $null = <MATRIX>;
+	} else {
+		open MATRIX, "$ARGV[0]"; $null = <MATRIX>;
 	}
-} close MATRIX; close OUT;
+	while ($l = <MATRIX>) {
+		chomp $l;
+		@P = split(/\t/, $l);
+		$rowID = shift(@P);
+		if (($ROWNAME_nonzero{$rowID}>=$rowMin) &&
+			((!defined $opt{'r'} && !defined $opt{'B'}) ||
+			 (defined $opt{'r'} && defined $ROWID_list_include{$rowID}) ||
+			 (defined $opt{'B'} && defined $ROWID_bed_include{$rowID}))) {
+				$included_rows++;
+				print OUT "$rowID";
+				for ($cellNum = 0; $cellNum < @P; $cellNum++) {
+					$cellID = $MATRIX_COLNAMES[$cellNum];
+					if ($COLNAME_nonzero{$cellID}>=$colMin) {
+						print OUT "\t$P[$cellNum]";
+					}
+				}
+				print OUT "\n";
+		}
+	} close MATRIX; close OUT;
+} else {
+	if (defined $opt{'z'}) {
+		open OUT, "| $gzip > $opt{'O'}.rows.gz";
+	} else {
+		open OUT, ">$opt{'O'}.rows";
+	}
+	if ($rowID_file =~ /\.gz$/) {
+		open ROWS, "$zcat $rowID_file |";
+	} else {
+		open ROWS, "$rowID_file";
+	}
+	%oldRowNum_newRowNum = ();
+	$newRowNum = 1; $rowNum = 1;
+	while ($rowID = <ROWS>) {
+		chomp $rowID;
+		if (($ROWNAME_nonzero{$rowID}>=$rowMin) &&
+			((!defined $opt{'r'} && !defined $opt{'B'}) ||
+			 (defined $opt{'r'} && defined $ROWID_list_include{$rowID}) ||
+			 (defined $opt{'B'} && defined $ROWID_bed_include{$rowID}))) {
+				$included_rows++;
+				$oldRowNum_newRowNum{$rowNum} = $newRowNum;
+				$newRowNum++;
+				print OUT "$rowID\n";
+		}
+		$rowNum++;
+	}
+	close OUT; close ROWS;
+	
+	if (defined $opt{'z'}) {
+		open OUT, "| $gzip > $opt{'O'}.cols.gz";
+	} else {
+		open OUT, ">$opt{'O'}.cols";
+	}
+	if ($colID_file =~ /\.gz$/) {
+		open COLS, "$zcat $colID_file |";
+	} else {
+		open COLS, "$colID_file";
+	}
+	%oldColNum_newColNum = ();
+	$colNum = 1; $newColNum = 1;
+	while ($cellID = <COLS>) {
+		chomp $cellID;
+		if ($COLNAME_nonzero{$cellID}>=$colMin) {
+			$included_cells++;
+			$oldColNum_newColNum{$colNum} = $newColNum;
+			$newColNum++;
+			print OUT "$cellID\n";
+		}
+		$colNum++;
+	}
+	close OUT; close COLS;
+	
+	if (defined $opt{'z'}) {
+		open OUT, "| $gzip > $opt{'O'}.values.gz";
+	} else {
+		open OUT, ">$opt{'O'}.values";
+	}
+	if ($ARGV[0] =~ /\.gz$/) {
+		open MATRIX, "$zcat $ARGV[0] |";
+	} else {
+		open MATRIX, "$ARGV[0]";
+	}
+	while ($l = <MATRIX>) {
+		chomp $l;
+		($rowNum,$colNum,$value) = split(/\s/, $l);
+		if (defined $oldRowNum_newRowNum{$rowNum} && defined $oldColNum_newColNum{$colNum}) {
+			print OUT "$oldRowNum_newRowNum{$rowNum}\t$oldColNum_newColNum{$colNum}\t$value\n";
+		}
+	} close MATRIX; close OUT;
+}
 
 open LOG, ">$opt{'O'}.log";
 $ts = localtime(time);
