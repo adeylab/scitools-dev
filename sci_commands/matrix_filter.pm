@@ -13,7 +13,7 @@ sub matrix_filter {
 $colMin = 1;
 $rowMin = 1;
 
-getopts("O:C:R:c:r:A:a:B:vb:f:V:G:z", \%opt);
+getopts("O:C:R:c:r:A:a:B:vb:f:V:G:zM:", \%opt);
 
 $die2 = "
 scitools matrix-filter [options] [matrix OR sparseMatrix values/tfidf file]
@@ -32,6 +32,8 @@ Options:
    -a   [STR]   Comma separated list of annotations to include (requires -A)
    -V   [STR]   Values file to filter on (e.g. FRIP)
    -G   [MIN,MAX] Min and max values to include from values file (required if -V)
+   -M   [STR]   Comma separated list of chromosomes to exclude (eg chrX,chr3)
+                 Only works if row names are chr_start_end formatted.
    -z           Gzip output (def = no)
    -b   [STR]   Bedtools call (for -B filtering; def = $bedtools)
 
@@ -71,6 +73,12 @@ if (defined $opt{'a'}) {
 	@ANNOT_LIST = split(/,/, $opt{'a'});
 	foreach $annot (@ANNOT_LIST) {
 		$ANNOT_include{$annot} = 1;
+	}
+}
+if (defined $opt{'M'}) {
+	@CHR_EXCLUDE = split(/,/, $opt{'M'});
+	foreach $chr (@CHR_EXCLUDE) {
+		$CHR_exclude{$chr} = 1;
 	}
 }
 
@@ -155,8 +163,30 @@ if (defined $opt{'B'}) {
 	if (defined $opt{'f'}) {
 		system("rm -f $opt{'O'}.selected_features.bed");
 	}
+} elsif (defined $opt{'M'}) {
+	$opt{'B'} = 1; # trigger to use same filtering mechanism
+	if ($sparse == 0) {
+		if ($ARGV[0] =~ /\.gz$/) {
+			open MATRIX, "$zcat $ARGV[0] |"; $null = <MATRIX>;
+		} else {
+			open MATRIX, "$ARGV[0]"; $null = <MATRIX>;
+		}
+	} else {
+		if ($rowID_file =~ /\.gz$/) {
+			open MATRIX, "$zcat $rowID_file |";
+		} else {
+			open MATRIX, "$rowID_file";
+		}
+	}
+	while ($l = <MATRIX>) {
+		chomp $l; @P = split(/\t/, $l);
+		($chr,$start,$end) = split(/_/, $P[0]);
+		$rowID = "$chr\_$start\_$end";
+		if (!defined $CHR_exclude{$chr}) {
+			$ROWID_bed_include{$rowID} = 1;
+		}
+	}
 }
-
 
 if ($sparse < 0.5) {
 	if ($ARGV[0] =~ /\.gz$/) {
