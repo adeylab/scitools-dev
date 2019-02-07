@@ -59,12 +59,11 @@ if ($ARGV[0] =~ /sparse/i) {
 } else {
 	$sparse = 0;
 }
-if (!defined $opt{'O'}) {
-	$opt{'O'} = $ARGV[0];
-	$opt{'O'} =~ s/\.gz$//;
-	$opt{'O'} =~ s/\.(matrix|values|tfidf)$//;
-	$opt{'O'} .= ".filt";
-}
+if (!defined $opt{'O'}) {$opt{'O'} = $ARGV[0]};
+$opt{'O'} =~ s/\.gz$//;
+$opt{'O'} =~ s/\.(matrix|values|tfidf)$//;
+$opt{'O'} .= ".filt";
+
 if (defined $opt{'a'} && !defined $opt{'A'}) {die "\nMust provide an annotaiton file (-A) if specifying annotations to filter (-a)!\n$die2"};
 
 if (defined $opt{'A'}) {read_annot($opt{'A'})};
