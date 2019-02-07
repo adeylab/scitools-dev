@@ -60,8 +60,9 @@ if ($ARGV[0] =~ /sparse/i) {
 	$sparse = 0;
 }
 if (!defined $opt{'O'}) {$opt{'O'} = $ARGV[0]};
-$opt{'O'} =~ s/\.gz$//;
-$opt{'O'} =~ s/\.(matrix|values|tfidf)$//;
+$opt{'O'} =~ s/\.gz$//i;
+$opt{'O'} =~ s/\.(matrix|values|tfidf)$//i;
+$opt{'O'} =~ s/\.sparseMatrix$//i;
 $opt{'O'} .= ".filt";
 
 if (defined $opt{'a'} && !defined $opt{'A'}) {die "\nMust provide an annotaiton file (-A) if specifying annotations to filter (-a)!\n$die2"};
@@ -314,9 +315,9 @@ if ($sparse < 0.5) {
 	} close MATRIX; close OUT;
 } else {
 	if (defined $opt{'z'}) {
-		open OUT, "| $gzip > $opt{'O'}.rows.gz";
+		open OUT, "| $gzip > $opt{'O'}.sparseMatrix.rows.gz";
 	} else {
-		open OUT, ">$opt{'O'}.rows";
+		open OUT, ">$opt{'O'}.sparseMatrix.rows";
 	}
 	if ($rowID_file =~ /\.gz$/) {
 		open ROWS, "$zcat $rowID_file |";
@@ -341,9 +342,9 @@ if ($sparse < 0.5) {
 	close OUT; close ROWS;
 	
 	if (defined $opt{'z'}) {
-		open OUT, "| $gzip > $opt{'O'}.cols.gz";
+		open OUT, "| $gzip > $opt{'O'}.sparseMatrix.cols.gz";
 	} else {
-		open OUT, ">$opt{'O'}.cols";
+		open OUT, ">$opt{'O'}.sparseMatrix.cols";
 	}
 	if ($colID_file =~ /\.gz$/) {
 		open COLS, "$zcat $colID_file |";
@@ -365,9 +366,9 @@ if ($sparse < 0.5) {
 	close OUT; close COLS;
 	
 	if (defined $opt{'z'}) {
-		open OUT, "| $gzip > $opt{'O'}.values.gz";
+		open OUT, "| $gzip > $opt{'O'}.sparseMatrix.values.gz";
 	} else {
-		open OUT, ">$opt{'O'}.values";
+		open OUT, ">$opt{'O'}.sparseMatrix.values";
 	}
 	if ($ARGV[0] =~ /\.gz$/) {
 		open MATRIX, "$zcat $ARGV[0] |";
