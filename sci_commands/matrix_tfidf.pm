@@ -73,7 +73,7 @@ if ($ARGV[0] =~ /\.matrix/ || $ARGV[0] =~ /\.matrix\.gz/) {
 		print OUT "\n";
 	} close IN; close OUT;
 
-} elsif ($ARGV[0] =~ /sparseMatrix/) {
+} elsif ($ARGV[0] =~ /(sparseMatrix|values)/) {
 	
 	if (!defined $opt{'O'}) {$opt{'O'} = $ARGV[0]; $opt{'O'} =~ s/\.gz$//; $opt{'O'} =~ s/\.sparseMatrix.values$//};
 	
