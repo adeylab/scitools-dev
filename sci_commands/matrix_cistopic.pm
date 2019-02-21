@@ -8,7 +8,7 @@ use Exporter "import";
 sub matrix_cistopic {
 
 @ARGV = @_;
-getopts("O:A:c:C:S:G:r:n:T:XR:P:", \%opt);
+getopts("O:A:c:C:S:G:r:n:T:XR:P:L:W:", \%opt);
 
 $thrP = 0.975;
 
@@ -22,7 +22,7 @@ scitools matrix-cistopic [options] [input matrix (or rds for topic bed output on
 
 cisTopic serves as an alternative textmining algorithm to TFIDF-LSI processing.
 It is to be run on a sciATAC counts matrix. For more information see:
-https://github.com/aertslab/cisTopic/
+github.com/aertslab/cisTopic/
 
 Outputs a matrix file similar to matrix-irlba function call. To be processed through
 [matrix_tsne|matrix_umap|matrix_PCA|matrix_SWNE]
@@ -41,6 +41,8 @@ Options:
    -A   [STR]  Annotation file is useful. cisTopic will provide a PCA with the influence of and the heatmap of Topics
    -C   [STR]  color file 
    -S   [STR]  color string
+   -L   [STR]  Columns file for sparseMatrix (will try to auto-detect)
+   -W   [STR]  Rows file for sparseMatrix (will try to auto-detect)
    -T   [INT]  User defined number of Topics to use. 
                   If unspecified: will generate 15,20,25,30,50,65,100 Topics,
                   and use log-liklihood estimators to select the best.
@@ -56,7 +58,38 @@ Note: Requires cisTopic R package
 ";
 
 if (!defined $ARGV[0]) {die $die2};
-if (!defined $opt{'O'}) {$opt{'O'} = $ARGV[0]; $opt{'O'} =~ s/\.matrix$//};
+if (!defined $opt{'O'}) {
+	$prefix = $ARGV[0];
+	$prefix =~ s/\.gz$//;
+	$prefix =~ s/\.matrix$//;
+	$prefix =~ s/\.sparseMatrix$//;
+	$opt{'O'} = $prefix;
+}
+if ($ARGV[0] =~ /sparseMatrix/i) {
+	$sparse = 1;
+	if (defined $opt{'L'}) {
+		$col_file = $opt{'L'};
+	} else {
+		if (-e "$prefix.sparseMatrix.cols") {
+			$col_file = "$prefix.sparseMatrix.cols";
+		} elsif (-e "$prefix.sparseMatrix.cols.gz") {
+			$col_file = "$prefix.sparseMatrix.cols.gz";
+		} else {
+			die "ERROR: Cannot detect cols file (e.g. $prefix.sparseMatrix.cols), please provide as -C\n";
+		}
+	}
+	if (defined $opt{'W'}) {
+		$row_file = $opt{'W'};
+	} else {
+		if (-e "$prefix.sparseMatrix.rows") {
+			$row_file = "$prefix.sparseMatrix.rows";
+		} elsif (-e "$prefix.sparseMatrix.rows.gz") {
+			$row_file = "$prefix.sparseMatrix.rows.gz";
+		} else {
+			die "ERROR: Cannot detect rows file (e.g. $prefix.sparseMatrix.rows), please provide as -C\n";
+		}
+	}
+} else {$sparse = 0};
 if (!defined $opt{'c'}) {$opt{'c'} = 1};
 if (!defined $opt{'r'}) {$opt{'r'} = 1};
 if (!defined $opt{'n'}) {$opt{'n'} = 1};
