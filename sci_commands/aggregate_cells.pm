@@ -116,7 +116,7 @@ $xpos = $xdim-1; $ypos = $ydim-1;
 
 read_ranges($opt{'D'});
 
-if ($ARGV[0] =~ /\.(lambda|values)$/) {
+if ($ARGV[0] =~ /\.(lambda|values|val)$/ || defined $opt{'V'}) {
 	# figure out even spaced vs. even cell N
 	# if -K, then will be evenly spaced on lambda - uniform for all annotations
 	# elsif -N, then will be even number of cells - varable for annotations
@@ -324,7 +324,7 @@ if ($ARGV[0] =~ /\.(lambda|values|val)$/ || defined $opt{'V'}) {
 		}
 	} close AO;
 	open R, ">$opt{'O'}.$annot.agg_dims.r";
-	if ($ARGV[0] =~ /\.(lambda|values)$/) {
+	if ($ARGV[0] =~ /\.(lambda|values|val)$/ || defined $opt{'V'}) {
 	print R "
 D<-read.table(\"$opt{'O'}.$annot.agg_dims\",row.names=1)";
 	} else {
@@ -443,7 +443,7 @@ write.table(ANN,file=\"$opt{'O'}.$annot.agg_dims.annot\",col.names=FALSE,row.nam
 close CNT; close OUT;
 
 # Plot the projections of cells to their centroids
-if ($ARGV[0] =~ /\.(lambda|values)$/) {
+if ($ARGV[0] =~ /\.(lambda|values|val)$/ || defined $opt{'V'}) {
 	# labmda data plots?
 	# NOT CURRENTLY SUPPORTED
 } else {
