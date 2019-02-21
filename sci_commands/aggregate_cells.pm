@@ -92,7 +92,7 @@ if ($ARGV[0] =~ /\.(lambda|values|val)$/ || defined $opt{'V'}) {
 }
 
 if (!defined $opt{'O'}) {$opt{'O'} = $ARGV[0]};
-$opt{'O'} =~ s/\.(dims|lambda|values)$//;
+$opt{'O'} =~ s/\.(dims|lambda|values|val)$//;
 
 if (defined $opt{'R'}) {$Rscript = $opt{'R'}};
 
@@ -138,7 +138,7 @@ open OUT, ">$opt{'O'}.aggregate.annot";
 
 # loop through annotations individually
 foreach $annot (keys %ANNOT_include) {
-if ($ARGV[0] =~ /\.(lambda|values)$/) {
+if ($ARGV[0] =~ /\.(lambda|values|val)$/ || defined $opt{'V'}) {
 	# lambda file
 	# setup new CLUST center hash for the annot - all can be annot-only, no need for global to be kept
 	%CLUST_center = (); $assignment_count = 0; %CLUST_assignments = (); %CELLID_initial_cluster = (); %CLUST_cellIDs = ();
