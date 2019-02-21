@@ -25,7 +25,7 @@ use Exporter "import";
 	"read_pcurve_dims",
 		qw(%CELLID_PCURVE_DIMS),
 	"read_values",
-		qw(%CELLID_value),qw(@VALUES),qw($value_min),qw($value_max),qw($value_mean),qw($value_sum),qw($value_median),
+		qw(%CELLID_value),qw(@VALUES),qw($value_min),qw($value_max),qw($value_mean),qw($value_sum),qw($value_median),qw($value_range),
 	"read_ranges",
 		qw(@RANGE_VALUES),qw($range_R_set),
 	"read_mode",
