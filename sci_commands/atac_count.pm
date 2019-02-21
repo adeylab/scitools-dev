@@ -153,7 +153,8 @@ if ($ARGV[1] =~ /\.matrix$/) {
 				} else {
 					print OUT "\t0";
 				}
-			} print OUT "\n";
+			}
+			print OUT "\n";
 		} close OUT;
 		
 	} elsif ($format =~ /S/i) {

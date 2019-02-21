@@ -17,7 +17,7 @@ $aggN = 15;
 $minN = 5;
 $theme = "Clean";
 
-getopts("O:D:N:A:a:C:c:x:y:R:XK:T:n:v:", \%opt);
+getopts("O:D:N:A:a:C:c:x:y:R:XK:T:n:v:V", \%opt);
 
 $die2 = "
 scitools dims-aggregate [options] [input dims/lambda/values]
@@ -39,6 +39,7 @@ Options:
    -K   [INT]   Number of clusters (overrides -N to be the min/aggregate)
                 This will utilize standard k-means to aggregate cells
                 For lambda clustering it will evenly space them
+   -V           Force it to read as a values / pseudotime file
    -A   [STR]   Annotation file (will only merge within annot)
    -a   [STR]   Comma separated list of annotations to include
                   (requires -A to be specified)
@@ -66,7 +67,7 @@ if (defined $opt{'n'}) {$minN = $opt{'n'}};
 if (defined $opt{'T'}) {$theme = $opt{'T'}};
 if (defined $opt{'v'}) {$oversample = $opt{'v'}};
 
-if ($ARGV[0] =~ /\.(lambda|values)$/) {
+if ($ARGV[0] =~ /\.(lambda|values|val)$/ || defined $opt{'V'}) {
 	print STDERR "INFO: A lambda or values file was detected - will aggregate in one dimension\n";
 	if (!defined $opt{'D'}) {$opt{'D'} = 1};
 	read_values($ARGV[0]);
