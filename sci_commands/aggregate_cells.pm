@@ -123,6 +123,7 @@ if ($ARGV[0] =~ /\.(lambda|values|val)$/ || defined $opt{'V'}) {
 	if (defined $opt{'K'}) { # find centroids that will be constant across all annotations
 		%CLUST_global_centroid = ();
 		$clust_span = $value_range/$opt{'K'};
+		print STDERR "INFO: Value range is $value_range, span for each $opt{'K'} cluster is $clust_span\n"; 
 		$center = $clust_span/2;
 		$clustID = 0;
 		$CLUST_global_centroid{$clustID} = $center;
@@ -174,6 +175,8 @@ if ($ARGV[0] =~ /\.(lambda|values|val)$/ || defined $opt{'V'}) {
 					$CELLID_orphan{$cellID} = 1;
 				}
 				delete $CLUST_cellIDs{$clustID};
+			} else {
+				print STDERR "INFO: Cluster $clustID has $CLUST_assignments{$clustID} cells assigned which is >= $minN, and will be retained.\n";
 			}
 		}
 		foreach $cellID (keys %CELLID_orphan) {
