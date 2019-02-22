@@ -98,7 +98,7 @@ if ($ARGV[1] =~ /\.matrix$/) {
 		} close IN;
 	}
 
-	open IN, "$bedtools intersect -abam $ARGV[0] -b $ARGV[1] -bed -wa -wb -u |";
+	open IN, "$bedtools intersect -abam $ARGV[0] -b $ARGV[1] -bed -wa -wb |";
 	while ($l = <IN>) {
 		chomp $l;
 		@P = split(/\t/, $l);
