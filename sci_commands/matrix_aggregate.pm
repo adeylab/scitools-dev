@@ -101,7 +101,7 @@ foreach $operation (@OPS) {
 
 # get annot include
 if (defined $opt{'a'}) {
-	@ANNOT_INCLUDE = split(/,/, $opt{'a'};
+	@ANNOT_INCLUDE = split(/,/, $opt{'a'});
 	foreach $annot (@ANNOT_INCLUDE) {
 		$ANNOT_include{$annot} = 1;
 	}
