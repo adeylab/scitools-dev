@@ -36,6 +36,7 @@ Options:
    -L   [STR]  Columns file for sparseMatrix (will try to auto-detect)
    -W   [STR]  Rows file for sparseMatrix (will try to auto-detect)
    -z           Gzip output
+   
 ";
 
 if (!defined $ARGV[1]) {die $die2};
@@ -88,7 +89,7 @@ if ($ARGV[0] =~ /sparseMatrix/i) {  die "ERROR: SParsematrix support in progress
 } else {$sparse = 0};
 
 # load operations
-if (defined $opt{'o'}) {$operations = $opt{'O'}};
+if (defined $opt{'o'}) {$operations = $opt{'o'}};
 @OPS = split(/,/, $operations);
 foreach $operation (@OPS) {
 	if ($operation =~ /(^a$|sum|add)/) {$OPS{'a'} = 1}
