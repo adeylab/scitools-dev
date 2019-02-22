@@ -185,14 +185,11 @@ if ($sparse>0.5) {
 	# make column header
 	$col_names = join("\t", @ANNOT_INCLUDE);
 	# open OUTs
-	if (defined $OPS{'a'}) {
-		if (defined $opt{'z'}) {open ADD, "| $gzip > $opt{'O'}.sum.matrix.gz"} else {open ADD, ">$opt{'O'}.sum.matrix"};
-		print ADD "$col_names\n";
-	}
-	if (defined $OPS{'m'}) {if (defined $opt{'z'}) {open MEAN, "| $gzip > $opt{'O'}.mean.matrix.gz"} else {open MEAN, ">$opt{'O'}.mean.matrix"}};
-	if (defined $OPS{'d'}) {if (defined $opt{'z'}) {open MEDIAN, "| $gzip > $opt{'O'}.median.matrix.gz"} else {open MEDIAN, ">$opt{'O'}.median.matrix"}};
-	if (defined $OPS{'c'}) {if (defined $opt{'z'}) {open COUNT, "| $gzip > $opt{'O'}.count.matrix.gz"} else {open COUNT, ">$opt{'O'}.count.matrix"}};
-	if (defined $OPS{'s'}) {if (defined $opt{'z'}) {open STDEV, "| $gzip > $opt{'O'}.stdev.matrix.gz"} else {open STDEV, ">$opt{'O'}.stdev.matrix"}};
+	if (defined $OPS{'a'}) {if (defined $opt{'z'}) {open ADD, "| $gzip > $opt{'O'}.sum.matrix.gz"} else {open ADD, ">$opt{'O'}.sum.matrix"}; print ADD "$col_names\n"};
+	if (defined $OPS{'m'}) {if (defined $opt{'z'}) {open MEAN, "| $gzip > $opt{'O'}.mean.matrix.gz"} else {open MEAN, ">$opt{'O'}.mean.matrix"}; print MEAN "$col_names\n"};
+	if (defined $OPS{'d'}) {if (defined $opt{'z'}) {open MEDIAN, "| $gzip > $opt{'O'}.median.matrix.gz"} else {open MEDIAN, ">$opt{'O'}.median.matrix"}; print MEDIAN "$col_names\n"};
+	if (defined $OPS{'c'}) {if (defined $opt{'z'}) {open COUNT, "| $gzip > $opt{'O'}.count.matrix.gz"} else {open COUNT, ">$opt{'O'}.count.matrix"}; print COUNT "$col_names\n"};
+	if (defined $OPS{'s'}) {if (defined $opt{'z'}) {open STDEV, "| $gzip > $opt{'O'}.stdev.matrix.gz"} else {open STDEV, ">$opt{'O'}.stdev.matrix"}; print STDEV "$col_names\n"};
 	
 	if ($ARGV[0] =~ /\.gz/) {
 		open IN, "$zcat $ARGV[0] |";
