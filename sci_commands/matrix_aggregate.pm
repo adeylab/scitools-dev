@@ -29,7 +29,7 @@ Options:
                   stdev/s     standard deviation
                   median/d    median of cells
                   count/c     number of nonzero cells at the site
-				  fraction/f  fraction of nonzero cells
+                  fraction/f  fraction of nonzero cells
    -t           Factor in term-frequency prior to performing operation
                   (value of site / sum of all sites for the cell) * constant
    -k   [STR]   Constant to multiply for term-frequency can be a number or 'rownum'
