@@ -29,6 +29,7 @@ Options:
                   stdev/s     standard deviation
                   median/d    median of cells
                   count/c     number of nonzero cells at the site
+				  fraction/f  fraction of nonzero cells
    -t           Factor in term-frequency prior to performing operation
                   (value of site / sum of all sites for the cell) * constant
    -k   [STR]   Constant to multiply for term-frequency can be a number or 'rownum'
@@ -97,6 +98,7 @@ foreach $operation (@OPS) {
 	elsif ($operation =~ /(^d$|median)/) {$OPS{'d'} = 1}
 	elsif ($operation =~ /(^s$|stdev)/) {$OPS{'s'} = 1}
 	elsif ($operation =~ /(^c$|count)/) {$OPS{'c'} = 1}
+	elsif ($operation =~ /(^f$|fraction)/) {$OPS{'f'} = 1}
 	else {die "ERROR: Cannot determine which operation '$operation' represents!\n"};
 }
 
@@ -190,7 +192,8 @@ if ($sparse>0.5) {
 	if (defined $OPS{'d'}) {if (defined $opt{'z'}) {open MEDIAN, "| $gzip > $opt{'O'}.median.matrix.gz"} else {open MEDIAN, ">$opt{'O'}.median.matrix"}; print MEDIAN "$col_names\n"};
 	if (defined $OPS{'c'}) {if (defined $opt{'z'}) {open COUNT, "| $gzip > $opt{'O'}.count.matrix.gz"} else {open COUNT, ">$opt{'O'}.count.matrix"}; print COUNT "$col_names\n"};
 	if (defined $OPS{'s'}) {if (defined $opt{'z'}) {open STDEV, "| $gzip > $opt{'O'}.stdev.matrix.gz"} else {open STDEV, ">$opt{'O'}.stdev.matrix"}; print STDEV "$col_names\n"};
-	
+	if (defined $OPS{'f'}) {if (defined $opt{'z'}) {open FRAC, "| $gzip > $opt{'O'}.fraction.matrix.gz"} else {open FRAC, ">$opt{'O'}.fraction.matrix"}; print FRAC "$col_names\n"};
+
 	if ($ARGV[0] =~ /\.gz/) {
 		open IN, "$zcat $ARGV[0] |";
 	} else {
@@ -220,23 +223,28 @@ if ($sparse>0.5) {
 						push @{$ANNOT_values{$annot}}, $P[$i];
 					} else {
 						$value = ($P[$i]/$CELLID_sum{$COLS[$i]})*$constant;
-						if ($annot eq "Agg_5") {print STDERR "DEBUG: rowID = $rowID, annot = $annot, cellID = $COLS[$i], Cell sum = $CELLID_sum{$COLS[$i]}, Cell value = $P[$i], RESULT = $value\n"};
 						push @{$ANNOT_values{$annot}}, $value;
 					}
 				}
 			}
 		}
 		
-		if (defined $OPS{'c'}) {
-			print COUNT "$rowID";
+		if (defined $OPS{'c'} || defined $OPS{'f'}) {
+			if (defined $OPS{'c'}) {print COUNT "$rowID"};
+			if (defined $OPS{'f'}) {print FRAC "$rowID"};
 			for ($i = 0; $i < @ANNOT_INCLUDE; $i++) {
 				$annot = $ANNOT_INCLUDE[$i]; $nonZero = 0;
 				for ($j = 0; $j < @{$ANNOT_values{$annot}}; $j++) {
 					if ($ANNOT_values{$annot}[$j] != 0) {$nonZero++};
 				}
-				print COUNT "\t$nonZero";
+				if (defined $OPS{'c'}) {print COUNT "\t$nonZero"};
+				if (defined $OPS{'f'}) {
+					$frac = ($nonZero/$ANNOT_cellCount{$annot});
+					print FRAC "\t$frac";
+				}
 			}
-			print COUNT "\n";
+			if (defined $OPS{'c'}) {print COUNT "\n"};
+			if (defined $OPS{'f'}) {print FRAC "\n"};
 		}
 		if (defined $OPS{'d'}) {
 			print MEDIAN "$rowID";
@@ -254,6 +262,7 @@ if ($sparse>0.5) {
 			if (defined $OPS{'s'}) {print STDEV "$rowID"; %ANNOT_stdev_sum = ()};
 			for ($i = 0; $i < @ANNOT_INCLUDE; $i++) {
 				$annot = $ANNOT_INCLUDE[$i];
+				$ANNOT_sum{$annot} = 0;
 				for ($j = 0; $j < @{$ANNOT_values{$annot}}; $j++) {
 					$ANNOT_sum{$annot} += $ANNOT_values{$annot}[$j];
 				}
