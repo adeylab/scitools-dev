@@ -220,6 +220,7 @@ if ($sparse>0.5) {
 						push @{$ANNOT_values{$annot}}, $P[$i];
 					} else {
 						$value = ($P[$i]/$CELLID_sum{$COLS[$i]})*$constant;
+						if ($annot eq "Agg_5") {print STDERR "DEBUG: rowID = $rowID, annot = $annot, cellID = $COLS[$i], Cell sum = $CELLID_sum{$COLS[$i]}, Cell value = $P[$i], RESULT = $value\n"};
 						push @{$ANNOT_values{$annot}}, $value;
 					}
 				}
