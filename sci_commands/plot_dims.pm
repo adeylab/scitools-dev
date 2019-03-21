@@ -26,8 +26,11 @@ $panel_pass_color = "black";
 $width = 5;
 $height = 4;
 $frames = 100;
+$pause = 10;
+$gif_height = 600;
+$gif_width = 600;
 
-getopts("O:A:a:C:c:R:x:y:T:V:M:XS:s:G:p:f:Bb:k:w:h:m:Wr:N:F:j:k:z", \%opt);
+getopts("O:A:a:C:c:R:x:y:T:V:M:XS:s:G:p:f:Bb:k:w:h:m:Wr:N:F:j:k:zu:d", \%opt);
 
 $die2 = "
 scitools plot-dims [options] [dimensions file(s), comma sep]
@@ -61,7 +64,7 @@ Plotting by annotations:
 
 Plotting by values:				  
    -V   [STR]   Values file. tab-delimited, cellID (tab) value
-                  Will plot as teh color of points (overrides
+                  Will plot as the color of points (overrides
                   annotation colors)
    -S   [MIN,MAX] Min and max values for scaling (if -V specified)
                   (def = $minV,$maxV)
@@ -84,6 +87,8 @@ To plot Monocle output branch points:
 				
 Animated plots:
    -N   [MODE]  Toggle animation (requires gganimate & gifski libraries)
+                  Height and width values will be interpreted as points (-h,-w)
+                  Def height = $gif_height, Def width = $gif_width
                   Modes:
                     Transition/T   Transition to a second dims file that
                                    is provided as an additional argument
@@ -91,6 +96,8 @@ Animated plots:
    -j   [INT]   For transition mode, x-dimension (def = $xdim)
    -k   [INT]   For transition mode, y-dimension (def = $ydim)
    -F   [INT]   Number of frames (def = $frames)
+   -u   [INT]   Additional frames to pause for at start and end (def = $pause)
+   -d           Rewind plot (def = no)
    
 Other options:
    -R   [STR]   Rscript call (def = $Rscript)
@@ -201,6 +208,11 @@ if (defined $opt{'W'}) {
 
 # read 2nd dims for animation & set up the transition frames
 if ($opt{'N'} =~ /^T/i) {
+
+	if (defined $opt{'h'}) {$gif_height = $opt{'h'}};
+	if (defined $opt{'w'}) {$gif_width = $opt{'w'}};
+	
+	if (defined $opt{'u'}) {$pause = $opt{'u'}};
 
 	if (defined $opt{'j'}) {$xdim2 = $opt{'j'}} else {$xdim2 = $xdim};
 	if (defined $opt{'k'}) {$ydim2 = $opt{'k'}} else {$ydim2 = $ydim};
@@ -576,9 +588,17 @@ if ($theme =~ /Clean/i) {
 }
 
 if (defined $opt{'N'}) {
+if (defined $opt{'d'}) {
 print R "
-anim_save(\"$opt{'O'}.animation.gif\",PLT)
+ANIM<-animate(PLT,start_pause = $pause,end_pause = $pause,rewind = TRUE,height=$gif_height,width=$gif_width)
+anim_save(\"$opt{'O'}.animation.gif\",ANIM)
 ";
+else {
+print R "
+ANIM<-animate(PLT,start_pause = $pause,end_pause = $pause,height=$gif_height,width=$gif_width)
+anim_save(\"$opt{'O'}.animation.gif\",ANIM)
+";
+}
 } else {
 print R "
 ggsave(plot=PLT,filename=\"$opt{'O'}.plot.png\",width=$width,height=$height,dpi=900)
