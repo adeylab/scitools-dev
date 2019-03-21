@@ -470,18 +470,18 @@ library(gganimate)
 library(gifski)";
 if (defined $opt{'V'}) {
 print R "
-colnames(IN)<-c(\"cellid\",\"frame\",\"annot\",\"xpos\",\"ypos\",\"value\")";
+colnames(IN)<-c(\"cellid\",\"frame\",\"annot\",\"xdim\",\"ydim\",\"value\")";
 } else {
 print R "
-colnames(IN)<-c(\"cellid\",\"frame\",\"annot\",\"xpos\",\"ypos\")";
+colnames(IN)<-c(\"cellid\",\"frame\",\"annot\",\"xdim\",\"ydim\")";
 }
 } else {
 if (defined $opt{'V'}) {
 print R "
-colnames(IN)<-c(\"cellid\",\"value\",\"xpos\",\"ypos\",\"annot\")";
+colnames(IN)<-c(\"cellid\",\"value\",\"xdim\",\"ydim\",\"annot\")";
 } else {
 print R "
-colnames(IN)<-c(\"cellid\",\"annot\",\"xpos\",\"ypos\")";
+colnames(IN)<-c(\"cellid\",\"annot\",\"xdim\",\"ydim\")";
 }
 }
 
