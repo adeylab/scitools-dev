@@ -210,6 +210,7 @@ if ($opt{'N'} =~ /^T/i) {
 	while ($l = <IN>) {
 		chomp $l;
 		@P = split(/\t/, $l);
+		$cellID = $P[0];
 		@{$CELLID_DIMS_2{$cellID}} = @P;
 	} close IN;
 	
@@ -237,6 +238,7 @@ foreach $cellID (keys %CELLID_DIMS) {
 		}
 	} else {
 		$annot = "Cell";
+		$CELLID_annot{$cellID} = $annot;
 	}
 	
 	if ($opt{'N'} =~ /^T/i) {
