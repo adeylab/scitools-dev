@@ -497,7 +497,7 @@ print R "
 branch<-read.table(\"$opt{'m'}\",header=T)";
 }
 print R "
-PLT<-ggplot() +";
+PLT<-ggplot(data=IN) +";
 if (defined $opt{'m'}){
 print R "
 geom_segment(aes(x=branch\$source_prin_graph_dim_1,y=branch\$source_prin_graph_dim_2,xend=branch\$target_prin_graph_dim_1,yend=branch\$target_prin_graph_dim_2)) +";
@@ -505,16 +505,16 @@ geom_segment(aes(x=branch\$source_prin_graph_dim_1,y=branch\$source_prin_graph_d
 
 if (!defined $opt{'c'} && !defined $opt{'C'} && !defined $opt{'A'} && !defined $opt{'V'}) { # no special mode specified
 	print R "
-	geom_point(aes(IN\$xdim,IN\$ydim),color=\"lightsteelblue4\",size=$ptSize,alpha=$alpha,shape=16) +";
+	geom_point(aes(xdim,ydim),color=\"lightsteelblue4\",size=$ptSize,alpha=$alpha,shape=16) +";
 } elsif (!defined $opt{'V'}) { # annotation specified
 	print R "
-	geom_point(aes(IN\$xdim,IN\$ydim,color=IN\$annot),size=$ptSize,alpha=$alpha,shape=16) +
+	geom_point(aes(xdim,ydim,color=annot),size=$ptSize,alpha=$alpha,shape=16) +
 	guides(colour = guide_legend(override.aes = list(size=4,alpha=1))) +";
 } else { # values file specified
 	if (!defined $opt{'B'}) {
 	print R "
-	geom_point(aes(IN\$xdim,IN\$ydim,color=IN\$annot),size=$ptSize,alpha=$alpha,shape=16) +";
-	} else {
+	geom_point(aes(xdim,ydim,color=annot),size=$ptSize,alpha=$alpha,shape=16) +";
+	} else { # NEED TO VERIFY THIS WITH ADDING THE data=IN IN PLOT INITIALIZATION!
 	print R "
 	geom_point(aes(fail\$xdim,fail\$ydim),color=$binary_fail_color,size=$ptSize,alpha=$alpha,shape=16) +
 	geom_point(aes(pass\$xdim,pass\$ydim),color=$binary_pass_color,size=$ptSize,alpha=$alpha,shape=16) +";
