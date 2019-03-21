@@ -25,8 +25,9 @@ $binary_pass_color = "red3";
 $panel_pass_color = "black";
 $width = 5;
 $height = 4;
+$frames = 100;
 
-getopts("O:A:a:C:c:R:x:y:T:V:M:XS:s:G:p:f:Bb:k:w:h:m:Wr:", \%opt);
+getopts("O:A:a:C:c:R:x:y:T:V:M:XS:s:G:p:f:Bb:k:w:h:m:Wr:N:F:j:k:z", \%opt);
 
 $die2 = "
 scitools plot-dims [options] [dimensions file(s), comma sep]
@@ -42,6 +43,7 @@ Options - general:
    -f   [FLT]   Alpha for plotting points (def = $alpha)
    -w   [FLT]   Plot width (inches, def = $width)
    -h   [FLT]   Plot height (inches, def = $height)
+   -z           Z-score the dimensions (def = no)
 
 Plotting by annotations:
    -A   [STR]   Annotation file (to color code points)
@@ -79,7 +81,17 @@ To plot multiple values specified in a matrix file:
 To plot Monocle output branch points:
    -m 	[STR] 	Monocle branchpoints.txt file to be plotted underneath 
 				the point plots. Generated through cds_monocle command call.
-
+				
+Animated plots:
+   -N   [MODE]  Toggle animation (requires gganimate & gifski libraries)
+                  Modes:
+                    Transition/T   Transition to a second dims file that
+                                   is provided as an additional argument
+                                   after the first dims file. -z recommended.
+   -j   [INT]   For transition mode, x-dimension (def = $xdim)
+   -k   [INT]   For transition mode, y-dimension (def = $ydim)
+   -F   [INT]   Number of frames (def = $frames)
+   
 Other options:
    -R   [STR]   Rscript call (def = $Rscript)
    -s   [STR]   scitools call (def = $scitools)
@@ -101,7 +113,11 @@ if (defined $opt{'f'}) {$alpha = $opt{'f'}};
 if (defined $opt{'h'}) {$height = $opt{'h'}};
 if (defined $opt{'w'}) {$width = $opt{'w'}};
 if (defined $opt{'M'} && defined $opt{'W'}) {die "\nERROR: Panel wrapping and matrix plotting are not currently compatible.\n"};
-if (defined $opt{'M'} && !defined $opt{'A'}) {die "\nERROR: An annotaiton file must be provided for panel wrapping.\n"};
+if (defined $opt{'W'} && !defined $opt{'A'}) {die "\nERROR: An annotaiton file must be provided for panel wrapping.\n"};
+if (defined $opt{'W'} && defined $opt{'N'}) {die "\nERROR: Panel wrapping and animation plotting are not currently compatible.\n"};
+if (defined $opt{'M'} && defined $opt{'N'}) {die "\nERROR: Matrix plotting and animation plotting are not currently compatible.\n"};
+if ($opt{'N'} =~ /^T/i && !defined $ARGV[1]) {die "\nERROR: Must provide a second dims file for transition animation plotting.\n"};
+
 if (defined $opt{'M'} && defined $opt{'k'}) {
 	($panel_neg_color,$panel_pos_color) = split(/,/, $opt{'k'});
 }
@@ -109,7 +125,7 @@ if (defined $opt{'r'}) {$panel_nrow = $opt{'r'}};
 
 read_dims($ARGV[0]);
 
-if (defined $opt{'M'}) {
+if (defined $opt{'M'} && !defined $opt{'N'}) { # matrix plotting
 	print STDERR "SCITOOLS: Matrix file plotting detected! Will plot a separate value-based plot for each row entry of the matrix.\n";
 	
 	$matrix_out = "matrix_plots";
@@ -136,6 +152,7 @@ if (defined $opt{'M'}) {
 	if (defined $opt{'w'}) {$common_opts .= "-w $opt{'w'} "};
 	if (defined $opt{'h'}) {$common_opts .= "-h $opt{'h'} "};
 	if (defined $opt{'m'}) {$common_opts .= "-m $opt{'m'} "};
+	if (defined $opt{'z'}) {$common_opts .= "-z "};
 	if (defined $opt{'X'}) {$common_opts .= "-X "};
 	if (defined $opt{'B'}) {$common_opts .= "-B "};
 	$common_opts =~ s/\s$//;
@@ -182,27 +199,152 @@ if (defined $opt{'W'}) {
 	if ($binary_pass_color !~ /^#/) {$binary_pass_color = "\"".$binary_pass_color."\""};
 }
 
-open DATA, ">$opt{'O'}.plot.txt";
-foreach $cellID (keys %CELLID_DIMS) {
+# read 2nd dims for animation & set up the transition frames
+if ($opt{'N'} =~ /^T/i) {
 
+	if (defined $opt{'j'}) {$xdim2 = $opt{'j'}} else {$xdim2 = $xdim};
+	if (defined $opt{'k'}) {$ydim2 = $opt{'k'}} else {$ydim2 = $ydim};
+	
+	if (!defined $ARGV[1]) {die $die};
+	open IN, "$ARGV[1]";
+	while ($l = <IN>) {
+		chomp $l;
+		@P = split(/\t/, $l);
+		@{$CELLID_DIMS_2{$cellID}} = @P;
+	} close IN;
+	
+	%CELLID_DIM1_FRAME_value = ();
+	%CELLID_DIM2_FRAME_value = ();
+	
+}
+
+$cell_ct = 0;
+foreach $cellID (keys %CELLID_DIMS) {
+	
+	$exclude_cell = 0;
+	
 	if (defined $opt{'A'}) {
 		if (defined $opt{'a'}) {
 			if (defined $CELLID_annot{$cellID}) {
 				if (defined $ANNOT_include{$CELLID_annot{$cellID}}) {
 					$annot = $CELLID_annot{$cellID}
-				} else {$annot = "Exclude"};
-			} else {$annot = "Exclude"};
+				} else {$exclude_cell = 1};
+			} else {$exclude_cell = 1};
 		} else {
 			if (defined $CELLID_annot{$cellID}) {
 				$annot = $CELLID_annot{$cellID};
-			} else {$annot = "Exclude"};
+			} else {$exclude_cell = 1};
 		}
 	} else {
 		$annot = "Cell";
 	}
 	
-	if ($annot !~ /Exclude/i) {
-		$ANNOT_include{$annot} = 1;
+	if ($opt{'N'} =~ /^T/i) {
+		if (!defined $CELLID_DIMS_2{$cellID}[$xdim2] || !defined $CELLID_DIMS_2{$cellID}[$ydim2]) {
+			$exclude_cell = 1;
+		}
+	}
+	
+	if ($exclude_cell < 0.5) {
+		$CELLID_include{$cellID} = 1;
+		$cell_ct++;
+	}
+	
+}
+
+if (defined $opt{'z'}) { # ZSCORE!
+	$dim1_sum = 0; $dim2_sum = 0;
+	$dim1_mean = 0; $dim2_mean = 0;
+	$dim1_stdev_sum = 0; $dim2_stdev_sum = 0;
+	$dim1_stdev = 0; $dim2_stdev = 0;
+	if ($opt{'N'} =~ /^T/i) {
+		$dim1_sum2 = 0; $dim2_sum2 = 0;
+		$dim1_mean2 = 0; $dim2_mean2 = 0;
+		$dim1_stdev_sum2 = 0; $dim2_stdev_sum2 = 0;
+		$dim1_stdev2 = 0; $dim2_stdev2 = 0;
+	}
+	
+	# mean
+	foreach $cellID (keys %CELLID_include) {
+		$dim1_sum += $CELLID_DIMS{$cellID}[$xdim];
+		$dim2_sum += $CELLID_DIMS{$cellID}[$ydim];
+		if ($opt{'N'} =~ /^T/i) {
+			$dim1_sum2 += $CELLID_DIMS_2{$cellID}[$xdim2];
+			$dim2_sum2 += $CELLID_DIMS_2{$cellID}[$ydim2];
+		}
+	}
+	$dim1_mean = $dim1_sum/$cell_ct;
+	$dim2_mean = $dim2_sum/$cell_ct;
+	if ($opt{'N'} =~ /^T/i) {
+		$dim1_mean2 = $dim1_sum2/$cell_ct;
+		$dim2_mean2 = $dim2_sum2/$cell_ct;
+	}
+	
+	# stdev
+	foreach $cellID (keys %CELLID_include) {
+		$dim1_stdev_sum += ($CELLID_DIMS{$cellID}[$xdim]-$dim1_mean)**2;
+		$dim2_stdev_sum += ($CELLID_DIMS{$cellID}[$ydim]-$dim2_mean)**2;
+		if ($opt{'N'} =~ /^T/i) {
+			$dim1_stdev_sum2 += ($CELLID_DIMS_2{$cellID}[$xdim2]-$dim1_mean2)**2;
+			$dim2_stdev_sum2 += ($CELLID_DIMS_2{$cellID}[$ydim2]-$dim2_mean2)**2;
+		}
+	}
+	$dim1_stdev = sqrt($dim1_stdev_sum/$cell_ct);
+	$dim2_stdev = sqrt($dim2_stdev_sum/$cell_ct);
+	if ($opt{'N'} =~ /^T/i) {
+		$dim1_stdev2 = sqrt($dim1_stdev_sum2/$cell_ct);
+		$dim2_stdev2 = sqrt($dim2_stdev_sum2/$cell_ct);
+	}
+	
+	# replace values in dims object
+	foreach $cellID (keys %CELLID_include) {
+		$value = ($CELLID_DIMS{$cellID}[$xdim]-$dim1_mean)/$dim1_stdev;
+		$CELLID_DIMS{$cellID}[$xdim] = $value;
+		$value = ($CELLID_DIMS{$cellID}[$ydim]-$dim2_mean)/$dim2_stdev;
+		$CELLID_DIMS{$cellID}[$ydim] = $value;
+		if ($opt{'N'} =~ /^T/i) {
+			$value = ($CELLID_DIMS_2{$cellID}[$xdim2]-$dim1_mean2)/$dim1_stdev2;
+			$CELLID_DIMS_2{$cellID}[$xdim2] = $value;
+			$value = ($CELLID_DIMS_2{$cellID}[$ydim2]-$dim2_mean2)/$dim2_stdev2;
+			$CELLID_DIMS_2{$cellID}[$ydim2] = $value;
+		}
+	}
+}
+
+open DATA, ">$opt{'O'}.plot.txt";
+foreach $cellID (keys %CELLID_include) {
+	$annot = $CELLID_annot{$cellID};
+	$ANNOT_include{$annot} = 1;
+	
+	if ($opt{'N'} =~ /^T/) {
+	
+		$xstart = $CELLID_DIMS{$cellID}[$xdim];
+		$xend = $CELLID_DIMS_2{$cellID}[$xdim2];
+		$ystart = $CELLID_DIMS{$cellID}[$ydim];
+		$yend = $CELLID_DIMS_2{$cellID}[$ydim2];
+		
+		$slope = ($yend-$ystart)/($xend-$xstart);
+		$y_int = $ystart - ($xstart*$slope);
+		
+		# x progression
+		if ($xend > $xstart) {$prog_multiplier = 1} else {$prog_multiplier = -1};
+		$xdist = abs($xend-$xstart);
+		$xincrement = $xdist/$frames;
+		for ($frame = 0; $frame < $frames; $frame++) {
+			$xpos = $xstart+($prog_multiplier*$xincrement*$frame);
+			$ypos = ($slope*$xpos) + $y_int;
+			
+			if (!defined $opt{'V'}) { # qualitative annotations
+				print DATA "$cellID\t$frame\t$annot\t$xpos\t$ypos\n";
+			} else { # value annotations
+				######################## Value plotting for animations in progress
+				die "ERROR: -V not currently compatible with animation plotting.\n";
+				########################
+			}
+		}
+		
+		
+	} else {
 		if (!defined $opt{'V'}) { # qualitative annotations
 			print DATA "$cellID\t$annot\t$CELLID_DIMS{$cellID}[$xdim]\t$CELLID_DIMS{$cellID}[$ydim]\n";
 		} else { # value annotations
@@ -311,8 +453,24 @@ ggsave(plot=PLT_grid,filename=\"$opt{'O'}.plot.png\",width=$grid_width,height=$g
 ggsave(plot=PLT_grid,filename=\"$opt{'O'}.plot.pdf\",width=$grid_width,height=$grid_height)
 ";
 
-} else {
+}
 
+if (defined $opt{'N'}) { # Animated plotting
+
+exit; ############### for testing
+
+print R "
+library(ggplot2)
+library(gganimate)
+library(gifski)
+IN<-read.table(\"$opt{'O'}.plot.txt\")
+$gradient_function";
+
+
+
+}
+
+if (!defined $opt{'N'} && !defined $opt{'W'}) { # Not panel or animation plotting
 
 print R "
 library(ggplot2)
