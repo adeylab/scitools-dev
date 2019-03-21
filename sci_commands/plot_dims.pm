@@ -457,32 +457,39 @@ ggsave(plot=PLT_grid,filename=\"$opt{'O'}.plot.pdf\",width=$grid_width,height=$g
 
 }
 
-if (defined $opt{'N'}) { # Animated plotting
-
-exit; ############### for testing
+if (!defined $opt{'W'}) { # Not panel plotting
 
 print R "
 library(ggplot2)
-library(gganimate)
-library(gifski)
 IN<-read.table(\"$opt{'O'}.plot.txt\")
 $gradient_function";
 
-
-
+if (defined $opt{'N'}) {
+print R "
+library(gganimate)
+library(gifski)";
+if (defined $opt{'V'}) {
+print R "
+colnames(IN)<-c(\"cellid\",\"frame\",\"annot\",\"xpos\",\"ypos\",\"value\")";
+} else {
+print R "
+colnames(IN)<-c(\"cellid\",\"frame\",\"annot\",\"xpos\",\"ypos\")";
+}
+} else {
+if (defined $opt{'V'}) {
+print R "
+colnames(IN)<-c(\"cellid\",\"value\",\"xpos\",\"ypos\",\"annot\")";
+} else {
+print R "
+colnames(IN)<-c(\"cellid\",\"annot\",\"xpos\",\"ypos\")";
+}
 }
 
-if (!defined $opt{'N'} && !defined $opt{'W'}) { # Not panel or animation plotting
-
-print R "
-library(ggplot2)
-IN<-read.table(\"$opt{'O'}.plot.txt\")
-$gradient_function";
 
 if (defined $opt{'B'} && defined $opt{'V'}) {
 print R "
-fail<-subset(IN,V5==\"FAIL\")
-pass<-subset(IN,V5==\"PASS\")";
+fail<-subset(IN,annot==\"FAIL\")
+pass<-subset(IN,annot==\"PASS\")";
 }
 
 if (defined $opt{'m'}){
@@ -498,19 +505,19 @@ geom_segment(aes(x=branch\$source_prin_graph_dim_1,y=branch\$source_prin_graph_d
 
 if (!defined $opt{'c'} && !defined $opt{'C'} && !defined $opt{'A'} && !defined $opt{'V'}) { # no special mode specified
 	print R "
-	geom_point(aes(IN\$V3,IN\$V4),color=\"lightsteelblue4\",size=$ptSize,alpha=$alpha,shape=16) +";
+	geom_point(aes(IN\$xdim,IN\$ydim),color=\"lightsteelblue4\",size=$ptSize,alpha=$alpha,shape=16) +";
 } elsif (!defined $opt{'V'}) { # annotation specified
 	print R "
-	geom_point(aes(IN\$V3,IN\$V4,color=IN\$V2),size=$ptSize,alpha=$alpha,shape=16) +
+	geom_point(aes(IN\$xdim,IN\$ydim,color=IN\$annot),size=$ptSize,alpha=$alpha,shape=16) +
 	guides(colour = guide_legend(override.aes = list(size=4,alpha=1))) +";
 } else { # values file specified
 	if (!defined $opt{'B'}) {
 	print R "
-	geom_point(aes(IN\$V3,IN\$V4,color=IN\$V2),size=$ptSize,alpha=$alpha,shape=16) +";
+	geom_point(aes(IN\$xdim,IN\$ydim,color=IN\$annot),size=$ptSize,alpha=$alpha,shape=16) +";
 	} else {
 	print R "
-	geom_point(aes(fail\$V3,fail\$V4),color=$binary_fail_color,size=$ptSize,alpha=$alpha,shape=16) +
-	geom_point(aes(pass\$V3,pass\$V4),color=$binary_pass_color,size=$ptSize,alpha=$alpha,shape=16) +";
+	geom_point(aes(fail\$xdim,fail\$ydim),color=$binary_fail_color,size=$ptSize,alpha=$alpha,shape=16) +
+	geom_point(aes(pass\$xdim,pass\$ydim),color=$binary_pass_color,size=$ptSize,alpha=$alpha,shape=16) +";
 	}
 }
 
@@ -520,6 +527,11 @@ if ($color_mapping !~ /none/i && !defined $opt{'V'}) {
 } elsif (defined $opt{'V'} && !defined $opt{'B'}) {
 	print R "
 	scale_colour_gradientn(colours=gradient_funct(21),limits=c($minV,$maxV)) +";
+}
+
+if (defined $opt{'N'}) {
+	print R "
+	transition_time(frame) +";
 }
 
 if ($theme =~ /Clean/i) {
@@ -563,18 +575,24 @@ if ($theme =~ /Clean/i) {
 	}
 }
 
+if (defined $opt{'N'}) {
+print R "
+anim_save(\"$opt{'O'}.animation.gif\",PLT)
+";
+} else {
 print R "
 ggsave(plot=PLT,filename=\"$opt{'O'}.plot.png\",width=$width,height=$height,dpi=900)
 ggsave(plot=PLT,filename=\"$opt{'O'}.plot.pdf\",width=$width,height=$height)
 ";
+}
 
-if (defined $opt{'A'} && defined $opt{'V'}) {
+if (defined $opt{'A'} && defined $opt{'V'} && !defined $opt{'N'}) {
 print R "
 #Violin plot over opt A 
 
 Violin<-ggplot() + theme_bw() +
-	geom_violin(aes(IN\$V5,IN\$V2,fill=IN\$V5),alpha=0.5,color=\"gray30\",size=0.5) +
-	geom_jitter(aes(IN\$V5,IN\$V2),color=\"gray30\",size=0.15) +";
+	geom_violin(aes(IN\$annot,IN\$value,fill=IN\$annot),alpha=0.5,color=\"gray30\",size=0.5) +
+	geom_jitter(aes(IN\$annot,IN\$value),color=\"gray30\",size=0.15) +";
 if ($color_mapping !~ /none/i) {
 	print R "
 	scale_fill_manual(values = c($color_mapping)) +";
