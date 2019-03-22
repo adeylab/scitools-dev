@@ -588,16 +588,17 @@ if ($theme =~ /Clean/i) {
 }
 
 if (defined $opt{'N'}) {
-if (defined $opt{'d'}) {
+	if (defined $opt{'d'}) {
 print R "
 ANIM<-animate(PLT,start_pause = $pause,end_pause = $pause,rewind = TRUE,height=$gif_height,width=$gif_width)
 anim_save(\"$opt{'O'}.animation.gif\",ANIM)
 ";
+	} else {
 print R "
 ANIM<-animate(PLT,start_pause = $pause,end_pause = $pause,height=$gif_height,width=$gif_width)
 anim_save(\"$opt{'O'}.animation.gif\",ANIM)
 ";
-}
+	}
 } else {
 print R "
 ggsave(plot=PLT,filename=\"$opt{'O'}.plot.png\",width=$width,height=$height,dpi=900)
