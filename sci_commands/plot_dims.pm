@@ -593,7 +593,6 @@ print R "
 ANIM<-animate(PLT,start_pause = $pause,end_pause = $pause,rewind = TRUE,height=$gif_height,width=$gif_width)
 anim_save(\"$opt{'O'}.animation.gif\",ANIM)
 ";
-else {
 print R "
 ANIM<-animate(PLT,start_pause = $pause,end_pause = $pause,height=$gif_height,width=$gif_width)
 anim_save(\"$opt{'O'}.animation.gif\",ANIM)
