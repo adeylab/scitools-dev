@@ -266,7 +266,7 @@ foreach $cellID (keys %CELLID_DIMS) {
 	
 }
 
-print STDERR "INFO: $cell_ct cells included.\n"
+print STDERR "INFO: $cell_ct cells included.\n";
 
 if (defined $opt{'z'}) { # ZSCORE!
 	$dim1_sum = 0; $dim2_sum = 0;
