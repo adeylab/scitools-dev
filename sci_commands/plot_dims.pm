@@ -314,6 +314,7 @@ if (defined $opt{'z'}) { # ZSCORE!
 	foreach $cellID (keys %CELLID_include) {
 		$value = ($CELLID_DIMS{$cellID}[$xdim]-$dim1_mean)/$dim1_stdev;
 		$CELLID_DIMS{$cellID}[$xdim] = $value;
+		print STDERR "DEBUG: ( $CELLID_DIMS{$cellID}[$ydim]-$dim2_mean ) / $dim2_stdev\n";
 		$value = ($CELLID_DIMS{$cellID}[$ydim]-$dim2_mean)/$dim2_stdev;
 		$CELLID_DIMS{$cellID}[$ydim] = $value;
 		if ($opt{'N'} =~ /^T/i) {
