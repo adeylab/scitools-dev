@@ -147,6 +147,7 @@ foreach $barc (sort {$RAW_BARC_ct{$a}<=>$RAW_BARC_ct{$b}} keys %RAW_BARC_ct) {
 				if (defined $RAW_BARC_ct{$test_barc}) {
 					if ($RAW_BARC_ct{$test_barc} > $match_count) {
 						$match = $test_barc;
+						$match_count = $RAW_BARC_ct{$test_barc};
 					}
 				}
 				if ($hdist>1) {
@@ -158,6 +159,7 @@ foreach $barc (sort {$RAW_BARC_ct{$a}<=>$RAW_BARC_ct{$b}} keys %RAW_BARC_ct) {
 							if (defined $RAW_BARC_ct{$test_barc}) {
 								if ($RAW_BARC_ct{$test_barc2} > $match_count) {
 									$match = $test_barc2;
+									$match_count = $RAW_BARC_ct{$test_barc2};
 								}
 							}
 						}
