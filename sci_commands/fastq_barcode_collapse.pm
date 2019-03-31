@@ -105,7 +105,7 @@ while ($tag = <IX1>) {
 		$seq .= $seq2;
 		$qual .= $qual2;
 	}
-	$tag =~ s/^\@//; $tag =~ s/:.+$//;
+	$tag =~ s/^\@//; $tag =~ s/\s.+$//;
 	$exclude = 0;
 	foreach $pattern (@EXCLUSION_PATTERNS) {
 		if ($seq =~ /$pattern/i) {
@@ -204,7 +204,7 @@ while ($tag = <R1>) {
 	if (defined $ARGV[2]) {
 		$tag2 = <R>; chomp $tag2; $seq2 = <R2>; chomp $seq2; $null = <R2>; $qual2 = <R2>; chomp $qual2;
 	}
-	$tag =~ s/^\@//; $tag =~ s/:.+$//;
+	$tag =~ s/^\@//; $tag =~ s/\s.+$//;
 	if (!defined $TAG_barc{$tag}) {
 		if (!defined $TAG_exclude{$tag}) {
 			print LOG "WARNING: $tag in read1 was not found in the index fastq file!\n";
@@ -219,7 +219,7 @@ while ($tag = <R1>) {
 		}
 		$JUMP_HIST{$barc_jumps}++;
 		
-		print STDERR "DEBUG: $TAG_barc{$tag} jumped $barc_jumps to match $barc\n";
+#		print STDERR "DEBUG: $TAG_barc{$tag} jumped $barc_jumps to match $barc\n";
 		
 		if ($barc_jumps > $jdist) {
 			$jump_excluded++;
