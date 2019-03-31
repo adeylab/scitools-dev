@@ -148,6 +148,7 @@ foreach $barc (sort {$RAW_BARC_ct{$a}<=>$RAW_BARC_ct{$b}} keys %RAW_BARC_ct) {
 					if ($RAW_BARC_ct{$test_barc} > $match_count) {
 						$match = $test_barc;
 						$match_count = $RAW_BARC_ct{$test_barc};
+						print STDERR "DEBUG: $barc matches $test_barc w/ hd1; match count is $match_count\n";
 					}
 				}
 				if ($hdist>1) {
