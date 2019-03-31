@@ -148,7 +148,7 @@ foreach $barc (sort {$RAW_BARC_ct{$a}<=>$RAW_BARC_ct{$b}} keys %RAW_BARC_ct) {
 					if ($RAW_BARC_ct{$test_barc} > $match_count) {
 						$match = $test_barc;
 						$match_count = $RAW_BARC_ct{$test_barc};
-						print STDERR "DEBUG: $barc matches $test_barc w/ hd1; match count is $match_count\n";
+#						print STDERR "DEBUG: $barc matches $test_barc w/ hd1; match count is $match_count\n";
 					}
 				}
 				if ($hdist>1) {
@@ -218,6 +218,8 @@ while ($tag = <R1>) {
 			$barc = $new;
 		}
 		$JUMP_HIST{$barc_jumps}++;
+		
+		print STDERR "DEBUG: $TAG_barc{$tag} jumped $barc_jumps to match $barc\n";
 		
 		if ($barc_jumps > $jdist) {
 			$jump_excluded++;
