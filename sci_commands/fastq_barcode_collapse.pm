@@ -73,7 +73,7 @@ foreach $option (keys %opt) {
 	print LOG "\t\t$option\t$opt{$option}\n";
 }
 print LOG "\tIndex Files: $ARGV[0]\n\tRead1 File: $ARGV[1]\n";
-if (defined $ARGV[2]) {print LOG "\tRead2 File: $ARGV[2]\n"};
+if (defined $ARGV[2]) {print LOG "\tRead2 File: $ARGV[2]\nINFO: Processing index fastq files...\n"};
 
 # read in all barcodes
 
@@ -97,7 +97,7 @@ if ($ARGV[0] =~ /,/) {
 	}
 }
 
-$tag_exclusion_ct = 0; $raw_barc_total = 0;
+$tag_exclusion_ct = 0; $raw_barc_total = 0; $processed_reads = 0; $increment = 1000000; $report = $increment;
 while ($tag = <IX1>) {
 	chomp $tag; $seq = <IX1>; chomp $seq; $null = <IX1>; $qual = <IX1>; chomp $qual;
 	if (defined $index2_file) {
@@ -119,6 +119,12 @@ while ($tag = <IX1>) {
 	} else {
 		$TAG_exclude{$tag}++;
 		$tag_exclusion_ct++;
+	}
+	$processed_reads++;
+	if ($processed_reads>=$report) {
+		$ts = localtime(time);
+		print LOG "\t$ts, $report reads processed. $tag_exclusion_ct excluded due to tag sequence.\n";
+		$report += $increment;
 	}
 }
 close IX1; if (defined $index2_file) {close IX2};
