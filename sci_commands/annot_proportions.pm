@@ -24,7 +24,7 @@ Options:
 
 if (!defined $ARGV[0]) {die "Provide a check file!\n$die2"};
 if (!defined $opt{'A'}) {die "Provide an annotation file as -A option!\n$die2"};
-if (!defined $opt{'O'}) {$opt{'O'} = $ARGV[0]; $opt{'O'} =~ s/\..+$//};
+if (!defined $opt{'O'}) {$opt{'O'} = $ARGV[0]; $opt{'O'} =~ s/\.\D+$//};
 read_annot($opt{'A'});
 
 if ($ARGV[0] =~ /\.gz$/) {
