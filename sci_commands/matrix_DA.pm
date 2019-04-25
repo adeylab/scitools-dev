@@ -70,7 +70,6 @@ system("mkdir $opt{'O'}.$name_out");
 system("mkdir $opt{'O'}.$name_out/plots");
 	
 #read in annotation, scitools approach
-#190425 RM correction: $annotagg[0] index is wrong
 if (defined $opt{'A'}) {
    read_annot($opt{'A'});
    for my $CELLID (sort keys %CELLID_annot){
@@ -82,7 +81,7 @@ if (defined $opt{'A'}) {
       @annotagg = split(/_/, $aggannot);
 	  pop(@annotagg);
 	  $aggannotID = join("_", @annotagg);
-      push(@{$ANNOT_AGGID{$annotagg[1]}},$aggannot);
+      push(@{$ANNOT_AGGID{$annotagg[0]}},$aggannot);
    }
    } else {die $die2}
 
