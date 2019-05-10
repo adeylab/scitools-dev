@@ -129,7 +129,7 @@ if (!defined $opt{'c'} && !defined $opt{'C'} && !defined $opt{'A'}) { # no speci
 	PLT<-ggplot(IN,aes(V3,color=\"lightsteelblue4\") + geom_density() +"; 
 } else { # color
 	print R "
-	PLT<-ggplot(IN,aes(V3,color=V2) + geom_density() +"; 
+	PLT<-ggplot(IN,aes(V3,color=V2)) + geom_density() +"; 
 }
 
 if ($color_mapping !~ /none/i) {
