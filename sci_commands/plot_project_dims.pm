@@ -69,11 +69,12 @@ while ($row = <$fh>) {
   chomp $row;
   @row_array = split(/\t/, $row);
   $cellID=shift @row_array;
-  $CELLID_DIMS{$cellID}=@row_array;
- 
+  for ($i = 0; $i < @row_array; $i++) 
+  {$CELLID_DIMS{$cellID}[$i]=@row_array[$i];}
+  $counter=scalar @row_array;
 }
 
-$counter=scalar @row_array;
+
 
 if (defined $opt{'R'}) {$Rscript = $opt{'R'}};
 if (defined $opt{'s'}) {$scitools = $opt{'s'}};
