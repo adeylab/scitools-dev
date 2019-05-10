@@ -5,7 +5,7 @@ use Getopt::Std; %opt = ();
 use Exporter "import";
 @EXPORT = ("plot_project_dims");
 
-sub plot_dims {
+sub plot_project_dims {
 
 @ARGV = @_;
 # Defaults
