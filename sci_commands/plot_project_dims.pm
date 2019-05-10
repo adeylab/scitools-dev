@@ -64,16 +64,16 @@ $filename = $ARGV[0];
 open($fh, '<:encoding(UTF-8)', $filename)
   or die "Could not open file '$filename' $!";
  
- $counter=0;
+ 
 while ($row = <$fh>) {
   chomp $row;
   @row_array = split(/\t/, $row);
   $cellID=shift @row_array;
-  $CELLID_DIMS{$cellID}[$counter]=@row_array;
-  $counter++;
+  $CELLID_DIMS{$cellID}=@row_array;
+ 
 }
 
-
+$counter=scalar @row_array;
 
 if (defined $opt{'R'}) {$Rscript = $opt{'R'}};
 if (defined $opt{'s'}) {$scitools = $opt{'s'}};
@@ -88,7 +88,7 @@ if (defined $opt{'a'}) {
 if (defined $opt{'C'}) {read_color_file($opt{'C'})};
 if (defined $opt{'c'}) {read_color_string($opt{'c'})};
 
-for (my $i=0; $i < $counter; $i++) {
+for (my $i=0; $i <= $counter; $i++) {
 open DATA, ">$opt{'O'}.dim$i.plot.txt";
 	foreach $cellID (keys %CELLID_DIMS) {
 
