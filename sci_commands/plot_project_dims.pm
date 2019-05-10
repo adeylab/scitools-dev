@@ -20,7 +20,10 @@ $height = 4;
 getopts("O:A:a:C:c:R:T:V:M:Xs:w:h:", \%opt);
 
 $die2 = "
-scitools plot-dims [options] [dimensions file(s), comma sep]
+scitools plot-project-dims [options] [dimensions file]
+
+Project cell density onto individual dimensions, Useful for linear dim reductions
+
 
 Options - general:
    -O   [STR]   Output prefix (default is dims file 1 prefix)
