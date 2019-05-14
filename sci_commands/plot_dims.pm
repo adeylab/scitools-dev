@@ -525,7 +525,7 @@ if (!defined $opt{'c'} && !defined $opt{'C'} && !defined $opt{'A'} && !defined $
 } else { # values file specified
 	if (!defined $opt{'B'}) {
 	print R "
-	geom_point(aes(xdim,ydim,color=annot),size=$ptSize,alpha=$alpha,shape=16) +";
+	geom_point(aes(xdim,ydim,color=value),size=$ptSize,alpha=$alpha,shape=16) +";
 	} else { # NEED TO VERIFY THIS WITH ADDING THE data=IN IN PLOT INITIALIZATION!
 	print R "
 	geom_point(aes(fail\$xdim,fail\$ydim),color=$binary_fail_color,size=$ptSize,alpha=$alpha,shape=16) +
