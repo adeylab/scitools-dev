@@ -630,7 +630,7 @@ ggsave(plot=Violin,filename=\"$opt{'O'}.violin.pdf\",width=7,height=3)
 folder<-strsplit(\"$opt{'O'}\", \"\/\")[[1]]
 feature<-strsplit(\"$opt{'O'}\", \"\/\")[[1]]
 
-fit <- aov(V2 ~ V5, data=IN)
+fit <- aov(value ~ annot, data=IN)
 F<-summary(fit)[[1]][[\"F value\"]][1]
 P<-summary(fit)[[1]][[\"Pr(>F)\"]][1]
 
@@ -639,7 +639,7 @@ write(output,file=paste0(folder[1],\"/Annova_sum.txt\"),append=TRUE,ncolumns=3,s
 
 #individual comparisons with TukeyHSD
 comp<-TukeyHSD(fit)
-write.table(as.matrix(comp\$V5),file=\"./$opt{'O'}.TukeyHSD.txt\",quote=FALSE,sep=\"\\t\",row.names=T,col.names=T)";
+write.table(as.matrix(comp\$annot),file=\"./$opt{'O'}.TukeyHSD.txt\",quote=FALSE,sep=\"\\t\",row.names=T,col.names=T)";
 
 }
 
