@@ -125,7 +125,7 @@ cellwritecistopicmatrix <-function (object, method = \"Z-score\", ...)
     }
 	
 	if (method == \'Imputed\') {
-	pred.matrix <- as.data.frame(predictiveDistribution(cisTopicObject))
+	pred.matrix <- as.data.frame(predictiveDistribution(object))
     colnames(pred.matrix) <- object\@cell.names
 	write.table(pred.matrix,file=paste0($opt{'O'},\"_\",$opt{'T'},\".matrix\"),col.names=T,row.names=T,sep=\"\\t\",quote=F)
     }
@@ -137,8 +137,8 @@ cellwritecistopicmatrix <-function (object, method = \"Z-score\", ...)
 	}
 }
 
-
-cellwritecistopicmatrix($ARGV[0],method=$opt{'T'})
+cistopicObject<-readRDS($ARGV[0])
+cellwritecistopicmatrix(cistopicObject,method=$opt{'T'})
 ";
 
 
