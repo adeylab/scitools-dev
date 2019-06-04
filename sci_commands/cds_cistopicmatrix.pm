@@ -32,7 +32,7 @@ $opt{'O'}=~s/.rds//;
 if (!defined $opt{'T'}) {$opt{'T'} = "Z-score"};
 
 
-open R, ">$opt{'O'}/cds_matrix.r";
+open R, ">cds_matrix.r";
 
 print R "
 modelMatSelection <- function(
