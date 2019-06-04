@@ -115,7 +115,7 @@ modelMatSelection <- function(
 cellwritecistopicmatrix <-function (object, method = \"Z-score\", ...)
 {
     if (!\"cisTopic\" %in% installed.packages()) {
-        stop(\"Please, install cellwritecistopicmatrixp: \")
+        stop(\"Please, install cistopic: \")
     }
     else {
         require(cisTopic)
@@ -123,10 +123,18 @@ cellwritecistopicmatrix <-function (object, method = \"Z-score\", ...)
     if (length(object\@selected.model) < 1) {
         stop(\"Please, run selectModel() first.\")
     }
+	
+	if (method == \'Imputed\') {
+	pred.matrix <- as.data.frame(predictiveDistribution(cisTopicObject))
+    colnames(pred.matrix) <- object\@cell.names
+	write.table(pred.matrix,file=paste0($opt{'O'},\"_\",$opt{'T'},\".matrix\"),col.names=T,row.names=T,sep=\"\\t\",quote=F)
+    }
+	else {
     topic.mat <- modelMatSelection(object, \"cell\", method)
     rownames(topic.mat) <- paste(\"Topic\", seq(1, nrow(topic.mat)))
     colnames(topic.mat) <- object\@cell.names
 	write.table(topic.mat,file=paste0($opt{'O'},\"_\",$opt{'T'},\"topic.matrix\"),col.names=T,row.names=T,sep=\"\\t\",quote=F)
+	}
 }
 
 
