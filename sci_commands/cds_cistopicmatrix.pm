@@ -133,11 +133,11 @@ cellwritecistopicmatrix <-function (object, method = \"Z-score\", ...)
     topic.mat <- modelMatSelection(object, \"cell\", method)
     rownames(topic.mat) <- paste(\"Topic\", seq(1, nrow(topic.mat)))
     colnames(topic.mat) <- object\@cell.names
-	write.table(topic.mat,file=paste0($opt{'O'},\"_\",$opt{'T'},\"topic.matrix\"),col.names=T,row.names=T,sep=\"\\t\",quote=F)
+	write.table(topic.mat,file=paste0(\"$opt{'O'}\",\"_\",\"$opt{'T'}\",\"topic.matrix\"),col.names=T,row.names=T,sep=\"\\t\",quote=F)
 	}
 }
 
-cistopicObject<-readRDS($ARGV[0])
+cistopicObject<-readRDS(\"$ARGV[0]\")
 cellwritecistopicmatrix(cistopicObject,method=$opt{'T'})
 ";
 
