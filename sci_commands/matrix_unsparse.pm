@@ -84,16 +84,16 @@ if (defined $opt{'z'}) {
 
 print OUT "$header\n";
 for ($rowID = 1; $rowID < @ROWIDs; $rowID++) {
-	print MTX "$ROWIDs[$rowID]";
+	print OUT "$ROWIDs[$rowID]";
 	for ($cellID = 1; $cellID < @CELLIDs; $cellID++) {
 		if (defined $COUNTS{$rowID}{$cellID}) {
-			print MTX "\t$COUNTS{$rowID}{$cellID}\n";
+			print OUT "\t$COUNTS{$rowID}{$cellID}\t";
 		} else {
-			print MTX "\t0";
+			print OUT "\t0";
 		}
 	}
-	print MTX "\n";
-} close MTX;
+	print OUT "\n";
+} close OUT;
 
 }
 1;
