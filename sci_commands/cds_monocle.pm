@@ -23,15 +23,15 @@ Runs the current version of Monocle3 within a directory containing files for CDS
 Options:
    -O   [STR]   Output Directory (default is [current working directory]/monocle_output)
    -R   [STR]   Rscript call (def = $Rscript)
-   -I   [FLAG]   Use internal clustering within Monocle call. If not specified, 
+   -T   [FLAG]   Use internal clustering within Monocle call. If not specified, 
                   Monocle runs with the user-supplied cds_dims_data file.
-                  If -I not flagged, option -i is REQUIRED.
+                  If -T not flagged, option -i is REQUIRED.
             -P 	[INT]	   Only if I is specified. 
                            Number of components to be used for dimensionality reduction by PCA to denoise.
                				Default: 50 components
-   -i    [STR]    If -I is not flagged, option -i is REQUIRED.
+   -i    [STR]    If -T is not flagged, option -i is REQUIRED.
                   IRLBA dims file or cisTopic Matrix file for weighting.
-   -d    [STR]    If -I is not flagged, option -d is REQUIRED.
+   -d    [STR]    If -T is not flagged, option -d is REQUIRED.
                   Dimensionality Reduction style of dims file (Accepts [umap|tsne])
    -D    [2|3]    Dimensions to be used for final plotting (2D or 3D plotting)
                   Default: 2 Dimensions

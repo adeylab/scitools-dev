@@ -9,7 +9,7 @@ sub matrix_tfidf {
 
 @ARGV = @_;
 
-getopts("O:L:z", \%opt);
+getopts("O:L:Tz", \%opt);
 
 $die2 = "
 scitools matrix-tfidf [options] [counts matrix or sparseMatrix values file]
@@ -20,6 +20,7 @@ format as the input.
 
 Options:
    -O   [STR]   Output prefix (default is [input].tfidf)
+   -T           Use the natural log transformed TF value.
    -L   [BASE]  Log norm with base specified.
                 N for natural, def = no additional log norm
    -z           Gzip output
@@ -56,7 +57,11 @@ if ($ARGV[0] =~ /\.matrix/ || $ARGV[0] =~ /\.matrix\.gz/) {
 			if ($P[$i]>0) {
 				$tf = ($P[$i]/$MATRIX_CellID_signal{$MATRIX_COLNAMES[$i]});
 				$idf = (log(1+($matrix_colNum/($MATRIX_feature_signal{$rowID}+1))));
-				$raw_score = $tf*$idf;
+				if (defined $opt{'T'}) {
+					$raw_score = log($tf * 100000)*$idf;
+                } else {
+                    $raw_score = $tf*$idf;
+                }
 				if (defined $opt{'L'}) {
 					if ($opt{'L'} =~ /N/i) {
 						$raw_score = log($raw_score);
@@ -106,7 +111,11 @@ if ($ARGV[0] =~ /\.matrix/ || $ARGV[0] =~ /\.matrix\.gz/) {
 		($row,$col,$val) = split(/\s/, $l);
 		$tf = ($val/$COLID_sum{$col});
 		$idf = (log(1+($colNum/($ROWID_sum{$row}+1))));
-		$raw_score = $tf*$idf;
+			if (defined $opt{'T'}) {
+                $raw_score = log($tf * 100000)*$idf;
+            } else {
+        		$raw_score = $tf*$idf;
+            }
 		if (defined $opt{'L'}) {
 			if ($opt{'L'} =~ /N/i) {
 				$raw_score = log($raw_score);

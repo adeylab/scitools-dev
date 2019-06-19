@@ -87,7 +87,7 @@ for ($rowID = 1; $rowID < @ROWIDs; $rowID++) {
 	print OUT "$ROWIDs[$rowID]";
 	for ($cellID = 1; $cellID < @CELLIDs; $cellID++) {
 		if (defined $COUNTS{$rowID}{$cellID}) {
-			print OUT "\t$COUNTS{$rowID}{$cellID}\t";
+			print OUT "\t$COUNTS{$rowID}{$cellID}";
 		} else {
 			print OUT "\t0";
 		}
