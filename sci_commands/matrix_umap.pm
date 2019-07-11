@@ -113,7 +113,11 @@ if ($ARGV[0] =~ /\.dims$/) {
 	print OUT "dat<-read.table(\"$ARGV[0]\",row.names=1,header=T)";
 }
 print OUT "
-umap_dims<-umap(as.data.frame(t(dat)),method=c(\"naive\"))
+
+custom.config = umap.defaults
+custom.config$n_components = $dims
+
+umap_dims<-umap(as.data.frame(t(dat)),method=c(\"naive\"), config = custom.config)
 saveRDS(umap_dims,file=\"$opt{'O'}.UMAP.rds\")
 write.table(as.matrix(umap_dims\$layout),file=\"$opt{'O'}.UMAP.dims\",col.names=F,row.names=T,sep=\"\\t\",quote=F)";
 
