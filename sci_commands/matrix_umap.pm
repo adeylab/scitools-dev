@@ -115,7 +115,7 @@ if ($ARGV[0] =~ /\.dims$/) {
 print OUT "
 
 custom.config = umap.defaults
-custom.config$n_components = $dims
+custom.config\$n_components = $dims
 
 umap_dims<-umap(as.data.frame(t(dat)),method=c(\"naive\"), config = custom.config)
 saveRDS(umap_dims,file=\"$opt{'O'}.UMAP.rds\")
