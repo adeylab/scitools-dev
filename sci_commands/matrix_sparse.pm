@@ -43,7 +43,7 @@ $rowNum = 0;
 if (defined $opt{'z'}) {
 	open ROW, "| $gzip > $opt{'O'}.sparseMatrix.rows.gz";
 } else {
-	open ROW, ">$opt{'O'}.sparseMatrix.rows..rows";
+	open ROW, ">$opt{'O'}.sparseMatrix.rows";
 }
 if (defined $opt{'z'}) {
 	open MTX, "| $gzip > $opt{'O'}.sparseMatrix.values.gz";

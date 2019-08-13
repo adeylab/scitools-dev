@@ -190,9 +190,9 @@ if (defined $opt{'B'}) {
 
 if ($sparse < 0.5) {
 	if ($ARGV[0] =~ /\.gz$/) {
-		open MATRIX, "$zcat $ARGV[0] |"; $null = <MATRIX>;
+		open MATRIX, "$zcat $ARGV[0] |";
 	} else {
-		open MATRIX, "$ARGV[0]"; $null = <MATRIX>;
+		open MATRIX, "$ARGV[0]";
 	}
 	$h = <MATRIX>; chomp $h; @MATRIX_COLNAMES = split(/\t/, $h);
 	$matrix_colNum = @MATRIX_COLNAMES;
@@ -207,11 +207,11 @@ if ($sparse < 0.5) {
 	} else {
 		open ROWS, "$rowID_file";
 	}
-	$rowNum = 1;
+	$rowNum = 0;
 	while ($rowID = <ROWS>) {
 		chomp $rowID;
-		$ROWnum_ROWname{$rowNum} = $rowID;
 		$rowNum++;
+		$ROWnum_ROWname{$rowNum} = $rowID;
 	} close ROWS;
 	$matrix_rowNum = $rowNum;
 	
@@ -220,11 +220,11 @@ if ($sparse < 0.5) {
 	} else {
 		open COLS, "$colID_file";
 	}
-	$colNum = 1;
+	$colNum = 0;
 	while ($colID = <COLS>) {
 		chomp $colID;
-		$COLnum_COLname{$colNum} = $colID;
 		$colNum++;
+		$COLnum_COLname{$colNum} = $colID;
 	} close COLS;
 	$matrix_colNum = $colNum;
 	
@@ -263,13 +263,18 @@ while ($l = <MATRIX>) {
 		$cellID = $COLnum_COLname{$colNum};
 		if (!defined $COLNAME_nonzero{$cellID}) {$COLNAME_nonzero{$cellID} = 0};
 		if (!defined $ROWNAME_nonzero{$rowID}) {$ROWNAME_nonzero{$rowID} = 0};
-		if ((!defined $opt{'c'} || defined $CELLID_list_include{$cellID}) &&
+
+		if ((!defined $opt{'r'} && !defined $opt{'B'}) ||
+		    (defined $opt{'r'} && defined $ROWID_list_include{$rowID}) ||
+		    (defined $opt{'B'} && defined $ROWID_bed_include{$rowID})) {
+		    if ((!defined $opt{'c'} || defined $CELLID_list_include{$cellID}) &&
 			(!defined $opt{'a'} || defined $ANNOT_include{$CELLID_annot{$cellID}}) &&
 			(!defined $opt{'V'} || defined $CELLID_values_include{$cellID})) {
-				if (abs($value)>0) {
+			        if (abs($value)>0) {
 					$COLNAME_nonzero{$cellID}++;
 					$ROWNAME_nonzero{$rowID}++;
 				}
+		    }
 		}
 	}
 } close MATRIX;
