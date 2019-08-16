@@ -193,7 +193,8 @@ if ($ARGV[1] =~ /\.matrix$/) {
 			for ($i = 0; $i < @CELL_ID_LIST; $i++) {
 				if ($SITE_CELL_STATUS{$siteID}{$CELL_ID_LIST[$i]}>0.5) {
 					if (defined $opt{'B'}) {$val = 1} else {$val = $SITE_CELL_STATUS{$siteID}{$CELL_ID_LIST[$i]}};
-					print VALS "$siteNumber\t$i\t$val\n";
+					my $offset = $i + 1;
+					print VALS "$siteNumber\t$offset\t$val\n";
 				}
 			}
 		} close VALS; close SITES;
