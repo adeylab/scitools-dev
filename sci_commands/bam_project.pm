@@ -249,11 +249,11 @@ RANGE<-read.table(\"$opt{'O'}.read_projections/cell_summaries.txt\")
 SUMMARY<-read.table(\"$opt{'O'}.read_projections/summary_projections.txt\")
 PLT<-ggplot() + theme_bw() +
 	geom_ribbon(aes(x=(RANGE\$V1*100),ymin=log10(RANGE\$V6),ymax=log10(RANGE\$V5)),fill=\"lightsteelblue4\",alpha=0.5) +
-	geom_line(aes((RANGE\$V1*100),log10(RANGE\$V3)),color=\"black\",size=0.5,linetype=\"dashed\") +
-	geom_line(aes((RANGE\$V1*100),log10(RANGE\$V4)),color=\"black\",size=0.5,linetype=\"dashed\") +
+#	geom_line(aes((RANGE\$V1*100),log10(RANGE\$V3)),color=\"black\",size=0.5,linetype=\"dashed\") +
+#	geom_line(aes((RANGE\$V1*100),log10(RANGE\$V4)),color=\"black\",size=0.5,linetype=\"dashed\") +
 	geom_line(aes((RANGE\$V1*100),log10(RANGE\$V5)),color=\"black\",size=0.5,linetype=\"dashed\") +
 	geom_line(aes((RANGE\$V1*100),log10(RANGE\$V6)),color=\"black\",size=0.5,linetype=\"dashed\") +
-	geom_line(aes((SUMMARY\$V1*100),log10(SUMMARY\$V4)),color=\"black\",size=1,linetype=\"dashed\") +
+#	geom_line(aes((SUMMARY\$V1*100),log10(SUMMARY\$V4)),color=\"black\",size=1,linetype=\"dashed\") +
 	geom_line(aes((SUMMARY\$V1*100),log10(SUMMARY\$V3)),color=\"black\",size=1) +
 	geom_point(aes((SUMMARY\$V1*100),log10(SUMMARY\$V3)),color=\"black\",size=3) +
 	geom_point(aes((SUMMARY\$V1*100),log10(SUMMARY\$V3),color=log10(SUMMARY\$V2)),size=2) +
