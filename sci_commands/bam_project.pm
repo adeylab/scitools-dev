@@ -229,11 +229,13 @@ while ($projected_complexity > 0.05) {
 	$projected_mean = int($uniq_read_sum/$len);
 	$projected_max = $UNIQ_RDSs[($len-1)];
 	$projected_min = $UNIQ_RDSs[0];
-	$projected_top25 = $UNIQ_RDSs[int($len/4)];
+	$projected_top25 = $UNIQ_RDSs[int($len*0.25)];
 	$projected_bot25 = $UNIQ_RDSs[int($len*0.75)];
+	$projected_top10 = $UNIQ_RDSs[int($len*0.1)];
+	$projected_bot10 = $UNIQ_RDSs[int($len*0.9)];
 	if ($projected_complexity != $previous_complexity) {
 		print MED_PROJ "$projected_complexity\t$projected_read_total\t$projected_unique\t$projected_mean\n";
-		print CELL_SUMMARY "$projected_complexity\t$projected_read_total\t$projected_max\t$projected_min\t$projected_top25\t$projected_bot25\n";
+		print CELL_SUMMARY "$projected_complexity\t$projected_read_total\t$projected_max\t$projected_min\t$projected_top25\t$projected_bot25\t$projected_top10\t$projected_bot10\n";
 		$previous_complexity = $projected_complexity;
 	}
 	$projected_read_total += $read_increments;
@@ -253,6 +255,8 @@ PLT<-ggplot() + theme_bw() +
 #	geom_line(aes((RANGE\$V1*100),log10(RANGE\$V4)),color=\"black\",size=0.5,linetype=\"dashed\") +
 	geom_line(aes((RANGE\$V1*100),log10(RANGE\$V5)),color=\"black\",size=0.5,linetype=\"dashed\") +
 	geom_line(aes((RANGE\$V1*100),log10(RANGE\$V6)),color=\"black\",size=0.5,linetype=\"dashed\") +
+	geom_line(aes((RANGE\$V1*100),log10(RANGE\$V7)),color=\"black\",size=0.5,linetype=\"dashed\") +
+	geom_line(aes((RANGE\$V1*100),log10(RANGE\$V8)),color=\"black\",size=0.5,linetype=\"dashed\") +
 #	geom_line(aes((SUMMARY\$V1*100),log10(SUMMARY\$V4)),color=\"black\",size=1,linetype=\"dashed\") +
 	geom_line(aes((SUMMARY\$V1*100),log10(SUMMARY\$V3)),color=\"black\",size=1) +
 	geom_point(aes((SUMMARY\$V1*100),log10(SUMMARY\$V3)),color=\"black\",size=3) +
