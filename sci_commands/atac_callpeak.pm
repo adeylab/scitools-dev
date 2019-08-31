@@ -71,6 +71,7 @@ while ($l = <IN>) {
 			print OUT "$P[0]\t$start\t$end\n";
 		}
 	}
+}
 } close IN; close OUT;
 
 open IN, "$opt{'O'}.$min_feature_size.tmp";
