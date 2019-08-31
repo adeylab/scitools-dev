@@ -63,15 +63,15 @@ while ($l = <IN>) {
 			$start = int($mid-($min_feature_size/2));
 			$end = int($mid+($min_feature_size/2));
 			print OUT "$P[0]\t$start\t$end\n";
-		} else {
+		}} else {
 			if (($P[2]-$P[1])<$min_feature_size) {
 			$mid = ($P[2]+$P[1])/2;
 			$start = int($mid-($min_feature_size/2));
 			$end = int($mid+($min_feature_size/2));
 			print OUT "$P[0]\t$start\t$end\n";
 		}
-	}
 }
+
 } close IN; close OUT;
 
 open IN, "$opt{'O'}.$min_feature_size.tmp";
