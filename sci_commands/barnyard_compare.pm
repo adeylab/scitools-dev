@@ -57,19 +57,28 @@ while ($l = <IN>) {
 $pure_cells = 0;
 $mix_cells = 0;
 $total_cells = 0;
+$human_cells = 0;
+$mouse_cells = 0;
 
 open OUT, ">$opt{'O'}.barnyard_cells.txt";
 foreach $barc (sort {$BARC_total{$b}<=>$BARC_total{$a}} keys %BARC_total) {
 	if ($BARC_total{$barc} >= $minR) {
 		$total_cells++;
 		$frac_h = sprintf("%.2f", $BARC_human{$barc}/$BARC_total{$barc});
-		print OUT "$barc\t$BARC_total{$barc}\t$BARC_human{$barc}\t$BARC_mouse{$barc}\t$frac_h\n";
 		$total_cells++;
-		if ($frac_h>=(1-$maxF) || $frac_h<=$maxF) {
+		if ($frac_h>=(1-$maxF)) {
 			$pure_cells++;
+			$human_cells++;
+			$call = "Human";
+		} elsif ($frac_h<=$maxF) {
+			$pure_cells++;
+			$mouse_cells++;
+			$call = "Mouse";
 		} else {
 			$mix_cells++;
+			$call = "Mixed";
 		}
+		print OUT "$barc\t$BARC_total{$barc}\t$BARC_human{$barc}\t$BARC_mouse{$barc}\t$frac_h\t$call\n"
 	}
 } close OUT;
 
@@ -78,6 +87,8 @@ $frac_mix = sprintf("%.2f", $mix_cells/$total_cells);
 $est_total_collision = $frac_mix*2;
 print OUT "Barnyard stats for $ARGV[0]
 Total cells with $minR reads: $total_cells
+Cells called as human: $human_cells
+Cells called as mouse: $mouse_cells
 Cells with > $maxF from other species: $mix_cells ($frac_mix)
 Estimated total collision (mix fraction * 2): $est_total_collision
 ";
