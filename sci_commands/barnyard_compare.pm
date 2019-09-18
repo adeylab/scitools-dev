@@ -43,6 +43,11 @@ while ($l = <IN>) {
 	chomp $l;
 	@P = split(/\t/, $l);
 	$barc = $P[0]; $barc =~ s/:.+$//;
+	if (!defined $BARC_total{$barc}) {
+		$BARC_total{$barc} = 0;
+		$BARC_human{$barc} = 0;
+		$BARC_mouse{$barc} = 0;
+	}
 	if ($P[2] !~ /(M|Y|L|K|G|Un|un|random|alt|Random|Alt)/) {
 		if ($P[2] =~ /_h$/) {
 			$BARC_total{$barc}++;
