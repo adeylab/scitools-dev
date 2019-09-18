@@ -20,7 +20,7 @@ scitools barnyard-compare [options] [sorted rmdup filtered bam file]
 Generates a human vs mouse barnyard comparison file & stats.
 Reference must have _h or _m at the end of chromosome names to indicate species.
 
-Will exclude /(M|Y|L|K|G|Un|Random|Alt)/i chroms
+Will exclude /(M|Y|L|K|G|Un|Random|Alt)/ chroms
 
 Options:
    -O   [STR]   Output prefix (default is bam file prefix)
@@ -43,7 +43,7 @@ while ($l = <IN>) {
 	chomp $l;
 	@P = split(/\t/, $l);
 	$barc = $P[0]; $barc =~ s/:.+$//;
-	if ($P[2] !~ /(M|Y|L|K|G|Un|Random|Alt)/i) {
+	if ($P[2] !~ /(M|Y|L|K|G|Un|un|random|alt|Random|Alt)/) {
 		if ($P[2] =~ /_h$/) {
 			$BARC_total{$barc}++;
 			$BARC_human{$barc}++;
@@ -53,6 +53,10 @@ while ($l = <IN>) {
 		}
 	}
 } close IN;
+
+$pure_cells = 0;
+$mix_cells = 0;
+$total_cells = 0;
 
 open OUT, ">$opt{'O'}.barnyard_cells.txt";
 foreach $barc (sort {$BARC_total{$b}<=>$BARC_total{$a}} keys %BARC_total) {
