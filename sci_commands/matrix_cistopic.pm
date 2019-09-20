@@ -113,7 +113,6 @@ print R "
 library(plyr)
 library(cisTopic)
 
-
 readRDS(\"$ARGV[0]\")
 cisTopicObject <- getRegionsScores(cisTopicObject, method='Z-score', scale=TRUE)
 cisTopicObject <- binarizecisTopics(cisTopicObject, thrP=$thrP, plot=FALSE)
@@ -134,7 +133,21 @@ open R, ">$opt{'O'}.cistopic.r";
 print R "
 library(plyr)
 library(cisTopic)
-IN<-as.matrix(read.table(\"$ARGV[0]\"))
+library(Matrix)
+";
+
+if ($ARGV[0] =~ /sparseMatrix/i) {
+	print R "IN<-as.matrix(read.table(\"$ARGV[0]\"))
+IN<-sparseMatrix(i=IN[,1],j=IN[,2],x=IN[,3])
+COLS<-read.table(\"$col_file\")
+colnames(IN)<-COLS\$V1
+ROWS<-read.table(\"$row_file\")
+row.names(IN)<-ROWS\$V1\n";
+} else {
+	print R "IN<-as.matrix(read.table(\"$ARGV[0]\"))\n";
+}
+
+print R "
 row.names(IN)<-sub(\"_\",\"-\",sub(\"_\",\":\",row.names(IN)))
 
 #Set up filtered binarized counts matrix
