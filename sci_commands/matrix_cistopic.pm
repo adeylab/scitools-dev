@@ -62,6 +62,7 @@ if (!defined $opt{'O'}) {
 	$prefix = $ARGV[0];
 	$prefix =~ s/\.gz$//;
 	$prefix =~ s/\.matrix$//;
+	$prefix =~ s/\.values$//;
 	$prefix =~ s/\.sparseMatrix$//;
 	$opt{'O'} = $prefix;
 }
