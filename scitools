@@ -191,7 +191,7 @@ sub load_aliases {
 	foreach $alias ("annot_merge", "merge_annot") {$COMMAND_ALIAS{$alias} = "annot_merge"};
 	foreach $alias ("annot_rename", "rename_annot") {$COMMAND_ALIAS{$alias} = "annot_rename"};
 	foreach $alias ("rename_cells") {$COMMAND_ALIAS{$alias} = "rename_cells"};
-	foreach $alias ("annot_collapse", "collapse_annot", "rename_annot") {$COMMAND_ALIAS{$alias} = "annot_collapse"};
+	foreach $alias ("annot_collapse", "collapse_annot") {$COMMAND_ALIAS{$alias} = "annot_collapse"};
 	foreach $alias ("annot_proportions", "proportions", "proportions_annot") {$COMMAND_ALIAS{$alias} = "annot_proportions"};
 	
 	# sci-ATAC-seq Commands
