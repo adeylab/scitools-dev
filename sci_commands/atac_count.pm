@@ -8,7 +8,7 @@ use Exporter "import";
 sub atac_count {
 
 #defaults
-$format = "D";
+$format = "S";
 
 @ARGV = @_;
 getopts("s:b:O:BC:XF:z", \%opt);
