@@ -57,21 +57,16 @@ open OUT, "| $bedtools sort -i - 2>/dev/null | $bedtools merge -i - > $opt{'O'}.
 while ($l = <IN>) {
 	chomp $l;
 	@P = split(/\t/, $l);
-	if (!defined $opt{'e'} && $P[2] =~ /(M|Y|L|K|G|Un|Random|Alt)/i) {
+	if (defined $opt{'e'} || $P[2] !~ /(M|Y|L|K|G|Un|Random|Alt)/i) {
 		if (($P[2]-$P[1])<$min_feature_size) {
 			$mid = ($P[2]+$P[1])/2;
 			$start = int($mid-($min_feature_size/2));
 			$end = int($mid+($min_feature_size/2));
 			print OUT "$P[0]\t$start\t$end\n";
-		}} else {
-			if (($P[2]-$P[1])<$min_feature_size) {
-			$mid = ($P[2]+$P[1])/2;
-			$start = int($mid-($min_feature_size/2));
-			$end = int($mid+($min_feature_size/2));
-			print OUT "$P[0]\t$start\t$end\n";
+		} else {
+			print OUT "$P[0]\t$P[1]\t$P[2]\n";
 		}
-}
-
+	}
 } close IN; close OUT;
 
 open IN, "$opt{'O'}.$min_feature_size.tmp";
@@ -82,6 +77,8 @@ while ($l = <IN>) {
 	if (defined $opt{'f'}) {
 		if ($P[2] < $CHR_length{$P[0]}) {
 			print OUT "$P[0]\t$P[1]\t$P[2]\t$P[0]_$P[1]_$P[2]\n";
+		} else {
+			print OUT "$P[0]\t$P[1]\t$CHR_length{$P[0]}\t$P[0]_$P[1]_$CHR_length{$P[0]}\n";
 		}
 	} else {
 		print OUT "$P[0]\t$P[1]\t$P[2]\t$P[0]_$P[1]_$P[2]\n";
