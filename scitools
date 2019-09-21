@@ -189,8 +189,9 @@ sub load_aliases {
 	# Annotation Commands
 	foreach $alias ("annot_make", "make_annot") {$COMMAND_ALIAS{$alias} = "annot_make"};
 	foreach $alias ("annot_merge", "merge_annot") {$COMMAND_ALIAS{$alias} = "annot_merge"};
+	foreach $alias ("annot_rename", "rename_annot") {$COMMAND_ALIAS{$alias} = "annot_rename"};
 	foreach $alias ("rename_cells") {$COMMAND_ALIAS{$alias} = "rename_cells"};
-	foreach $alias ("annot_collapse", "collapse_annot", "rename_annot", "annot_rename") {$COMMAND_ALIAS{$alias} = "annot_collapse"};
+	foreach $alias ("annot_collapse", "collapse_annot") {$COMMAND_ALIAS{$alias} = "annot_collapse"};
 	foreach $alias ("annot_proportions", "proportions", "proportions_annot") {$COMMAND_ALIAS{$alias} = "annot_proportions"};
 	
 	# sci-ATAC-seq Commands
@@ -294,6 +295,7 @@ sub load_descriptions {
 	$COMMAND_DESCRIPTOR{"bam2sra"} = "Unfilterd bam files to SRA / GEO fastq files";
 	$COMMAND_DESCRIPTOR{"annot_make"} = "Make annotation file";
 	$COMMAND_DESCRIPTOR{"annot_merge"} = "Merge annotation files";
+	$COMMAND_DESCRIPTOR{"annot_rename"} = "Rename annotations using a mapping file";
 	$COMMAND_DESCRIPTOR{"annot_collapse"} = "Collapse annotations, or rename them";
 	$COMMAND_DESCRIPTOR{"annot_proportions"} = "Proportions of cells by annot";
 	$COMMAND_DESCRIPTOR{"rename_cells"} = "Rename cells";

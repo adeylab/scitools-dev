@@ -8,10 +8,10 @@ use Exporter "import";
 sub atac_count {
 
 #defaults
-$format = "D";
+$format = "S";
 
 @ARGV = @_;
-getopts("s:b:O:BC:XF:z", \%opt);
+getopts("s:b:O:BC:XF:u", \%opt);
 
 $die2 = "
 scitools atac-count [options] [bam file] [peaks bed file or matrix]
@@ -31,7 +31,7 @@ Options:
                 (file name will end in .binary.matrix)
    -C   [STR]   Complexity file (speeds up on-target calc)
    -F   [S/D]   Format: D = dense, S = sparse (def = $format)
-   -z           Gzip output
+   -u           Do not gzip output (defauly = yes)
    -X           Remove temp files
 
 ";
@@ -68,7 +68,7 @@ if ($ARGV[1] =~ /\.matrix$/) {
 	if (defined $opt{'s'}) {$common_opts .= "-s $opt{'s'} "};
 	if (defined $opt{'B'}) {$common_opts .= "-B $opt{'B'} "};
 	if (defined $opt{'C'}) {$common_opts .= "-C $opt{'C'} "};
-	if (defined $opt{'z'}) {$common_opts .= "-z "};
+	if (defined $opt{'u'}) {$common_opts .= "-u "};
 	$common_opts =~ s/\s$//;
 	#call same script but on temp bed
 	system("scitools atac-count $common_opts $ARGV[0] $tembedfilename.temp.bed");
@@ -122,7 +122,7 @@ if ($ARGV[1] =~ /\.matrix$/) {
 
 	if ($format =~ /D/i) {
 
-		if (defined $opt{'z'}) {
+		if (!defined $opt{'u'}) {
 			if (defined $opt{'B'}) {
 				open OUT, "| $gzip > $opt{'O'}.binary.matrix.gz";
 			} else {
@@ -159,7 +159,7 @@ if ($ARGV[1] =~ /\.matrix$/) {
 		
 	} elsif ($format =~ /S/i) {
 
-		if (defined $opt{'z'}) {
+		if (!defined $opt{'u'}) {
 			if (defined $opt{'B'}) {
 				open CELLS, "| $gzip > $opt{'O'}.binary.sparseMatrix.cols.gz";
 				open SITES, "| $gzip > $opt{'O'}.binary.sparseMatrix.rows.gz";
