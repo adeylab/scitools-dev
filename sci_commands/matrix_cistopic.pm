@@ -58,14 +58,16 @@ Note: Requires cisTopic R package
 ";
 
 if (!defined $ARGV[0]) {die $die2};
+
+$prefix = $ARGV[0];
+$prefix =~ s/\.gz$//;
+$prefix =~ s/\.matrix$//;
+$prefix =~ s/\.values$//;
+$prefix =~ s/\.sparseMatrix$//;
 if (!defined $opt{'O'}) {
-	$prefix = $ARGV[0];
-	$prefix =~ s/\.gz$//;
-	$prefix =~ s/\.matrix$//;
-	$prefix =~ s/\.values$//;
-	$prefix =~ s/\.sparseMatrix$//;
 	$opt{'O'} = $prefix;
 }
+
 if ($ARGV[0] =~ /sparseMatrix/i) {
 	$sparse = 1;
 	if (defined $opt{'L'}) {
