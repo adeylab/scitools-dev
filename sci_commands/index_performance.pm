@@ -102,10 +102,10 @@ foreach $cellID (keys %CELLID_count) {
 		}
 		
 		#split index name to map to coordinates
-		$nex_i7_set = $INDEX_POS_SEQ_name{'1'}{$nex_i7};
-		$pcr_i7_set = $INDEX_POS_SEQ_name{'2'}{$pcr_i7};
-		$nex_i5_set = $INDEX_POS_SEQ_name{'3'}{$nex_i5};
-		$pcr_i5_set = $INDEX_POS_SEQ_name{'4'}{$pcr_i5};
+		$nex_i7_set = $INDEX_POS_SEQ_id{'1'}{$nex_i7};
+		$pcr_i7_set = $INDEX_POS_SEQ_id{'2'}{$pcr_i7};
+		$nex_i5_set = $INDEX_POS_SEQ_id{'3'}{$nex_i5};
+		$pcr_i5_set = $INDEX_POS_SEQ_id{'4'}{$pcr_i5};
 				
 		$nex_i7_col = $INDEX_POS_SEQ_well{'1'}{$nex_i7};
 		$pcr_i7_col = $INDEX_POS_SEQ_well{'2'}{$pcr_i7};
