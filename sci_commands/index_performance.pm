@@ -13,7 +13,7 @@ sub index_performance {
 $gradient_def = "BuYlRd";
 $bias = 0.65;
 
-getopts("O:I:R:s:t:A:G:b:", \%opt);
+getopts("O:I:R:s:t:A:G:b:N", \%opt);
 
 # DEFAULTS
 @LETTERS = ("0", "A", "B", "C", "D", "E", "F", "G", "H");
@@ -36,6 +36,7 @@ Options:
          (Index names must be in form of: [Tier]_[set]_[i5/i7]_[A-H/1-12])
    -A   [STR]   Annotation file (only include cell IDs in the annot file)
    -t   [INT]   Threshold of reads for a plate to include (def = $threshold)
+   -N           Do not log scale (eg for cell counts)
    -G   [GRD]   Color gradient for plots (def = $gradient_def)
                 For all available gradients, run 'scitools gradient'
    -b   [FLT]   Gradient bias (def = $bias)
@@ -182,12 +183,17 @@ for ($i = 0; $i<@PLOT_FILES; $i++) {
 	$plotTitle = $PLOT_TITLE[$i];
 	print R "
 # Plot File = $plotFile
-IN<-read.table($plotFile)
-colnames(IN)<-(\"row\",\"col\",\"value\")
+IN<-read.table(\"$plotFile\")
+colnames(IN)<-c(\"row\",\"col\",\"value\")
 PLT<-ggplot(data=IN) + theme_bw() + ggtitle(\"$plotTitle\") +
-	xlab(\"Column\") + ylab(\"Row\") +
-	geom_tile(aes(col,row,fill=log10(value))) +
-	labs(fill=\"Log10\nReads\") +
+	xlab(\"Column\") + ylab(\"Row\") +";
+if (!defined $opt{'N'}) {
+	print R "	geom_tile(aes(col,row,fill=log10(value))) +
+	labs(fill=\"Log10\nReads\") +";
+} else {
+print R "	geom_tile(aes(col,row,value)) +
+	labs(fill=\"Count\") +";
+} print R "
 	scale_y_reverse(breaks=c(1,2,3,4,5,6,7,8)) +
 	scale_x_continuous(breaks=c(1,2,3,4,5,6,7,8,9,10,11,12)) +
 	scale_fill_gradientn(colours=gradient_funct(99))
