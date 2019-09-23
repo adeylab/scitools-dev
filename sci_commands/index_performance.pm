@@ -173,7 +173,7 @@ foreach $pcrSet (keys %PCR_SET_WELLID_count) {
 	}
 }
 
-open R, "$opt{'O'}.index_performance/plot_plates.r";
+open R, ">$opt{'O'}.index_performance/plot_plates.r";
 print R "library(ggplot2)
 $gradient_function\n";
 
