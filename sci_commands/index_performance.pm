@@ -9,20 +9,18 @@ sub index_performance {
 
 @ARGV = @_;
 
-# Defaults
-$gradient_def = "BuYlRd";
-$bias = 0.65;
-
-getopts("O:I:R:s:t:A:G:b:N", \%opt);
+getopts("O:I:R:s:t:A:G:b:NT:", \%opt);
 
 # DEFAULTS
 @LETTERS = ("0", "A", "B", "C", "D", "E", "F", "G", "H");
 %LETTER_NUM = ("A"=>"1", "B"=>"2", "C"=>"3", "D"=>"4", "E"=>"5", "F"=>"6", "G"=>"7", "H"=>"8");
-
-$threshold = 1000000;
+$gradient_def = "BuYlRd";
+$bias = 0.65;
+$threshold = 100000;
+$minUniq = 1000;
 
 $die2 = "
-scitools index-perform [options] [fastq or bam]
+scitools index-perform [options] [fastq, bam, annot, complexity, or list]
 
 Will generate the read counts from each well of each tier of indexing.
 Should be on a pre-filetered since it will plot all barcode combos present.
@@ -36,6 +34,7 @@ Options:
          (Index names must be in form of: [Tier]_[set]_[i5/i7]_[A-H/1-12])
    -A   [STR]   Annotation file (only include cell IDs in the annot file)
    -t   [INT]   Threshold of reads for a plate to include (def = $threshold)
+   -T   [INT]   Min unique reads (if complexity file, def = $minUniq)
    -N           Do not log scale (eg for cell counts)
    -G   [GRD]   Color gradient for plots (def = $gradient_def)
                 For all available gradients, run 'scitools gradient'
@@ -55,6 +54,7 @@ if (defined $opt{'R'}) {$Rscript = $opt{'R'}};
 if (defined $opt{'s'}) {$samtools = $opt{'s'}};
 if (defined $opt{'I'}) {$VAR{'SCI_index_file'} = $opt{'I'}};
 if (defined $opt{'t'}) {$threshold = $opt{'t'}};
+if (defined $opt{'T'}) {$minUniq = $opt{'T'}};
 if (defined $opt{'A'}) {read_annot($opt{'A'})};
 if (!defined $opt{'G'}) {$opt{'G'} = $gradient_def};
 if (defined $opt{'b'}) {$bias = $opt{'b'}};
@@ -73,16 +73,34 @@ if ($ARGV[0] =~ /\.bam$/) {
 		$CELLID_count{$cellID}++;
 	} close IN;
 } else {
-	if ($ARGV[0] =~ /\.gz$/) {
-		open IN, "$zcat $ARGV[0] |";
-	} elsif ($ARGV[0] =~ /\.fq$/) {
+	if ($ARGV[0] =~ /fastq|fq/) {
+		if ($ARGV[0] =~ /\.gz$/) {
+			open IN, "$zcat $ARGV[0] |";
+		} elsif ($ARGV[0] =~ /\.fq$/) {
+			open IN, "$ARGV[0]";
+		}
+		while ($cellID = <IN>) {
+			chomp $cellID; $null = <IN>; $null = <IN>; $null = <IN>;
+			$cellID =~ s/:.+$//; $cellID =~ s/^\@//;
+			$CELLID_count{$cellID}++;
+		} close IN;
+	} elsif ($ARGV[0] =~ /complexity/) {
 		open IN, "$ARGV[0]";
-	} else {die "\n\nCannot determine file input type! Provide either a fastq (can be gzipped) or a bam file!\n\n$die2"};
-	while ($cellID = <IN>) {
-		chomp $cellID; $null = <IN>; $null = <IN>; $null = <IN>;
-		$cellID =~ s/:.+$//; $cellID =~ s/^\@//;
-		$CELLID_count{$cellID}++;
-	} close IN;
+		while ($l = <IN>) {
+			chomp $l;
+			@P = split(/\t/, $l);
+			$CELLID_count{$P[1]}++;
+		} close IN;
+	} elsif ($ARGV[0] =~ /annot|annotation|list|txt/) {
+		open IN, "$ARGV[0]";
+		while ($l = <IN>) {
+			chomp $l;
+			@P = split(/\s+/, $l);
+			$CELLID_count{$P[0]}++;
+		} close IN;
+	} else {
+		die "ERROR: Cannot determine file type!\n";
+	}
 }
 
 $NEX_set_count = 0; $PCR_set_count = 0;
