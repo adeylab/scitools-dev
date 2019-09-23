@@ -130,7 +130,7 @@ foreach $nexSet (keys %NEX_SET_WELLID_count) {
 		open OUT, ">$opt{'O'}.index_performance/nex_$nexSet.wellID.counts";
 		print OUT "#row\tcol\tcount\n";
 		for ($row = 1; $row <= 8; $row++) {
-			for ($col = 1; $col <= 12; col++) {
+			for ($col = 1; $col <= 12; $col++) {
 				$wellID = $row.",".$col;
 				if (defined $NEX_SET_WELLID_count{$nexSet}{$wellID}) {
 					print OUT "$row\t$col\t$NEX_SET_WELLID_count{$nexSet}{$wellID}\n";
@@ -151,7 +151,7 @@ foreach $pcrSet (keys %PCR_SET_WELLID_count) {
 	if ($PCR_SET_count{$pcrSet} >= $threshold) {
 		open OUT, ">$opt{'O'}.index_performance/pcr_$pcrSet.wellID.counts";
 		for ($row = 1; $row <= 8; $row++) {
-			for ($col = 1; $col <= 12; col++) {
+			for ($col = 1; $col <= 12; $col++) {
 				$wellID = $row.",".$col;
 				if (defined $PCR_SET_WELLID_count{$pcrSet}{$wellID}) {
 					print OUT "$row\t$col\t$PCR_SET_WELLID_count{$pcrSet}{$wellID}\n";
