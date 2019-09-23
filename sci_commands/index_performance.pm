@@ -101,13 +101,16 @@ foreach $cellID (keys %CELLID_count) {
 			print STDERR "WARNING: Barcode combo: $cellID ($nex_i7)($pcr_i7)($nex_i5)($pcr_i5) has a barcode not present in the index file!\n";
 		}
 		
-		print STDERR "DEBUG: Barcode combo: $cellID ($nex_i7)($pcr_i7)($nex_i5)($pcr_i5)\n";
-		
 		#split index name to map to coordinates
-		($null,$nex_i7_set,$i7,$nex_i7_col) = split(/_/, $nex_i7);
-		($null,$pcr_i7_set,$i7,$pcr_i7_col) = split(/_/, $pcr_i7);
-		($null,$nex_i5_set,$i5,$nex_i5_row) = split(/_/, $nex_i5);
-		($null,$pcr_i5_set,$i5,$pcr_i5_row) = split(/_/, $pcr_i5);
+		$nex_i7_set = $INDEX_POS_SEQ_name{'1'}{$nex_i7};
+		$pcr_i7_set = $INDEX_POS_SEQ_name{'2'}{$pcr_i7};
+		$nex_i5_set = $INDEX_POS_SEQ_name{'3'}{$nex_i5};
+		$pcr_i5_set = $INDEX_POS_SEQ_name{'4'}{$pcr_i5};
+				
+		$nex_i7_col = $INDEX_POS_SEQ_well{'1'}{$nex_i7};
+		$pcr_i7_col = $INDEX_POS_SEQ_well{'2'}{$pcr_i7};
+		$nex_i5_row = $INDEX_POS_SEQ_well{'3'}{$nex_i5};
+		$pcr_i5_row = $INDEX_POS_SEQ_well{'4'}{$pcr_i5};
 		
 		#make and store the wellID and counts
 		$nex_id = $LETTER_NUM{$nex_i5_row}.",".$nex_i7_col;
