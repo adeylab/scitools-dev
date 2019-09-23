@@ -125,7 +125,7 @@ system("mkdir $opt{'O'}.index_performance");
 
 @PLOT_FILES = ();
 
-foreach $nexSet {keys %NEX_SET_WELLID_count} {
+foreach $nexSet (keys %NEX_SET_WELLID_count) {
 	if ($NEX_SET_count{$nexSet} >= $threshold) {
 		open OUT, ">$opt{'O'}.index_performance/nex_$nexSet.wellID.counts";
 		print OUT "#row\tcol\tcount\n";
@@ -147,7 +147,7 @@ foreach $nexSet {keys %NEX_SET_WELLID_count} {
 	}
 }
 
-foreach $pcrSet {keys %PCR_SET_WELLID_count} {
+foreach $pcrSet (keys %PCR_SET_WELLID_count) {
 	if ($PCR_SET_count{$pcrSet} >= $threshold) {
 		open OUT, ">$opt{'O'}.index_performance/pcr_$pcrSet.wellID.counts";
 		for ($row = 1; $row <= 8; $row++) {
