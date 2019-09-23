@@ -16,7 +16,7 @@ getopts("O:I:R:s:t:A:G:b:NT:", \%opt);
 %LETTER_NUM = ("A"=>"1", "B"=>"2", "C"=>"3", "D"=>"4", "E"=>"5", "F"=>"6", "G"=>"7", "H"=>"8");
 $gradient_def = "BuYlRd";
 $bias = 0.65;
-$threshold = 100000;
+$threshold = 1000;
 $minUniq = 1000;
 
 $die2 = "
