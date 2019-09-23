@@ -101,6 +101,8 @@ foreach $cellID (keys %CELLID_count) {
 			print STDERR "WARNING: Barcode combo: $cellID ($nex_i7)($pcr_i7)($nex_i5)($pcr_i5) has a barcode not present in the index file!\n";
 		}
 		
+		print STDERR "DEBUG: Barcode combo: $cellID ($nex_i7)($pcr_i7)($nex_i5)($pcr_i5)\n";
+		
 		#split index name to map to coordinates
 		($null,$nex_i7_set,$i7,$nex_i7_col) = split(/_/, $nex_i7);
 		($null,$pcr_i7_set,$i7,$pcr_i7_col) = split(/_/, $pcr_i7);
