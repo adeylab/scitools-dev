@@ -49,7 +49,7 @@ Options:
    -R   [STR]   Rscript call (def = $Rscript)
    -X           Keep intermediate files (def = delete)
 
-  ";
+";
 
 if (!defined $ARGV[0]) {die $die2};
 $ARGV[0] =~ s/\/$//;
