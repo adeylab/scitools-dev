@@ -8,11 +8,14 @@ use Exporter "import";
 sub plot_complexity {
 
 @ARGV = @_;
-getopts("O:A:a:C:c:R:Mf:p:k:", \%opt);
+getopts("O:A:a:C:c:R:Mf:p:k:h:w:T:", \%opt);
 
 #defaults
 $alpha = 0.3;
 $ptSize = 1;
+$height = 6;
+$width = 7;
+$title = "Library Complexity";
 
 $die2 = "
 scitools plot-complexity [options] [complexity file(s) can be comma separated]
@@ -30,6 +33,9 @@ Options:
    -f   [FLT]   Alpha for plotting points (def = $alpha)
    -k   [STR]   If defined will color density lines the specified color (def = same as points)
                  either #hexcolor, or colorName
+   -w   [FLT]   Plot width (def = $width)
+   -h   [FLT]   Plot height (def = $height)
+   -T   [STR]   Title (def = $title)
    -R   [STR]   Rscript call (def = $Rscript)
 
 Note: Requires ggplot2 R package
@@ -55,6 +61,9 @@ if (defined $opt{'k'}) {
 	if ($opt{'k'} =~ /^#/) {$cont_col = $opt{'k'}}
 	else {$cont_col = "\"$opt{'k'}\""};
 }
+if (defined $opt{'h'}) {$height = $opt{'h'}};
+if (defined $opt{'w'}) {$width = $opt{'w'}};
+if (defined $opt{'T'}) {$title = $opt{'T'}; $title =~ s/"//g};
 
 if (!defined $opt{'O'}) {$opt{'O'} = $ARGV[0]};
 $opt{'O'} =~ s/\.txt$//;
@@ -96,8 +105,9 @@ if (defined $opt{'C'} || defined $opt{'c'}) {
 print R "
    scale_x_continuous(limits=c(0,100)) +
    scale_y_continuous(limits=c(0,6)) +
-   xlab(\"Complexity\") +
-   ylab(\"log10 Unique Reads\") +";
+   xlab(\"Percent Passing Reads\") +
+   ylab(\"log10 Passing Reads\") +
+   ggtitle(\"$title\") +";
 if (defined $opt{'A'}) {
 print R "
 	theme(legend.background=element_blank(),legend.title=element_blank())";
@@ -106,8 +116,8 @@ print R "
 	theme(legend.position=\"none\")";
 }
 print R "
-ggsave(plot=PLT,filename=\"$opt{'O'}.png\",width=7,height=6)
-ggsave(plot=PLT,filename=\"$opt{'O'}.pdf\",width=7,height=6)
+ggsave(plot=PLT,filename=\"$opt{'O'}.png\",width=$width,height=$height)
+ggsave(plot=PLT,filename=\"$opt{'O'}.pdf\",width=$width,height=$height)
 ";
 
 if (defined $opt{'M'}) {
@@ -163,8 +173,9 @@ if (defined $opt{'C'} || defined $opt{'c'}) {
 	print R "   scale_colour_manual(values = c($color_mapping)) +";
 }
 print R "
-	xlab(\"log10 Unique Reads\") +
+	xlab(\"log10 Passing Reads\") +
 	ylab(\"Counts\") +
+	ggtitle(\"$title\") +
 	scale_x_continuous(limits=c(0,6)) +";
 if (defined $opt{'A'}) {
 print R "
@@ -174,8 +185,8 @@ print R "
 	theme(legend.position=\"none\")";
 }
 print R "
-ggsave(plot=PLT,filename=\"$opt{'O'}.hist.png\",width=7,height=6)
-ggsave(plot=PLT,filename=\"$opt{'O'}.hist.pdf\",width=7,height=6)
+ggsave(plot=PLT,filename=\"$opt{'O'}.hist.png\",width=$width,height=$height)
+ggsave(plot=PLT,filename=\"$opt{'O'}.hist.pdf\",width=$width,height=$height)
 ";
 
 close R;
