@@ -21,8 +21,9 @@ $ribbon_alpha = 0.5;
 $ymax = 6;
 $cell_width = 0.15;
 $quantile_width = 0.5;
+$title = "Complexity Projection";
 
-getopts("O:G:ep:r:a:c:y:q:m:l:w:h:R:X", \%opt);
+getopts("O:G:ep:r:a:c:y:q:m:l:w:h:R:XT:", \%opt);
 
 $die2 = "
 scitools plot-projection [options] [output directory from bam-project]
@@ -46,6 +47,7 @@ Options:
    -q   [FLT]   Quantile line width (if no -e, def = $quantile_width)
    -w   [FLT]   Plot width (def = $width)
    -h   [FLT]   Plot height (def = $height)
+   -T   [STR]   Plot title (def = $title)
    -R   [STR]   Rscript call (def = $Rscript)
    -X           Keep intermediate files (def = delete)
 
@@ -72,6 +74,7 @@ if (defined $opt{'l'}) {$line_color = $opt{'l'}};
 if (defined $opt{'w'}) {$width = $opt{'w'}};
 if (defined $opt{'h'}) {$height = $opt{'h'}};
 if (defined $opt{'R'}) {$Rscript = $opt{'R'}};
+if (defined $opt{'T'}) {$title = $opt{'T'}; $title =~ s/"//g};
 
 if (-e "$ARGV[0]/cell_summaries.txt") {print STDERR "$ARGV[0]/cell_summaries.txt found!\n"} else {die "ERROR: Cannot find $ARGV[0]/cell_summaries.txt!\n"};
 if (-e "$ARGV[0]/summary_projections.txt") {print STDERR "$ARGV[0]/summary_projections.txt found!\n"} else {die "ERROR: Cannot find $ARGV[0]/summary_projections.txt!\n"};
@@ -110,7 +113,8 @@ print R "
 	scale_y_continuous(limits=c(2,$ymax)) +
 	xlab(\"Complexity\") +
 	ylab(\"log10 Passing Reads\") +
-	labs(color=\"Log10 Total\\nReads\")
+	labs(color=\"Log10 Total\\nReads\") +
+	ggtitle(\"$title\")
 ggsave(plot=PLT,filename=\"$opt{'O'}.png\",width=$width,height=$height)
 ggsave(plot=PLT,filename=\"$opt{'O'}.pdf\",width=$width,height=$height)
 ";
