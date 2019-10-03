@@ -96,6 +96,7 @@ sub load_defaults {
 	if (!defined $bismark) {$bismark = "bismark"};
 	if (!defined $VAR{'index_directory'}) {$VAR{'index_directory'} = "$_[1]/index_files"};
 	if (!defined $VAR{'SCI_index_file'}) {$VAR{'SCI_index_file'} = "$_[1]/SCI_Indexes.txt"};
+	if (!defined $VAR{'10X_index_file'}) {$VAR{'10X_index_file'} = "$_[1]/10X_Indexes.txt"};
 	if (!defined $VAR{'sci_modes'}) {$VAR{'sci_modes'} = "$_[1]/sci_modes.cfg"};
 }
 
