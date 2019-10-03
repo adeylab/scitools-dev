@@ -32,7 +32,7 @@ Options:
    -A   [STR]   Annotation file (will split fastqs)
    -N           Run is not combinatorial indexing. (def = yes)
    -D   [INT]   Hamming distance for sample & sci indexes
-				(max 2, def = $hd_s)
+                (max 2, def = $hd_s)
    -d   [INT]   Hamming distance for 10X index
                 (max 2, def = $hd_x)
 
