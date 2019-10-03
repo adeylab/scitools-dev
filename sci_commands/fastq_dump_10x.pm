@@ -206,9 +206,12 @@ while ($r1tag = <R1>) {
 	if (!defined $opt{'N'}) {
 		$ix3 = substr($r2seq,0,$POS_length{'3'});
 		$r2dna = substr($r2seq,($POS_length{'3'}+20));
+		$r2qtrm = substr($r2qual,($POS_length{'3'}+20));
+		$r2qual = $r2qtrm;
 	} else {
 		$ix3 = "null";
 		$r2dna = $r2seq;
+		
 	}
 	
 	if (defined $POS_SEQ_seq{'1'}{$ix1} &&
