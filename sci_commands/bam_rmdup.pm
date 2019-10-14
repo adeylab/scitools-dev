@@ -23,7 +23,7 @@ complexity file. Will merge bams if multipe are specified.
 Uses header from the first bam provided. If -O is not specified, the name
 of the first bam provided will be used as the output prefix.
 
-Will exclude /(M|Y|L|K|G|Un|Random|Alt)/ chroms
+Will exclude /(M|Y|L|K|G|Un|un|random|alt|Random|Alt)/ chroms
 
 Options:
    -O   [STR]   Output prefix (default is bam file prefix)
@@ -126,7 +126,7 @@ if (defined $opt{'C'}) {
 				$total_kept++;
 			} elsif ($P[1] & 4) {} else {
 				$filt_chrom = 0;
-				if (!defined $opt{'e'} && $P[2] =~ /(M|Y|L|K|G|Un|Random|Alt)/) {
+				if (!defined $opt{'e'} && $P[2] =~ /(M|Y|L|K|G|Un|un|random|alt|Random|Alt)/) {
 					$filt_chrom+=10;
 				} elsif ($opt{'e'} ne "none") {
 					foreach $pattern (@CHR_FILT) {
