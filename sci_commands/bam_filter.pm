@@ -77,7 +77,7 @@ if (defined $opt{'N'} && !defined $opt{'C'}) {
 	while ($l = <IN>) {
 		chomp $l;
 		@P = split(/\t/, $l);
-		if ($P[2] !~ /(M|Y|L|K|G|Un|Random|Alt|_)/i) {
+		if ($P[2] !~ /(M|Y|L|K|G|Un|Random|Alt|_)/) {
 			$cellID = $P[0];
 			$cellID =~ s/:.*$//;
 			if (!defined $CELLID_uniq_reads{$cellID}) {

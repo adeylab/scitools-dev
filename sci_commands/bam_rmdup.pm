@@ -23,7 +23,7 @@ complexity file. Will merge bams if multipe are specified.
 Uses header from the first bam provided. If -O is not specified, the name
 of the first bam provided will be used as the output prefix.
 
-Will exclude /(M|Y|L|K|G|Un|Random|Alt)/i chroms
+Will exclude /(M|Y|L|K|G|Un|Random|Alt)/ chroms
 
 Options:
    -O   [STR]   Output prefix (default is bam file prefix)
@@ -32,7 +32,7 @@ Options:
    -x           If multiple bams, do not include BAMID field
    -e   [PAT]   Patterns for chromosomes to exclude (comma sep)
                 (def = M,Y,L,K,G,Un,Random,Alt  can be set to 'none')
-   -m   [MEM]   Samtools sort mex memory K/M/G (def = $memory)
+   -m   [MEM]   Samtools sort max memory K/M/G (def = $memory)
                  (only for multiple bams)
    -C           By chromosome (for large files)
                  Bams must be idnexed (if not will make index)
