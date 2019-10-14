@@ -31,7 +31,7 @@ Options:
                  multiple bams are used as the input.
    -x           If multiple bams, do not include BAMID field
    -e   [PAT]   Patterns for chromosomes to exclude (comma sep)
-                (def = M,Y,L,K,G,Un,Random,Alt  can be set to 'none')
+                (def = chrM,chrY,chrUn,random,alt  can be set to 'none')
    -m   [MEM]   Samtools sort max memory K/M/G (def = $memory)
                  (only for multiple bams)
    -C           By chromosome (for large files)
@@ -126,7 +126,7 @@ if (defined $opt{'C'}) {
 				$total_kept++;
 			} elsif ($P[1] & 4) {} else {
 				$filt_chrom = 0;
-				if (!defined $opt{'e'} && $P[2] =~ /(M|Y|L|K|G|Un|un|random|alt|Random|Alt)/) {
+				if (!defined $opt{'e'} && $P[2] =~ /(chrM|chrY|chrUn|random|alt)/) {
 					$filt_chrom+=10;
 				} elsif ($opt{'e'} ne "none") {
 					foreach $pattern (@CHR_FILT) {
