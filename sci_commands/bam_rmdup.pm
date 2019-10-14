@@ -126,11 +126,11 @@ if (defined $opt{'C'}) {
 				$total_kept++;
 			} elsif ($P[1] & 4) {} else {
 				$filt_chrom = 0;
-				if (!defined $opt{'e'} && $P[2] =~ /(M|Y|L|K|G|Un|Random|Alt)/i) {
+				if (!defined $opt{'e'} && $P[2] =~ /(M|Y|L|K|G|Un|Random|Alt)/) {
 					$filt_chrom+=10;
 				} elsif ($opt{'e'} ne "none") {
 					foreach $pattern (@CHR_FILT) {
-						if ($P[2] =~ /$pattern/i) {
+						if ($P[2] =~ /$pattern/) {
 							$filt_chrom+=10;
 						}
 					}
