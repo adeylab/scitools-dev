@@ -14,8 +14,8 @@ $maxF = 0.1;
 $ptSize = 0.75;
 $alpha = 1;
 $colors = "red3,blue3,purple3";
-$width = 4.5;
-$height = 4;
+$width = 3.5;
+$height = 3;
 
 $die2 = "
 scitools plot-barnyard [options] [barnyard_cells.txt file]
