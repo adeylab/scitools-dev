@@ -8,13 +8,13 @@ use Exporter "import";
 sub plot_barnyard {
 
 @ARGV = @_;
-getopts("O:f:p:a:C:w:h:R:", \%opt);
+getopts("O:f:p:a:C:w:h:R:x:y:", \%opt);
 
 $maxF = 0.1;
 $ptSize = 0.75;
 $alpha = 1;
 $colors = "red3,blue3,purple3";
-$width = 4;
+$width = 4.5;
 $height = 4;
 
 $die2 = "
@@ -28,6 +28,8 @@ Options:
    -C   [STR]   Colors: human,mouse,mix (def = $colors)
    -w   [FLT]   Plot width (def = $width)
    -h   [FLT]   Plot height (def = $height)
+   -x   [INT]   xmax (human, def = max cell)
+   -y   [INT]   ymax (mouse, def = max cell)
    -R   [STR]   Rscript call (def = $Rscript)
 
 ";
@@ -50,16 +52,26 @@ print R "
 library(ggplot2)
 
 IN<-read.table(\"$ARGV[0]\")
-HUM<-subset(IN,\$V5>=$minF)
-MUS<-subset(IN,\$V5<=$maxF)
-MIX<-subset(IN,\$V5<$minF&\$V5>$maxF)
+HUM<-subset(IN,V5>=$minF)
+MUS<-subset(IN,V5<=$maxF)
+MIX<-subset(IN,V5<$minF&V5>$maxF)
 
-PLT<-ggplot() +
+PLT<-ggplot() + theme_bw() +
 	geom_point(aes(MIX\$V3,MIX\$V4),color=\"$mix_color\",alpha=$alpha,size=$ptSize) +
 	geom_point(aes(HUM\$V3,HUM\$V4),color=\"$human_color\",alpha=$alpha,size=$ptSize) +
 	geom_point(aes(MUS\$V3,MUS\$V4),color=\"$mouse_color\",alpha=$alpha,size=$ptSize) +
 	xlab(\"Human Passing Reads\") +
-	ylab(\"Mouse Passing Reads\")
+	ylab(\"Mouse Passing Reads\")";
+
+if (defined $opt{'x'}) {print R " +
+	scale_x_continuous(limits = c(0,$opt{'x'}))";
+}
+
+if (defined $opt{'y'}) {print R " +
+	scale_y_continuous(limits = c(0,$opt{'y'}))";
+}
+
+print R "
 
 ggsave(plot=PLT,filename=\"$opt{'O'}.plot.png\",width=$width,height=$height)
 ggsave(plot=PLT,filename=\"$opt{'O'}.plot.pdf\",width=$width,height=$height)
