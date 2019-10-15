@@ -231,7 +231,8 @@ sub load_aliases {
 	foreach $alias ("aggregate_cells", "aggregate") {$COMMAND_ALIAS{$alias} = "aggregate_cells"};
 	
 	# Plotting Commands
-	foreach $alias ("plot_complexity") {$COMMAND_ALIAS{$alias} = "plot_complexity"};
+	foreach $alias ("plot_complexity", "complexity_plot") {$COMMAND_ALIAS{$alias} = "plot_complexity"};
+	foreach $alias ("plot_barnyard", "barnyard_plot") {$COMMAND_ALIAS{$alias} = "plot_barnyard"};
 	foreach $alias ("plot_projection", "plot_projections", "projection-plot", "plot_project") {$COMMAND_ALIAS{$alias} = "plot_projection"};
 	foreach $alias ("plot_dims", "dims_plot") {$COMMAND_ALIAS{$alias} = "plot_dims"};
 	foreach $alias ("plot_3ddims", "plot_dims_3d", "dims_plot3d", "dims_plot_3d") {$COMMAND_ALIAS{$alias} = "plot_3ddims"};
@@ -273,8 +274,6 @@ sub load_descriptions {
 	# Command Decription Structure:
 	# The call must be the EXACT match to the command file / package / etc...
 	# Provide a brief description of its function
-	
-	# FOR PULIC RELEASE
 	
 	$COMMAND_DESCRIPTOR{"dependencies"} = "Check dependencies";
 	$COMMAND_DESCRIPTOR{"defaults"} = "Print out the defaults that are detected / specified";
@@ -332,6 +331,7 @@ sub load_descriptions {
 	$COMMAND_DESCRIPTOR{"aggregate_cells"} = "Aggregate cells in proximity with one another";
 	$COMMAND_DESCRIPTOR{"plot_projection"} = "Plot complexity projections after bam-project";
 	$COMMAND_DESCRIPTOR{"plot_complexity"} = "Plot complexity data";
+	$COMMAND_DESCRIPTOR{"plot_barnyard"} = "Plot barnyard data";
 	$COMMAND_DESCRIPTOR{"plot_dims"} = "Plot tSNE or other dimensions file";
 	$COMMAND_DESCRIPTOR{"plot_3ddims"} = "Plot a dimensions file in 3d, uses a monocle CDS.rds file";
 	$COMMAND_DESCRIPTOR{"plot_pcurve"} = "Genrate multiple princurve plots";
@@ -340,15 +340,11 @@ sub load_descriptions {
 	$COMMAND_DESCRIPTOR{"index_performance"} = "Index performance on fastq or bam";
 	$COMMAND_DESCRIPTOR{"data_combine"} = "Combine matrixes, annotations, dims to a table";
 	$COMMAND_DESCRIPTOR{"data_split"} = "Breaks a combined data file into component files";
-	
 	$COMMAND_DESCRIPTOR{"met_NOMeextract"} = "Extract NOMe seq methylation data";
 	$COMMAND_DESCRIPTOR{"met_metextract"} = "Extract methylaiton data from sci-MET";
 	$COMMAND_DESCRIPTOR{"met_metfilter"} = "Filter extracted methylaiton data";
 	$COMMAND_DESCRIPTOR{"met_probesummary"} = "Summarize methylaiton over regions";
 	$COMMAND_DESCRIPTOR{"met_probeview"} = "Visualize methylaiton over regions";
-	
-	# INTERNAL / DEVELOPMENT COMMANDS
-	
 	$COMMAND_DESCRIPTOR{"check_vars"} = "Debugging tool to test vars passed to a command";
 	$COMMAND_DESCRIPTOR{"atac_chromvar"} = "Run chromVAR wrapper on sci-ATAC-seq data";
 	$COMMAND_DESCRIPTOR{"matrix_factors"} = "Calculates reconstruction error for NMF and SWNE";

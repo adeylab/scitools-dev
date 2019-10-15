@@ -8,7 +8,7 @@ use Exporter "import";
 sub barnyard_compare {
 
 @ARGV = @_;
-getopts("O:q:n:f:s:", \%opt);
+getopts("O:q:n:f:s:x", \%opt);
 
 $mapQ = 20;
 $minR = 1000;
@@ -28,6 +28,7 @@ Options:
    -n   [INT]   Min number of reads to consider cell (def = $minR)
    -f   [FLT]   Max fraction of other species to be considered pure (def = $maxF)
    -s   [STR]   Samtools call (def = $samtools)
+   -x           Do not plot
 
 ";
 
@@ -48,7 +49,7 @@ while ($l = <IN>) {
 		$BARC_human{$barc} = 0;
 		$BARC_mouse{$barc} = 0;
 	}
-	if ($P[2] !~ /(M|Y|L|K|G|Un|un|random|alt|Random|Alt)/) {
+	if ($P[2] !~ /chrM|chrY|chrUn|random|alt/) {
 		if ($P[2] =~ /_h$/) {
 			$BARC_total{$barc}++;
 			$BARC_human{$barc}++;
@@ -97,6 +98,10 @@ Cells with > $maxF from other species: $mix_cells ($frac_mix)
 Estimated total collision (mix fraction * 2): $est_total_collision
 ";
 close OUT;
+
+if (!defined $opt{'x'}) {
+	system("$scitools plot-barnyard $opt{'O'}.barnyard_cells.txt");
+}
 
 }
 1;
