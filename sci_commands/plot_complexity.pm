@@ -193,6 +193,7 @@ ggsave(plot=PLT,filename=\"$opt{'O'}.hist.pdf\",width=$width,height=$height)
 # knee plotting
 if (defined $opt{'n'}) {
 print R "
+library(inflection)
 IN_sub<-subset(IN,V4<100&V4>0)
 IN_sub[order(IN_sub\$V3,decreasing=T),]\$cell_order<-c(1:nrow(IN_sub))
 kneecalling_xintercept<-uik(x=log10(IN_sub\$cell_order),y=log10(IN_sub\$V3))
