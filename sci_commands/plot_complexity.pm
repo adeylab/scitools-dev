@@ -8,7 +8,7 @@ use Exporter "import";
 sub plot_complexity {
 
 @ARGV = @_;
-getopts("O:A:a:C:c:R:Mf:p:k:h:w:T:", \%opt);
+getopts("O:A:a:C:c:R:Mf:p:k:h:w:T:n", \%opt);
 
 #defaults
 $alpha = 0.3;
@@ -36,6 +36,7 @@ Options:
    -w   [FLT]   Plot width (def = $width)
    -h   [FLT]   Plot height (def = $height)
    -T   [STR]   Title (def = $title)
+   -n           Also generate a knee plot (def = no)
    -R   [STR]   Rscript call (def = $Rscript)
 
 Note: Requires ggplot2 R package
@@ -188,6 +189,31 @@ print R "
 ggsave(plot=PLT,filename=\"$opt{'O'}.hist.png\",width=$width,height=$height)
 ggsave(plot=PLT,filename=\"$opt{'O'}.hist.pdf\",width=$width,height=$height)
 ";
+
+# knee plotting
+if (defined $opt{'k'}) {
+print R "
+PLT<-ggplot(data=subset(IN,V4<100&V4>0)) + theme_bw() +
+	geom_point(aes(log10(V1),log10(V3),fill=V2)) +";
+if (defined $opt{'C'} || defined $opt{'c'}) {
+	print R "   scale_colour_manual(values = c($color_mapping)) +";
+}
+print R "
+	xlab(\"log10 Cell Order\") +
+	ylab(\"log10 Passing Reads\") +
+	ggtitle(\"$title\") +";
+if (defined $opt{'A'}) {
+print R "
+	theme(legend.background=element_blank(),legend.title=element_blank())";
+} else {
+print R "
+	theme(legend.position=\"none\")";
+}
+print R "
+ggsave(plot=PLT,filename=\"$opt{'O'}.knee.png\",width=$width,height=$height)
+ggsave(plot=PLT,filename=\"$opt{'O'}.knee.pdf\",width=$width,height=$height)
+";
+}
 
 close R;
 
