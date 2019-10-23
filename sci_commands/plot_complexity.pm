@@ -8,7 +8,7 @@ use Exporter "import";
 sub plot_complexity {
 
 @ARGV = @_;
-getopts("O:A:a:C:c:R:Mf:p:k:h:w:T:n", \%opt);
+getopts("O:A:a:C:c:R:Mf:p:k:h:w:T:", \%opt);
 
 #defaults
 $alpha = 0.3;
@@ -36,7 +36,6 @@ Options:
    -w   [FLT]   Plot width (def = $width)
    -h   [FLT]   Plot height (def = $height)
    -T   [STR]   Title (def = $title)
-   -n           Also generate a knee plot (def = no)
    -R   [STR]   Rscript call (def = $Rscript)
 
 Note: Requires ggplot2 R package
@@ -191,7 +190,6 @@ ggsave(plot=PLT,filename=\"$opt{'O'}.hist.pdf\",width=$width,height=$height)
 ";
 
 # knee plotting
-if (defined $opt{'n'}) {
 print R "
 library(inflection)
 IN_sub<-subset(IN,V4<100&V4>0)
@@ -202,7 +200,10 @@ kneecalling_xintercept<-uik(x=log10(IN_sub_forced500cells\$cell_order),y=log10(I
 
 cell_count_cutoff<-10^kneecalling_xintercept
 read_cutoff<-IN_sub[IN_sub\$cell_order==as.integer(cell_count_cutoff),]\$V3
-PLT<-ggplot(data=IN_sub) + theme_bw() + geom_point(aes(log10(cell_order),log10(V3),fill=V2))+geom_vline(xintercept=kneecalling_xintercept,color=\"red\") + geom_text(aes(label=paste(\"Cells:\",cell_count_cutoff,\"\\n Read Cutoff:\",read_cutoff),x=max(log10(IN_sub\$cell_order))-0.5,y=max(log10(IN_sub\$V3))-0.5))+
+PLT<-ggplot(data=IN_sub) + theme_bw() +
+	geom_point(aes(log10(cell_order),log10(V3),fill=V2)) + 
+	geom_vline(xintercept=kneecalling_xintercept,color=\"red\") +
+	geom_text(aes(label=paste(\"Cells:\",cell_count_cutoff,\"\\n Read Cutoff:\",read_cutoff),x=max(log10(IN_sub\$cell_order))-0.5,y=max(log10(IN_sub\$V3))-0.5)) +
 ";
 
 if (defined $opt{'C'} || defined $opt{'c'}) {
@@ -223,7 +224,6 @@ print R "
 ggsave(plot=PLT,filename=\"$opt{'O'}.knee.png\",width=$width,height=$height)
 ggsave(plot=PLT,filename=\"$opt{'O'}.knee.pdf\",width=$width,height=$height)
 ";
-}
 
 close R;
 
