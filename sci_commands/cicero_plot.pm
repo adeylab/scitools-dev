@@ -317,7 +317,7 @@ foreach $winID (sort keys %INCLUDE) {
       {
       print R "
 	  #multiply cons with minus 1
-	  cons\$coaccess<-cons\$coaccess
+	  cons\$coaccess= -cons\$coaccess
       pdf(\"$opt{'O'}/$WINID_gene{$winID}_$winID\_cutoff\_$corr_cutoff.pdf\",width=24,height=12)
       try(plot_connections(cons,\"$chr\", $start, $end, gene_model = gene_annotations, coaccess_cutoff = abs($corr_cutoff), connection_width = .5, collapseTranscripts = \"longest\" ))
       dev.off()\n";
