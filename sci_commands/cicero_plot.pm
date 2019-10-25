@@ -190,6 +190,9 @@ open IN, "$ARGV[0]/cicero.output.txt";
    while ($l = <IN>) {
       chomp $l;
       @P = split(/\t/, $l);
+	  #if negative value then do lower than that anticorrelation
+	  if($corr_cutoff > 0 )
+	  {
       if ($P[2] > $corr_cutoff) {
          ($chr1,$start1,$end1) = split(/_/, $P[0]);
          ($chr2,$start2,$end2) = split(/_/, $P[1]);
@@ -203,6 +206,23 @@ open IN, "$ARGV[0]/cicero.output.txt";
             }
          }
       }
+	  }
+	  else 
+	  {
+	  if ($P[2] < $corr_cutoff) {
+         ($chr1,$start1,$end1) = split(/_/, $P[0]);
+         ($chr2,$start2,$end2) = split(/_/, $P[1]);
+         if ($start1<$start2) {$start = $start1} else {$start = $start2};
+         if ($end1>$end2) {$end = $end1} else {$end = $end2};
+         if ($chr !~ /(Y|M|L|Un)/)
+         {
+            if ($start !~ /J/)
+            {
+            print COR "$chr\t$start\t$end\n";
+            }
+         }
+      
+	  }
    } close IN;
 close COR;
 
@@ -258,7 +278,9 @@ cons <- read.table(\"$ARGV[0]/cicero.output.txt\",header=T)\n
 
 
 ";
-
+if($coaccess_cutoff > 0 )
+{
+print "Plotting positive correlation\n";
 foreach $winID (sort keys %INCLUDE) {
    $chr = $WINID_chr{$winID};
    $start = $WINID_start{$winID};
@@ -267,25 +289,57 @@ foreach $winID (sort keys %INCLUDE) {
       {
       print R "
       pdf(\"$opt{'O'}/$WINID_gene{$winID}_$winID\_cutoff\_$corr_cutoff.pdf\",width=24,height=12)
-      try(plot_connections(cons,\"$chr\", $start, $end, gene_model = gene_annotations, coaccess_cutoff = .15, connection_width = .5, collapseTranscripts = \"longest\" ))
+      try(plot_connections(cons,\"$chr\", $start, $end, gene_model = gene_annotations, coaccess_cutoff = abs($corr_cutoff), connection_width = .5, collapseTranscripts = \"longest\" ))
       dev.off()\n";
 
 
          } elsif (defined $WINID_CCAN{$winID}) {
       print R "
       pdf(\"$opt{'O'}/CCAN_$WINID_CCAN{$winID}_$winID\_cutoff\_$corr_cutoff.pdf\",width=24,height=12)
-      try(plot_connections(cons,\"$chr\", $start, $end, gene_model = gene_annotations, coaccess_cutoff = .15, connection_width = .5, collapseTranscripts = \"longest\" ))
+      try(plot_connections(cons,\"$chr\", $start, $end, gene_model = gene_annotations, coaccess_cutoff = abs($corr_cutoff), connection_width = .5, collapseTranscripts = \"longest\" ))
       dev.off()\n";
          } else {
 
       print R "
       pdf(\"$opt{'O'}/$winID\_cutoff\_$corr_cutoff.pdf\",width=24,height=12)
-      try(plot_connections(cons,\"$chr\", $start, $end, gene_model = gene_annotations, coaccess_cutoff = .15, connection_width = .5, collapseTranscripts = \"longest\" ))
+      try(plot_connections(cons,\"$chr\", $start, $end, gene_model = gene_annotations, coaccess_cutoff = abs($corr_cutoff), connection_width = .5, collapseTranscripts = \"longest\" ))
       dev.off()\n";
       }
       }
+}
+else 
+{
+print "Plotting nagative correlation, plot will be on an absolute scale\n";
+foreach $winID (sort keys %INCLUDE) {
+   $chr = $WINID_chr{$winID};
+   $start = $WINID_start{$winID};
+   $end = $WINID_end{$winID};
+      if (defined $WINID_gene{$winID})
+      {
+      print R "
+	  #multiply cons with minus 1
+	  cons\$coaccess<-cons\$coaccess
+      pdf(\"$opt{'O'}/$WINID_gene{$winID}_$winID\_cutoff\_$corr_cutoff.pdf\",width=24,height=12)
+      try(plot_connections(cons,\"$chr\", $start, $end, gene_model = gene_annotations, coaccess_cutoff = abs($corr_cutoff), connection_width = .5, collapseTranscripts = \"longest\" ))
+      dev.off()\n";
 
+
+         } elsif (defined $WINID_CCAN{$winID}) {
+      print R "
+      pdf(\"$opt{'O'}/CCAN_$WINID_CCAN{$winID}_$winID\_cutoff\_$corr_cutoff.pdf\",width=24,height=12)
+      try(plot_connections(cons,\"$chr\", $start, $end, gene_model = gene_annotations, coaccess_cutoff = abs($corr_cutoff), connection_width = .5, collapseTranscripts = \"longest\" ))
+      dev.off()\n";
+         } else {
+
+      print R "
+      pdf(\"$opt{'O'}/$winID\_cutoff\_$corr_cutoff.pdf\",width=24,height=12)
+      try(plot_connections(cons,\"$chr\", $start, $end, gene_model = gene_annotations, coaccess_cutoff = abs($corr_cutoff), connection_width = .5, collapseTranscripts = \"longest\" ))
+      dev.off()\n";
+      }
+      }
+}
 close R;
+
 system("Rscript $ARGV[0]/plot_scriptID_$timeID.r");
 if (!defined $opt{'X'}) {
     system("rm -f $ARGV[0]/plot_scriptID_$timeID.r");
