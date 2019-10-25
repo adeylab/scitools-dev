@@ -8,7 +8,7 @@ use Exporter "import";
 sub plot_complexity {
 
 @ARGV = @_;
-getopts("O:A:a:C:c:R:Mf:p:k:h:w:T:", \%opt);
+getopts("O:A:a:C:c:R:Mf:p:k:h:w:T:K:", \%opt);
 
 #defaults
 $alpha = 0.3;
@@ -23,6 +23,7 @@ scitools plot-complexity [options] [complexity file(s) can be comma separated]
 Options:
    -O   [STR]   Output prefix (default is complexity file 1 prefix)
    -M           Run mixed model to determine read count cutoff for cells (def = no)
+   -K 	[INT] 	Force a minimum number of cells to be called by the knee analysis. (def=500)
    -A   [STR]   Annotation file (to color code points)
    -a   [STR]   Comma separated list of annoations to include in plot
                  (requires -A to be specified)
@@ -64,6 +65,8 @@ if (defined $opt{'k'}) {
 if (defined $opt{'h'}) {$height = $opt{'h'}};
 if (defined $opt{'w'}) {$width = $opt{'w'}};
 if (defined $opt{'T'}) {$title = $opt{'T'}; $title =~ s/"//g};
+if (!defined $opt{'O'}) {$opt{'O'} = $ARGV[0]};
+if (!defined $opt{'K'}) {$opt{'K'} = 500};
 
 if (!defined $opt{'O'}) {$opt{'O'} = $ARGV[0]};
 $opt{'O'} =~ s/\.txt$//;
@@ -195,8 +198,8 @@ library(inflection)
 IN_sub<-subset(IN,V4<100&V4>0)
 IN_sub\$cell_order<-NA
 IN_sub[order(IN_sub\$V3,decreasing=T),]\$cell_order<-c(1:nrow(IN_sub))
-IN_sub_forced500cells<-subset(IN_sub,cell_order>500)
-kneecalling_xintercept<-uik(x=log10(IN_sub_forced500cells\$cell_order),y=log10(IN_sub_forced500cells\$V3))
+IN_sub_forcedcells<-subset(IN_sub,cell_order>$opt{'K'})
+kneecalling_xintercept<-uik(x=log10(IN_sub_forcedcells\$cell_order),y=log10(IN_sub_forcedcells\$V3))
 
 cell_count_cutoff<-10^kneecalling_xintercept
 read_cutoff<-IN_sub[IN_sub\$cell_order==as.integer(cell_count_cutoff),]\$V3
