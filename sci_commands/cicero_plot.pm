@@ -191,8 +191,7 @@ open IN, "$ARGV[0]/cicero.output.txt";
       chomp $l;
       @P = split(/\t/, $l);
 	  #if negative value then do lower than that anticorrelation
-	  if($corr_cutoff > 0 )
-	  {
+	  if($corr_cutoff > 0 ) {
       if ($P[2] > $corr_cutoff) {
          ($chr1,$start1,$end1) = split(/_/, $P[0]);
          ($chr2,$start2,$end2) = split(/_/, $P[1]);
@@ -207,8 +206,7 @@ open IN, "$ARGV[0]/cicero.output.txt";
          }
       }
 	  }
-	  else 
-	  {
+	  else {
 	  if ($P[2] < $corr_cutoff) {
          ($chr1,$start1,$end1) = split(/_/, $P[0]);
          ($chr2,$start2,$end2) = split(/_/, $P[1]);
@@ -223,6 +221,7 @@ open IN, "$ARGV[0]/cicero.output.txt";
          }
       
 	  }
+   } 
    } close IN;
 close COR;
 
