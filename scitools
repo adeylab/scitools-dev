@@ -163,6 +163,7 @@ sub load_aliases {
 	# Fastq Commands
 	foreach $alias ("fastq_dump", "dump_fastq") {$COMMAND_ALIAS{$alias} = "fastq_dump"};
 	foreach $alias ("fastq_dump_10x", "dump_fastq_10x", "10x_fastq_dump", "10x_dump_fastq") {$COMMAND_ALIAS{$alias} = "fastq_dump_10x"};
+	foreach $alias ("fastq_dump_sci_stdchem", "dump_fastq_sci_stdchem", "sci_stdchem_fastq_dump", "sci_stdchem_dump_fastq") {$COMMAND_ALIAS{$alias} = "fastq_dump_sci_stdchem"};
 	foreach $alias ("fastq_split", "split_fastq") {$COMMAND_ALIAS{$alias} = "fastq_split"};
 	foreach $alias ("fastq_merge", "merge_fastq") {$COMMAND_ALIAS{$alias} = "fastq_merge"};
 	foreach $alias ("fastq_align", "align_fastq", "align") {$COMMAND_ALIAS{$alias} = "fastq_align"};
@@ -281,6 +282,7 @@ sub load_descriptions {
 	$COMMAND_DESCRIPTOR{"gradients_print"} = "Print out the default gradients";
 	$COMMAND_DESCRIPTOR{"fastq_dump"} = "Go from illumina fastqs to SCI fastq format";
 	$COMMAND_DESCRIPTOR{"fastq_dump_10x"} = "Go from illumina fastqs to SCI fastq format for 10X ATAC";
+	$COMMAND_DESCRIPTOR{"fastq_dump_sci_stdchem"} = "Go from illumina fastqs to SCI fastq format for sci standard chemistry runs";
 	$COMMAND_DESCRIPTOR{"fastq_split"} = "Split SCI fastq files using annotation file";
 	$COMMAND_DESCRIPTOR{"fastq_merge"} = "Merge fastq files that have the same barcodes";
 	$COMMAND_DESCRIPTOR{"fastq_align"} = "Align fastq files and sort resulting bam file";
