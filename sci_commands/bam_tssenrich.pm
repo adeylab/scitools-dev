@@ -45,6 +45,7 @@ Options:
     system("$bedtools intersect -bed -u -a $ARGV[0] -b $tss_signal | cut -f 4 | sed -e 's/:.*//g' | sort | uniq -c | sed -e 's/^[ ]*//g' | awk '{print \$2,\$1}' | tr ' ' '\t' > $opt{'O'}.tss_reads.value");
     system("$bedtools intersect -bed -u -a $ARGV[0] -b $bg_signal | cut -f 4 | sed -e 's/:.*//g' | sort | uniq -c | sed -e 's/^[ ]*//g' | awk '{print \$2,\$1}' | tr ' ' '\t' > $opt{'O'}.bg_reads.value");
     system("join -e \"0\" -a1 -a2 -o \"0,1.2,2.2\" $opt{'O'}.tss_reads.value $opt{'O'}.bg_reads.value | awk '{print \$1,\$2/(\$3+1)}' | tr ' ' '\t' > $opt{'O'}.TSSenrich.value");
+    system("cat $opt{'O'}.TSSenrich.value | awk '{sum+=\$2}END{print \"Average TSS enrichment: \" sum/NR}' > $opt{'O'}.TSSenrich.log");
 
     if (!defined $opt{'X'}) {
 	system("rm -f $opt{'O'}.tss_reads.value $opt{'O'}.bg_reads.value");
