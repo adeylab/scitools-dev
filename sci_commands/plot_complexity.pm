@@ -8,13 +8,14 @@ use Exporter "import";
 sub plot_complexity {
 
 @ARGV = @_;
-getopts("O:A:a:C:c:R:Mf:p:k:h:w:T:K:", \%opt);
+getopts("O:A:a:C:c:R:Mf:p:k:h:w:T:K:y:", \%opt);
 
 #defaults
 $alpha = 0.3;
 $ptSize = 1;
 $height = 6;
 $width = 7;
+$max = 6;
 $title = "Library Complexity";
 
 $die2 = "
@@ -36,6 +37,7 @@ Options:
                  either #hexcolor, or colorName
    -w   [FLT]   Plot width (def = $width)
    -h   [FLT]   Plot height (def = $height)
+   -y   [INT]   Max scale for plot in log10 unique reads (def = $max)
    -T   [STR]   Title (def = $title)
    -R   [STR]   Rscript call (def = $Rscript)
 
@@ -67,6 +69,7 @@ if (defined $opt{'w'}) {$width = $opt{'w'}};
 if (defined $opt{'T'}) {$title = $opt{'T'}; $title =~ s/"//g};
 if (!defined $opt{'O'}) {$opt{'O'} = $ARGV[0]};
 if (!defined $opt{'K'}) {$opt{'K'} = 500};
+if (defined $opt{'y'}) {$max = $opt{'y'}};
 
 if (!defined $opt{'O'}) {$opt{'O'} = $ARGV[0]};
 $opt{'O'} =~ s/\.txt$//;
@@ -107,7 +110,7 @@ if (defined $opt{'C'} || defined $opt{'c'}) {
 }
 print R "
    scale_x_continuous(limits=c(0,100)) +
-   scale_y_continuous(limits=c(0,6)) +
+   scale_y_continuous(limits=c(0,$max)) +
    xlab(\"Percent Passing Reads\") +
    ylab(\"log10 Passing Reads\") +
    ggtitle(\"$title\") +";
@@ -179,7 +182,7 @@ print R "
 	xlab(\"log10 Passing Reads\") +
 	ylab(\"Counts\") +
 	ggtitle(\"$title\") +
-	scale_x_continuous(limits=c(0,6)) +";
+	scale_x_continuous(limits=c(0,$max)) +";
 if (defined $opt{'A'}) {
 print R "
 	theme(legend.background=element_blank(),legend.title=element_blank())";
