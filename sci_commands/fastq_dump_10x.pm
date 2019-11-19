@@ -9,7 +9,7 @@ sub fastq_dump_10x {
 
 @ARGV = @_;
 
-getopts("R:F:O:o:I:1:2:A:i:j:r:N", \%opt);
+getopts("R:F:O:o:I:1:2:A:i:j:r:Nd:D:", \%opt);
 
 # defaults
 $hd_s = 2;
@@ -62,6 +62,8 @@ if (!defined $opt{'F'}) {$opt{'F'} = $VAR{'fastq_input_directory'}};
 if (!defined $opt{'O'}) {$opt{'O'} = $VAR{'SCI_fastq_directory'}};
 if (!defined $opt{'o'}) {$opt{'o'} = $opt{'R'}};
 if (!defined $opt{'I'}) {$opt{'I'} = $VAR{'10X_index_file'}};
+if (defined $opt{'D'}) {$hd_s = $opt{'D'}};
+if (defined $opt{'d'}) {$hd_x = $opt{'d'}};
 
 
 open IN, "$opt{'I'}";
