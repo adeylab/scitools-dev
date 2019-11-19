@@ -203,8 +203,18 @@ while ($r1tag = <R1>) {
 	$null = <I1>; $null = <I1>;
 	$null = <I2>; $null = <I2>;
 	
-	$ix1 = $i1seq;
-	$ix2 = $i2seq;
+	if (length($i1seq ) > $POS_length{'1'}) {
+		$ix1 = substr($i1seq,0,$POS_length{'1'});
+	} else {
+		$ix1 = $i1seq;
+	}
+	
+	if (length($i2seq ) > $POS_length{'2'}) {
+		$ix2 = substr($i2seq,0,$POS_length{'2'});
+	} else {
+		$ix2 = $i2seq;
+	}
+	
 	if (!defined $opt{'N'}) {
 		$ix3 = substr($r2seq,0,$POS_length{'3'});
 		$r2dna = substr($r2seq,($POS_length{'3'}+20));
