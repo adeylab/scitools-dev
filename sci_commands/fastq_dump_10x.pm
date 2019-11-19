@@ -189,7 +189,7 @@ open R2, "$zcat $r2 |";
 open I1, "$zcat $i1 |";
 open I2, "$zcat $i2 |";
 
-if (defined $opt{'b'}) {open DEBUG ">$opt{'O'}/$opt{'o'}/$opt{'o'}.debug.txt"};
+if (defined $opt{'b'}) {open DEBUG, ">$opt{'O'}/$opt{'o'}/$opt{'o'}.debug.txt"};
 	
 while ($r1tag = <R1>) {
 	$raw_count++;
