@@ -61,7 +61,7 @@ while ($l = <IN>) {
 	chomp $l;
 	@P = split(/\t/, $l);
 	$cellID = $P[0]; $cellID =~ s/:.+$//;
-	if ((defined $ANNOT_include{$CELLID_annot{$cellID}} || !defined $opt{'a'}) && $P[8] > 0 && $P[8] <= $max) {
+	if (((defined $CELLID_annot{$cellID} && defined $ANNOT_include{$CELLID_annot{$cellID}}) || !defined $opt{'a'}) && $P[8] > 0 && $P[8] <= $max) {
 		if (defined $opt{'A'}) {
 			print OUT "$CELLID_annot{$cellID}\t$P[8]\n";
 		} else {
