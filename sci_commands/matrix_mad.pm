@@ -33,6 +33,8 @@ if ($ARGV[0] =~ /\.gz/) {
 } else {
 	open IN, "$ARGV[0]";
 }
+
+# load matrix and calculate the sum of the cell signal
 $h = <IN>; @CELLIDS = split(/\t/, $h);
 while ($l = <IN>) {
 	chomp $l;
@@ -40,33 +42,23 @@ while ($l = <IN>) {
 	$rowID = shift(@P);
 	for ($i = 0; $i < @P; $i++) {
 		$CELLID_sum{$CELLIDS[$i]} += $P[$i];
+		push @{$CELLID_values{$CELLIDS[$i]}}, $P[$i];
 	} $rowCT++;
 } close IN;
 
-foreach $cellID (keys %CELLID_sum) {
-	$CELLID_mean{$cellID} = $CELLID_sum{$cellID}/$rowCT;
-}
-
-if ($ARGV[0] =~ /\.gz/) {
-	open IN, "zcat $ARGV[0] |";
-} else {
-	open IN, "$ARGV[0]";
-}
-$h = <IN>;
-while ($l = <IN>) {
-	chomp $l;
-	@P = split (/\t/, $l);
-	$rowID = shift(@P);
-	for ($i = 0; $i < @P; $i++) {
-		push @{$CELLID_DEVS{$CELLIDS[$i]}}, abs($CELLID_mean{$CELLIDS[$i]} - $P[$i])
+# calculate differences on normalized values (norm to 1)
+foreach $cellID (keys %CELLID_values) {
+	for ($i = 1; $i < $rowCT; $i++) {
+		push @{$CELLID_diffs{$cellID}}, (abs( (($CELLID_values{$cellID}[$i]/$CELLID_sum{$cellID})*$rowCT) - (($CELLID_values{$cellID}[$i-1]/$CELLID_sum{$cellID})*$rowCT) ));
 	}
-} close IN;
+}
 
+# print MAD
 open OUT, ">$opt{'O'}.MAD.values";
 foreach $cellID (keys %CELLID_DEVS) {
-	$MAD = $CELLID_DEVS{$cellID}[($rowCT-1)];
+	$MAD = $CELLID_diffs{$cellID}[int($rowCT/2)];
 	print OUT "$cellID\t$MAD\n";
-}
+} close OUT;
 
 }
 1;
