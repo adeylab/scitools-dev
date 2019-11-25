@@ -9,17 +9,19 @@ sub matrix_mad {
 
 @ARGV = @_;
 
-getopts("O:N:", \%opt);
+getopts("O:", \%opt);
 
 $die2 = "
 scitools matrix-MAD [options] [window counts matrix]
    or    MAD
 
-Calculates the MAD score for each cell in a matrix
-Currently only supports dense matrix format
+Calculates the MAD (median absolute deviation) score
+for each cell in a matrix.
+
+Currently only supports dense matrix format.
 
 Options:
-   -O   [STR]   Output prefix (default is [input].tf)
+   -O   [STR]   Output prefix (default is [input].MAD.values)
 
 ";
 
