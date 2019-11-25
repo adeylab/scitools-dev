@@ -47,7 +47,7 @@ while ($l = <IN>) {
 } close IN;
 
 # calculate differences on normalized values (norm to 1)
-foreach $cellID (keys %CELLID_values) {
+foreach $cellID (keys %CELLID_sum) {
 	for ($i = 1; $i < $rowCT; $i++) {
 		push @{$CELLID_diffs{$cellID}}, (abs( (($CELLID_values{$cellID}[$i]/$CELLID_sum{$cellID})*$rowCT) - (($CELLID_values{$cellID}[$i-1]/$CELLID_sum{$cellID})*$rowCT) ));
 	}
@@ -55,7 +55,7 @@ foreach $cellID (keys %CELLID_values) {
 
 # print MAD
 open OUT, ">$opt{'O'}.MAD.values";
-foreach $cellID (keys %CELLID_DEVS) {
+foreach $cellID (keys %CELLID_sum) {
 	$MAD = $CELLID_diffs{$cellID}[int($rowCT/2)];
 	print OUT "$cellID\t$MAD\n";
 } close OUT;
