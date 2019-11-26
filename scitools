@@ -175,7 +175,6 @@ sub load_aliases {
 	foreach $alias ("bam_bulk2sci", "bulk2sci") {$COMMAND_ALIAS{$alias} = "bam_bulk2sci"};
 	foreach $alias ("bam_addrg", "addrg") {$COMMAND_ALIAS{$alias} = "bam_addrg"};
 	foreach $alias ("bam_rmdup", "rmdup") {$COMMAND_ALIAS{$alias} = "bam_rmdup"};
-	foreach $alias ("bam_isize", "isize", "isize_bam") {$COMMAND_ALIAS{$alias} = "bam_isize"};
 	foreach $alias ("bam_split", "split_bam") {$COMMAND_ALIAS{$alias} = "bam_split"};
 	foreach $alias ("bam_filter", "filter_bam") {$COMMAND_ALIAS{$alias} = "bam_filter"};
 	foreach $alias ("bam_merge", "merge_bam") {$COMMAND_ALIAS{$alias} = "bam_merge"};
@@ -291,7 +290,6 @@ sub load_descriptions {
 	$COMMAND_DESCRIPTOR{"fastq_barcode_collapse"} = "Collapse barcodes in a fastq set -> sci format";
 	$COMMAND_DESCRIPTOR{"bam_bulk2sci"} = "Merge multiple bulk bam files to one SCI bam";
 	$COMMAND_DESCRIPTOR{"bam_addrg"} = "Add RG lines to bam";
-	$COMMAND_DESCRIPTOR{"bam_isize"} = "Plot insert size distribution of bam";
 	$COMMAND_DESCRIPTOR{"bam_rmdup"} = "Barcode-based duplicate removal";
 	$COMMAND_DESCRIPTOR{"complexity2log10"} = "Complexity to log10 unique reads values file";
 	$COMMAND_DESCRIPTOR{"bam_filter"} = "Filter bam based on a variety of options";
