@@ -9,7 +9,7 @@ sub fastq_dump_10x {
 
 @ARGV = @_;
 
-getopts("R:F:O:o:I:1:2:A:i:j:r:N", \%opt);
+getopts("R:F:O:o:I:1:2:A:i:j:r:Nd:D:b", \%opt);
 
 # defaults
 $hd_s = 2;
@@ -53,7 +53,7 @@ To specify specific fastq files instead of defaults:
    -i   [STR]   Index 1 fastq (opt)
    -j   [STR]   Index 2 fastq (opt)
 
-Will split with a hamming distance of 2
+Other: -b  Debug mode
 
 ";
 
@@ -62,7 +62,8 @@ if (!defined $opt{'F'}) {$opt{'F'} = $VAR{'fastq_input_directory'}};
 if (!defined $opt{'O'}) {$opt{'O'} = $VAR{'SCI_fastq_directory'}};
 if (!defined $opt{'o'}) {$opt{'o'} = $opt{'R'}};
 if (!defined $opt{'I'}) {$opt{'I'} = $VAR{'10X_index_file'}};
-
+if (defined $opt{'D'}) {$hd_s = $opt{'D'}};
+if (defined $opt{'d'}) {$hd_x = $opt{'d'}};
 
 open IN, "$opt{'I'}";
 while ($l = <IN>) {
@@ -188,8 +189,10 @@ open R2, "$zcat $r2 |";
 open I1, "$zcat $i1 |";
 open I2, "$zcat $i2 |";
 
+if (defined $opt{'b'}) {open DEBUG, ">$opt{'O'}/$opt{'o'}/$opt{'o'}.debug.txt"};
 	
 while ($r1tag = <R1>) {
+	$raw_count++;
 
 	$r2tag = <R2>; chomp $r1tag; chomp $r2tag;
 	$r1seq = <R1>; $r2seq = <R2>; chomp $r1seq; chomp $r2seq;
@@ -201,8 +204,18 @@ while ($r1tag = <R1>) {
 	$null = <I1>; $null = <I1>;
 	$null = <I2>; $null = <I2>;
 	
-	$ix1 = $i1seq;
-	$ix2 = $i2seq;
+	if (length($i1seq ) > $POS_length{'1'}) {
+		$ix1 = substr($i1seq,0,$POS_length{'1'});
+	} else {
+		$ix1 = $i1seq;
+	}
+	
+	if (length($i2seq ) > $POS_length{'2'}) {
+		$ix2 = substr($i2seq,0,$POS_length{'2'});
+	} else {
+		$ix2 = $i2seq;
+	}
+	
 	if (!defined $opt{'N'}) {
 		$ix3 = substr($r2seq,0,$POS_length{'3'});
 		$r2dna = substr($r2seq,($POS_length{'3'}+20));
@@ -213,6 +226,8 @@ while ($r1tag = <R1>) {
 		$r2dna = $r2seq;
 		
 	}
+	
+	if (defined $opt{'b'}) {print DEBUG "READ $raw_count Index1 = $ix1, Index2 = $ix2, Index3 = $ix3\n"};
 	
 	if (defined $POS_SEQ_seq{'1'}{$ix1} &&
 		defined $POS_SEQ_seq{'2'}{$ix2} &&
@@ -275,5 +290,6 @@ if (defined $opt{'A'}) {
 }
 
 close R1FAIL; close R2FAIL;
+if (defined $opt{'b'}) {close DEBUG};
 }
 1;
