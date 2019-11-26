@@ -35,7 +35,7 @@ if ($ARGV[0] =~ /\.gz/) {
 }
 
 # load matrix and calculate the sum of the cell signal
-$h = <IN>; @CELLIDS = split(/\t/, $h);
+$h = <IN>; chomp $h; @CELLIDS = split(/\t/, $h);
 while ($l = <IN>) {
 	chomp $l;
 	@P = split (/\t/, $l);
