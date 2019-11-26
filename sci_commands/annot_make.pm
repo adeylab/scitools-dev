@@ -126,7 +126,13 @@ exit;
 if (!defined $ARGV[0] && !defined $opt{'P'}) {die $die2};
 
 # Read in index file
-open IN, $VAR{'SCI_index_file'};
+
+if (!defined $opt{'I'}) {
+    open IN, $VAR{'SCI_index_file'};
+} else {
+    open IN, $opt{'I'};
+}
+
 while ($l = <IN>) {
 	chomp $l;
 	($ID,$pos,$seq) = split(/\t/, $l);
