@@ -22,7 +22,10 @@ scitools fastq-dump-10x [options]
 Takes sequencer fastq files (from bcl2fastq) and will format
 them into fastq files with matched barcodes.
 
-NOTE: Currently only works for the Illumina 10X sci
+NOTE: Currently only works for the Illumina 10X sci Platform (sciDROP).
+Index 1 is the 10x barcode (16bp). 
+Index 2 is i7 Truseq index from PCR (10bp). 
+Index 3 is the start of Read 2 (8bp).
 
 Options:
    -R   [STR]   Run name (preferred mode)
