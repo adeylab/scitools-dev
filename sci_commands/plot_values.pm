@@ -85,8 +85,8 @@ if (defined $opt{'M'}) {
 	
 	$common_opts = "";
 	if (defined $opt{'A'}) {$common_opts .= "-A $opt{'A'} "};
-	if (defined $opt{'A'}) {$common_opts .= "-C $opt{'C'} "};
-	if (defined $opt{'A'}) {$common_opts .= "-c $opt{'c'} "};
+	if (defined $opt{'C'}) {$common_opts .= "-C $opt{'C'} "};
+	if (defined $opt{'c'}) {$common_opts .= "-c $opt{'c'} "};
 	if (defined $opt{'a'}) {$common_opts .= "-a $opt{'a'} "};
 	if (defined $opt{'T'}) {$common_opts .= "-T $opt{'T'} "};
 	if (defined $opt{'R'}) {$common_opts .= "-R $opt{'R'} "};
