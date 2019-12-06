@@ -18,7 +18,7 @@ $alpha = 0.5;
 getopts("O:A:a:C:c:R:T:M:Xs:p:f:w:h:Wr:", \%opt);
 
 $die2 = "
-scitools plot-values [options] [values file]
+scitools plot-values [options] [values file / null if -M]
 
 Options - general:
    -O   [STR]   Output prefix (def: vals prefix; adds type suffix)
@@ -58,7 +58,7 @@ Note: Requires ggplot2 R package
 
 ";
 
-if (!defined $ARGV[0]) {die $die2};
+if (!defined $ARGV[0] && !defined $opt{'M'}) {die $die2};
 if (defined $opt{'a'} && !defined $opt{'A'}) {die "\nMust provide an annotation file (-A) if specifying annotations to plot (-a)!\n$die2"};
 if (defined $opt{'C'} && defined $opt{'c'}) {die "\nSpecify either a color string (-c) or a color coding file (-C), not both!\n$die2"};
 if (!defined $opt{'O'}) {$opt{'O'} = $ARGV[0]};
