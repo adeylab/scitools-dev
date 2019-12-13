@@ -20,7 +20,7 @@ $threshold = 1000;
 $minUniq = 1000;
 
 $die2 = "
-scitools index-perform [options] [fastq, bam, annot, complexity, or list]
+scitools index-perform [options] [fastq, bam, annot, complexity, or list] [next file]
 
 Will generate the read counts from each well of each tier of indexing.
 Should be on a pre-filetered since it will plot all barcode combos present.
@@ -64,42 +64,44 @@ $gradient_function =~ s/\)$//; $gradient_function .= ",bias=$bias)";
 read_indexes($VAR{'SCI_index_file'});
 
 %CELLID_count = ();
-if ($ARGV[0] =~ /\.bam$/) {
-	open IN, "$samtools view $ARGV[0] 2>/dev/null |";
-	while ($l = <IN>) {
-		chomp $l;
-		@P = split(/\t/, $l);
-		$cellID = $P[0]; $cellID =~ s/:.+$//;
-		$CELLID_count{$cellID}++;
-	} close IN;
-} else {
-	if ($ARGV[0] =~ /fastq|fq/) {
-		if ($ARGV[0] =~ /\.gz$/) {
-			open IN, "$zcat $ARGV[0] |";
-		} elsif ($ARGV[0] =~ /\.fq$/) {
-			open IN, "$ARGV[0]";
-		}
-		while ($cellID = <IN>) {
-			chomp $cellID; $null = <IN>; $null = <IN>; $null = <IN>;
-			$cellID =~ s/:.+$//; $cellID =~ s/^\@//;
-			$CELLID_count{$cellID}++;
-		} close IN;
-	} elsif ($ARGV[0] =~ /complexity/) {
-		open IN, "$ARGV[0]";
+for ($fileID = 0; $fileID < @ARGV; $filID++) {
+	if ($ARGV[$fileID] =~ /\.bam$/) {
+		open IN, "$samtools view $ARGV[$fileID] 2>/dev/null |";
 		while ($l = <IN>) {
 			chomp $l;
 			@P = split(/\t/, $l);
-			$CELLID_count{$P[1]}++;
-		} close IN;
-	} elsif ($ARGV[0] =~ /annot|annotation|list|txt/) {
-		open IN, "$ARGV[0]";
-		while ($l = <IN>) {
-			chomp $l;
-			@P = split(/\s+/, $l);
-			$CELLID_count{$P[0]}++;
+			$cellID = $P[0]; $cellID =~ s/:.+$//;
+			$CELLID_count{$cellID}++;
 		} close IN;
 	} else {
-		die "ERROR: Cannot determine file type!\n";
+		if ($ARGV[$fileID] =~ /fastq|fq/) {
+			if ($ARGV[$fileID] =~ /\.gz$/) {
+				open IN, "$zcat $ARGV[$fileID] |";
+			} elsif ($ARGV[$fileID] =~ /\.fq$/) {
+				open IN, "$ARGV[$fileID]";
+			}
+			while ($cellID = <IN>) {
+				chomp $cellID; $null = <IN>; $null = <IN>; $null = <IN>;
+				$cellID =~ s/:.+$//; $cellID =~ s/^\@//;
+				$CELLID_count{$cellID}++;
+			} close IN;
+		} elsif ($ARGV[$fileID] =~ /complexity/) {
+			open IN, "$ARGV[$fileID]";
+			while ($l = <IN>) {
+				chomp $l;
+				@P = split(/\t/, $l);
+				$CELLID_count{$P[1]}++;
+			} close IN;
+		} elsif ($ARGV[$fileID] =~ /annot|annotation|list|txt/) {
+			open IN, "$ARGV[$fileID]";
+			while ($l = <IN>) {
+				chomp $l;
+				@P = split(/\s+/, $l);
+				$CELLID_count{$P[0]}++;
+			} close IN;
+		} else {
+			die "ERROR: Cannot determine file type!\n";
+		}
 	}
 }
 

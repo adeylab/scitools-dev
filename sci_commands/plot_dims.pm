@@ -29,6 +29,7 @@ $frames = 100;
 $pause = 10;
 $gif_height = 600;
 $gif_width = 600;
+$panel_nrow = 2;
 
 getopts("O:A:a:C:c:R:x:y:T:V:M:XS:s:G:p:f:Bb:k:w:h:m:Wr:N:F:j:k:zu:d", \%opt);
 
