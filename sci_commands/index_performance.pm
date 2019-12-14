@@ -64,7 +64,7 @@ $gradient_function =~ s/\)$//; $gradient_function .= ",bias=$bias)";
 read_indexes($VAR{'SCI_index_file'});
 
 %CELLID_count = ();
-for ($fileID = 0; $fileID < @ARGV; $filID++) {
+for ($fileID = 0; $fileID < @ARGV; $fileID++) {
 	if ($ARGV[$fileID] =~ /\.bam$/) {
 		open IN, "$samtools view $ARGV[$fileID] 2>/dev/null |";
 		while ($l = <IN>) {
