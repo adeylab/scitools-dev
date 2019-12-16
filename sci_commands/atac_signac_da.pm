@@ -140,6 +140,10 @@ da_peaks\$enriched_cells<-unlist(lapply(strsplit(row.names(da_peaks),\"[.]\"),\"
 write(\"Outputting DA Table.\", stderr())
 write.table(da_peaks,file=\"$opt{'O'}.da_peaks.txt\",sep=\"\\t\",col.names=T,row.names=T,quote=F)
 
+
+write(\"Outputting Seurat Object.\", stderr())
+saveRDS(dat,file=\"$opt{'O'}.SeuratObject.Rds\")
+
 write(\"Generating a sanity check PDF for enrichment. Using Top $opt{'N'} sites per annotation.\", stderr())
 
 #grab top N peaks per cell grouping
@@ -148,7 +152,7 @@ da_peaks_topN<-do.call(\"rbind\",lapply(unique(da_peaks\$enriched_cells),functio
 da_peaks_topN<-unlist(lapply(strsplit(row.names(da_peaks_topN),\"[.]\"),\"[\",2))
 
 
-pdf(\"$opt{'O'}.da_peaks.violinplot.pdf\"),height=100,width=100)
+pdf(\"$opt{'O'}.da_peaks.violinplot.pdf\",height=100,width=100)
 VlnPlot(
   object = dat,
   features = da_peaks_topN,
@@ -159,7 +163,7 @@ dev.off()
 ";
 if ($opt{'U'}){
 print R "
-pdf(\"$opt{'O'}.da_peaks.featureplot.pdf\"),height=100,width=100)
+pdf(\"$opt{'O'}.da_peaks.featureplot.pdf\",height=100,width=100)
 FeaturePlot(
   object = dat,
   features = da_peaks_topN,
