@@ -203,7 +203,8 @@ sub load_aliases {
 					"merge_bed", "bed_merge", "mergebed", "bedmerge") {$COMMAND_ALIAS{$alias} = "atac_mergepeak"};
 	foreach $alias ("atac_counts", "atac_count", "count", "counts") {$COMMAND_ALIAS{$alias} = "atac_count"};
 	foreach $alias ("atac_enrich", "enrich_atac") {$COMMAND_ALIAS{$alias} = "atac_enrich"};
-	
+	foreach $alias ("atac_signac_da", "signac_da","da_signac") {$COMMAND_ALIAS{$alias} = "atac_signac_da"};
+
 	# Matrix Commands
 	foreach $alias ("matrix_filter", "filter_matrix") {$COMMAND_ALIAS{$alias} = "matrix_filter"};
 	foreach $alias ("matrix_naomit", "naomit_matrix") {$COMMAND_ALIAS{$alias} = "matrix_naomit"};
