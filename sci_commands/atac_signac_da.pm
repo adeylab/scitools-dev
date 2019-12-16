@@ -78,7 +78,7 @@ write(\"Read in counts matrix: $ARGV[0]\", stderr())
 #read in annotation file for grouping
 metadata <- read.table(\"$ARGV[2]\",header=F)
 colnames(metadata)<-c(\"cellID\",\"pg_clus\")
-row.names(metadata)<-metadata$cellID
+row.names(metadata)<-metadata\$cellID
 
 write(\"Read in Annot File for DA Groupings: $ARGV[2]\", stderr())
 
