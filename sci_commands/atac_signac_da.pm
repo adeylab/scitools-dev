@@ -11,7 +11,7 @@ sub atac_signac_da {
 @ARGV = @_;
 use Getopt::Std; %opt = ();
 #190425 RM Correction: Some option flags listed by unused.
-getopts("O:A:IT:Xn:", \%opt);
+getopts("O:U:N:", \%opt);
 
 $die2 = "
 scitools atac-signac-da [options] [counts matrix] [reference genome] [annotation file for grouping cells]
