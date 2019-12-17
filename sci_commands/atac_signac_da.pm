@@ -203,12 +203,10 @@ pdf(paste0(\"$opt{'O'}.da_peaks.\",i,\".GeneAssociation.pdf\"))
 plotRegionGeneAssociationGraphs(job)
 dev.off()
 
-tb = getEnrichmentTables(job)
-
 for (j in 1:length(names(tb))){
   write(paste(\"Outputting DA GREAT Analysis for\", i, names(tb)[j]) stderr())
   tabl_name<-paste0(strsplit(names(tb)[j]))
-  write.table(as.data.frame(tb[[j]]),file=paste(\"$opt{'O'}.da_peaks\",i,j,\".txt\",sep=\".\"),sep=\"\\t\",col.names=T,row.names=T,quote=F)
+  write.table(as.data.frame(tb[[j]]),file=paste(\"$opt{'O'}.da_peaks\",i,tabl_name,\".txt\",sep=\".\"),sep=\"\\t\",col.names=T,row.names=T,quote=F)
   }
 }
 ";
