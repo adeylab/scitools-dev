@@ -194,6 +194,7 @@ bed<-as.data.frame(bed)
 colnames(bed)<-c(\"chr\",\"start\",\"end\")
 bed\$start<-as.numeric(as.character(bed\$start))
 bed\$end<-as.numeric(as.character(bed\$end))
+write(paste(\"Using\",nrow(bed), \"DA peaks from\",i), stderr())
 
 job = submitGreatJob(bed,bg_bed,species=\"$ARGV[1]\",request_interval=30)
 tb = getEnrichmentTables(job, ontology = c(\"GO Molecular Function\", \"GO Biological Process\",\"GO Cellular Component\"))
@@ -204,9 +205,9 @@ plotRegionGeneAssociationGraphs(job)
 dev.off()
 
 for (j in 1:length(names(tb))){
-  write(paste(\"Outputting DA GREAT Analysis for\", i, names(tb)[j]) stderr())
-  tabl_name<-paste0(strsplit(names(tb)[j]))
-  write.table(as.data.frame(tb[[j]]),file=paste(\"$opt{'O'}.da_peaks\",i,tabl_name,\".txt\",sep=\".\"),sep=\"\\t\",col.names=T,row.names=T,quote=F)
+  write(paste(\"Outputting DA GREAT Analysis for\", i, as.character(names(tb))[j]), stderr())
+  tabl_name<-gsub(\" \",\"\",as.character(names(tb))[j])
+  write.table(as.data.frame(tb[[j]]),file=paste(\"$opt{'O'}.da_peaks\",i,tabl_name,\"txt\",sep=\".\"),sep=\"\\t\",col.names=T,row.names=T,quote=F)
   }
 }
 ";
