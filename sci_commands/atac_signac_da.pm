@@ -174,6 +174,48 @@ FeaturePlot(
 dev.off()
 ";
 };
+if ($ARGV[1]=="mm10"){
+print R"
+write(\"Performing GREAT on all enriched sites per annotation group\", stderr())
+
+library(rGREAT)
+#format data as bed file
+write(\"Preparing Background Set as all called peaks.\", stderr())
+
+bg_bed<-do.call(\"rbind\",strsplit(unlist(dat\@assays\$peaks\@counts\@Dimnames[1]),\"[-]\"))
+bg_bed<-as.data.frame(bg_bed)
+colnames(bg_bed)<-c(\"chr\",\"start\",\"end\")
+bg_bed\$start<-as.numeric(as.character(bg_bed\$start))
+bg_bed\$end<-as.numeric(as.character(bg_bed\$end))
+
+write(\"Beginning loop through all annotation groups.\", stderr())
+for (i in unique(da_peaks\$enriched_cells)){
+bed<-do.call(\"rbind\",strsplit(da_peaks[da_peaks\$enriched_cells==i,]\$da_region,\"-\"))
+bed<-as.data.frame(bed)
+colnames(bed)<-c(\"chr\",\"start\",\"end\")
+bed\$start<-as.numeric(as.character(bed\$start))
+bed\$end<-as.numeric(as.character(bed\$end))
+
+job = submitGreatJob(bed,bg_bed,species=\"$ARGV[1]\",request_interval=30)
+tb = getEnrichmentTables(job, ontology = c(\"GO Molecular Function\", \"GO Biological Process\",\"GO Cellular Component\"))
+tb = getEnrichmentTables(job, category = c(\"GO\",\"Phenotype\",\"Genes\"))
+
+pdf(paste0(\"$opt{'O'}.da_peaks.\",i,\".GeneAssociation.pdf\")
+plotRegionGeneAssociationGraphs(job)
+dev.off()
+
+tb = getEnrichmentTables(job)
+
+for (j in 1:length(names(tb))){
+  write(paste(\"Outputting DA GREAT Analysis for\", i, names(tb)[j]) stderr())
+  tabl_name<-paste0(strsplit(names(tb)[j]))
+  write.table(as.data.frame(tb[[j]]),file=paste(\"$opt{'O'}.da_peaks\",i,j,\".txt\",sep=\".\")sep=\"\\t\",col.names=T,row.names=T,quote=F)
+  }
+}
+
+";} else {
+  print "$ARGV[1] not yet supported for rGREAT.\n";
+};
 
 close(R);
 
