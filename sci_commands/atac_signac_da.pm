@@ -147,7 +147,7 @@ saveRDS(dat,file=\"$opt{'O'}.SeuratObject.Rds\")
 write(\"Generating a sanity check PDF for enrichment. Using Top $opt{'N'} sites per annotation.\", stderr())
 
 #grab top N peaks per cell grouping
-N<-$opt{'N'}
+N<-as.numeric(as.character($opt{'N'}))
 da_peaks_topN<-do.call(\"rbind\",lapply(unique(da_peaks\$enriched_cells),function(x) head(da_peaks[da_peaks\$enriched_cells==x,][order(da_peaks\$p_val),],N)))
 da_peaks_topN<-unlist(lapply(strsplit(row.names(da_peaks_topN),\"[.]\"),\"[\",2))
 
@@ -174,7 +174,6 @@ FeaturePlot(
 dev.off()
 ";
 };
-if ($ARGV[1]=="mm10"){
 print R"
 write(\"Performing GREAT on all enriched sites per annotation group\", stderr())
 
@@ -200,7 +199,7 @@ job = submitGreatJob(bed,bg_bed,species=\"$ARGV[1]\",request_interval=30)
 tb = getEnrichmentTables(job, ontology = c(\"GO Molecular Function\", \"GO Biological Process\",\"GO Cellular Component\"))
 tb = getEnrichmentTables(job, category = c(\"GO\",\"Phenotype\",\"Genes\"))
 
-pdf(paste0(\"$opt{'O'}.da_peaks.\",i,\".GeneAssociation.pdf\")
+pdf(paste0(\"$opt{'O'}.da_peaks.\",i,\".GeneAssociation.pdf\"))
 plotRegionGeneAssociationGraphs(job)
 dev.off()
 
@@ -209,13 +208,10 @@ tb = getEnrichmentTables(job)
 for (j in 1:length(names(tb))){
   write(paste(\"Outputting DA GREAT Analysis for\", i, names(tb)[j]) stderr())
   tabl_name<-paste0(strsplit(names(tb)[j]))
-  write.table(as.data.frame(tb[[j]]),file=paste(\"$opt{'O'}.da_peaks\",i,j,\".txt\",sep=\".\")sep=\"\\t\",col.names=T,row.names=T,quote=F)
+  write.table(as.data.frame(tb[[j]]),file=paste(\"$opt{'O'}.da_peaks\",i,j,\".txt\",sep=\".\"),sep=\"\\t\",col.names=T,row.names=T,quote=F)
   }
 }
-
-";} else {
-  print "$ARGV[1] not yet supported for rGREAT.\n";
-};
+";
 
 close(R);
 
