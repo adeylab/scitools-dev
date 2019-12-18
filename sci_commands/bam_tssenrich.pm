@@ -15,7 +15,7 @@ sub bam_tssenrich {
     getopts("O:T:B:b:X", \%opt);
 
 $die2 = "
-scitools bam_tssenrich [options] [duplicate removed and filtered bam file] [genome -- either 'hg38' or 'mm10']
+scitools bam_tssenrich [options] [duplicate removed and filtered bam file] [genome -- either 'hg38' or 'mm10' or 'dm6']
 
 Options:
    -O   [STR]   Output prefix (default is bam file prefix)
@@ -34,6 +34,9 @@ Options:
     } elsif ($ARGV[1] eq "mm10") {
 	$tss_signal = "/home/groups/oroaklab/refs/mm10/ensembl_tss/ensembl.mm10.tss.chr100bpWINDOW.bed";
 	$bg_signal = "/home/groups/oroaklab/refs/mm10/ensembl_tss/ensembl.mm10.tss.chr.b1_b2.bed";
+    } elsif ($ARGV[1] eq "dm6") {
+	$tss_signal = "/home/groups/oroaklab/refs/dm6/ensembl_tss/ensembl.dm6.tss.chr100bpWINDOW.bed";
+	$bg_signal = "/home/groups/oroaklab/refs/dm6/ensembl_tss/ensembl.dm6.tss.chr.b1_b2.bed";
     } else {
 	die $die2;
     }
