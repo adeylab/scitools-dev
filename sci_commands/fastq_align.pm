@@ -13,7 +13,7 @@ sub fastq_align {
 $threads = 1;
 $memory = "2G";
 
-getopts("t:b:s:A:L:rO:m:", \%opt);
+getopts("t:b:s:A:L:rO:m:n", \%opt);
 
 $die2 = "
 scitools fastq-align [options] [bwa reference] [output_prefix] [read1.fq] (read2.fq)
@@ -26,6 +26,7 @@ Options:
    -t   [INT]   Threads for alignment (def = $threads)
    -b   [STR]   Bwa call (def = $bwa)
    -s   [STR]   Samtools call (def = $samtools)
+   -n           Sort reads by name / index (def = coordinate)
    -m   [MEM]   Samtools sort mex memory per thread, K/M/G (def = $memory)
 
 Bwa reference shortcuts:
@@ -54,9 +55,17 @@ if (!defined $opt{'t'}) {$opt{'t'} = $threads};
 if (!defined $opt{'m'}) {$opt{'m'} = $memory};
 
 if (defined $ARGV[3]) {
-	$align_command = "$bwa mem -t $opt{'t'} $ref_file $ARGV[2] $ARGV[3] 2>> $out_prefix.align.log | $samtools view -bSu - 2>> $out_prefix.align.log | $samtools sort -m $opt{'m'} -T $out_prefix.TMP - > $out_prefix.bam 2>> $out_prefix.align.log";
+	if (defined $opt{'n'}) {
+		$align_command = "$bwa mem -t $opt{'t'} $ref_file $ARGV[2] $ARGV[3] 2>> $out_prefix.align.log | $samtools view -bSu - 2>> $out_prefix.align.log | $samtools sort -m $opt{'m'} -T $out_prefix.TMP -n - > $out_prefix.bam 2>> $out_prefix.align.log";
+	} else {
+		$align_command = "$bwa mem -t $opt{'t'} $ref_file $ARGV[2] $ARGV[3] 2>> $out_prefix.align.log | $samtools view -bSu - 2>> $out_prefix.align.log | $samtools sort -m $opt{'m'} -T $out_prefix.TMP - > $out_prefix.bam 2>> $out_prefix.align.log";
+	}
 } else { # single ended
-	$align_command = "$bwa mem -t $opt{'t'} $ref_file $ARGV[2] 2>> $out_prefix.align.log | $samtools view -bSu - 2>> $out_prefix.align.log | $samtools sort -m $opt{'m'} -T $out_prefix.TMP - > $out_prefix.bam 2>> $out_prefix.align.log";
+	if (defined $opt{'n'}) {
+		$align_command = "$bwa mem -t $opt{'t'} $ref_file $ARGV[2] 2>> $out_prefix.align.log | $samtools view -bSu - 2>> $out_prefix.align.log | $samtools sort -m $opt{'m'} -T $out_prefix.TMP -n - > $out_prefix.bam 2>> $out_prefix.align.log";
+	} else {
+		$align_command = "$bwa mem -t $opt{'t'} $ref_file $ARGV[2] 2>> $out_prefix.align.log | $samtools view -bSu - 2>> $out_prefix.align.log | $samtools sort -m $opt{'m'} -T $out_prefix.TMP - > $out_prefix.bam 2>> $out_prefix.align.log";
+	}
 }
 
 #print "Running: $align_command\n";
