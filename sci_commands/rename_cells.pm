@@ -12,7 +12,7 @@ sub rename_cells {
 # Defaults
 $naming_scheme = "Cell_[number]";
 
-getopts("O:A:N:R:Dx", \%opt);
+getopts("O:A:N:R:DxCG", \%opt);
 
 $die2 = "
 scitools rename-cells [options] [input file] (additional input file) etc...
@@ -33,6 +33,8 @@ Options:
                   Example:     MySample_[annot]_[number]
                   Default:     $naming_scheme
    -A   [STR]   Annotation file to include as [annot] in new names
+   -C           Do not include CB field in bam (cell barcode, def = yes)
+   -G           Remove RG fields (def = retain & rename)
    -x           Exclude cells not in the annot file (-A)
                   (def = annot: Cell)
    -D           Do not create new files, just an annotaiton file to later
@@ -105,13 +107,15 @@ for ($in_file = 0; $in_file < @ARGV; $in_file++) {
 			@P = split(/\t/, $l);
 			if ($P[0] =~ /^\@/) {
 				if ($P[0] =~ /^\@RG/) {
-					$RG_lines = "TRUE";
-					$origID = $P[1]; $origID =~ s/^ID://;
-					if (!defined $ORIGINAL_newID{$origID}) {
-						$ORIGINAL_newID{$origID} = rename_cell($origID);
+					if (!defined $opt{'G'}) {
+						$RG_lines = "TRUE";
+						$origID = $P[1]; $origID =~ s/^ID://;
+						if (!defined $ORIGINAL_newID{$origID}) {
+							$ORIGINAL_newID{$origID} = rename_cell($origID);
+						}
+						$newID = $ORIGINAL_newID{$origID};
+						$out_line = "\@RG\tID:$newID\tSM:$newID\tLB:$newID\tPL:SCI";
 					}
-					$newID = $ORIGINAL_newID{$origID};
-					$out_line = "\@RG\tID:$newID\tSM:$newID\tLB:$newID\tPL:SCI";
 				} else {
 					$out_line = $l;
 				}
@@ -128,10 +132,17 @@ for ($in_file = 0; $in_file < @ARGV; $in_file++) {
 					$P[0] = "$newID:$tail_info";
 					for ($i = 10; $i < @P; $i++) {
 						if ($P[$i] =~ /^RG:Z:/) {
-							$P[$i] = "RG:Z:$newID";
+							if (!defined $opt{'G'}) {
+								$P[$i] = "RG:Z:$newID";
+							} else {
+								splice(@P,$i,1);
+							}
 						}
 					}
 					$out_line = join("\t", @P);
+					if (!defined $opt{'C'}) {
+						$out_line .= "\tCB:X:$origID";
+					}
 				}
 			}
 			if (!defined $opt{'D'} && $out_line !~ /00EXCL00/) {
