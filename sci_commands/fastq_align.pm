@@ -56,13 +56,13 @@ if (!defined $opt{'m'}) {$opt{'m'} = $memory};
 
 if (defined $ARGV[3]) {
 	if (defined $opt{'n'}) {
-		$align_command = "$bwa mem -t $opt{'t'} $ref_file $ARGV[2] $ARGV[3] 2>> $out_prefix.align.log | $samtools view -bSu - 2>> $out_prefix.align.log | $samtools sort -m $opt{'m'} -T $out_prefix.TMP -n - > $out_prefix.bam 2>> $out_prefix.align.log";
+		$align_command = "$bwa mem -t $opt{'t'} $ref_file $ARGV[2] $ARGV[3] 2>> $out_prefix.align.log | $samtools view -bSu - 2>> $out_prefix.align.log | $samtools sort -m $opt{'m'} -T $out_prefix.TMP -n - > $out_prefix.nsrt.bam 2>> $out_prefix.align.log";
 	} else {
 		$align_command = "$bwa mem -t $opt{'t'} $ref_file $ARGV[2] $ARGV[3] 2>> $out_prefix.align.log | $samtools view -bSu - 2>> $out_prefix.align.log | $samtools sort -m $opt{'m'} -T $out_prefix.TMP - > $out_prefix.bam 2>> $out_prefix.align.log";
 	}
 } else { # single ended
 	if (defined $opt{'n'}) {
-		$align_command = "$bwa mem -t $opt{'t'} $ref_file $ARGV[2] 2>> $out_prefix.align.log | $samtools view -bSu - 2>> $out_prefix.align.log | $samtools sort -m $opt{'m'} -T $out_prefix.TMP -n - > $out_prefix.bam 2>> $out_prefix.align.log";
+		$align_command = "$bwa mem -t $opt{'t'} $ref_file $ARGV[2] 2>> $out_prefix.align.log | $samtools view -bSu - 2>> $out_prefix.align.log | $samtools sort -m $opt{'m'} -T $out_prefix.TMP -n - > $out_prefix.nsrt.bam 2>> $out_prefix.align.log";
 	} else {
 		$align_command = "$bwa mem -t $opt{'t'} $ref_file $ARGV[2] 2>> $out_prefix.align.log | $samtools view -bSu - 2>> $out_prefix.align.log | $samtools sort -m $opt{'m'} -T $out_prefix.TMP - > $out_prefix.bam 2>> $out_prefix.align.log";
 	}

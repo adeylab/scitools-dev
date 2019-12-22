@@ -8,7 +8,7 @@ use Exporter "import";
 sub bam_rmdup {
 
 @ARGV = @_;
-getopts("s:O:xm:H:e:c:C", \%opt);
+getopts("s:O:xm:H:e:c:Cnr", \%opt);
 
 $memory = "2G";
 $chr_list = "chr1,chr2,chr3,chr4,chr5,chr6,chr7,chr8,chr9,chr10,chr11,chr12,chr13,chr14,chr15,chr16,chr17,chr18,chr19,chr20,chr21,chr22";
@@ -40,6 +40,8 @@ Options:
    -c   [STR]   List chr to include:
                  def is chr1 to chr22 and chrX
                  provide as a comma sep list, eg: chr1,chr2,...
+   -n           Bam(s) are name sorted
+   -r           If -n, retain name sort (def = chr/pos sort)
    -H   [BAM]   Use header from this bam instead.
    -s   [STR]   Samtools call (def = $samtools)
 
@@ -53,11 +55,13 @@ if (!defined $ARGV[1]) {$opt{'x'} = 1};
 if (defined $opt{'e'}) {@CHR_FILT = split(/,/, $opt{'e'})};
 if (defined $opt{'c'}) {$chr_list = $opt{'c'}};
 
-if (!defined $ARGV[1]) {
-	open OUT, "| $samtools view -bS - > $opt{'O'}.bbrd.q10.bam 2>/dev/null";
-} else {
-	$out_prefix = "$opt{'O'}.bbrd.q10";
-	open OUT, "| $samtools view -bSu - | $samtools sort -m $memory -T $out_prefix.TMP - > $out_prefix.bam";
+if (!defined $opt{'n'}) {
+	if (!defined $ARGV[1]) {
+		open OUT, "| $samtools view -bS - > $opt{'O'}.bbrd.q10.bam 2>/dev/null";
+	} else {
+		$out_prefix = "$opt{'O'}.bbrd.q10";
+		open OUT, "| $samtools view -bSu - | $samtools sort -m $memory -T $out_prefix.TMP - > $out_prefix.bam";
+	}
 }
 
 if (!defined $opt{'H'}) {$opt{'H'} = $ARGV[0]};
@@ -77,7 +81,7 @@ if (defined $opt{'C'}) {
 	}
 }
 
-if (defined $opt{'C'}) {
+if (defined $opt{'C'}) { # by chromosome
 	@CHR_LIST = split(/,/, $chr_list);
 	for ($chrID = 0; $chrID < @CHR_LIST; $chrID++) {
 		%KEEP = (); %BARC_POS_ISIZE = (); %OBSERVED = ();
@@ -110,7 +114,80 @@ if (defined $opt{'C'}) {
 			%KEEP = ();
 		}
 	}
-} else {
+} elsif (defined $opt{'n'}) { # by namesort
+	$opt{'O'} =~ s/\.nsrt//;
+	if (defined $ARGV[1]) { # multiple bams - qfilt, add bamID and nsort
+		open OUT, "| $samtools view -bSu -n - > $opt{'O'}.merged.nsrt.bam";
+		for ($bamID = 0; $bamID < @ARGV; $bamID++) {
+			open IN, "$samtools view -q 10 $ARGV[$bamID] |";
+			while ($l = <IN>) {
+				chomp $l;
+				@P = split(/\t/, $l);
+				if (!defined $opt{'x'}) {$P[0] .= ":BAMID=$bamID"; $l = join("\t", @P)};
+				print OUT "$l\n";
+			}
+			close IN;
+		} close OUT;
+		open IN, "$samtools view -q 10 $opt{'O'}.merged.nsrt.bam |";
+	} else { # single bam
+		open IN, "$samtools view -q 10 $ARGV[0] |";
+	}
+	
+	if (defined $opt{'r'}) {
+		open OUT, "| $samtools view -bS - > $opt{'O'}.bbrd.q10.nsrt.bam";
+	} else {
+		open OUT, "| $samtools view -bSu - | -m $memory -T $opt{'O'}.TMP - > $opt{'O'}.bbrd.q10.bam";
+	}
+	
+	$currentBarc = "null";
+	while ($l = <IN>) {
+		$q10_reads++;
+		chomp $l;
+		@P = split(/\t/, $l);
+		$barc = $P[0]; $barc =~ s/:.+$//;
+		if ($currentBarc ne $barc) {
+			# set hashes
+			%KEEP = (); %OBSERVED = (); %POS_ISIZE = ();
+			$currentBarc = $barc;
+		}
+		# process read
+		if (defined $KEEP{$P[0]}) {
+			print OUT "$l\n";
+			$BARC_total{$barc}++;
+			$BARC_kept{$barc}++;
+			$total_kept++;
+		} elsif ($P[1] & 4) {} else {
+			$filt_chrom = 0;
+			if (!defined $opt{'e'} && $P[2] =~ /chrM|chrY|chrUn|random|alt/) {
+				$filt_chrom+=10;
+			} elsif ($opt{'e'} ne "none") {
+				foreach $pattern (@CHR_FILT) {
+					if ($P[2] =~ /$pattern/) {
+						$filt_chrom+=10;
+					}
+				}
+			}
+			
+			if ($filt_chrom < 1) {
+				$BARC_total{$barc}++;
+				if (!defined $POS_ISIZE{"$P[2]:$P[3]:$P[8]"} && !defined $OBSERVED{$P[0]}) {
+					$POS_ISIZE{"$P[2]:$P[3]:$P[8]"} = 1;
+					$KEEP{$P[0]} = 1;
+					print OUT "$l\n";
+					$BARC_kept{$barc}++;
+					$total_kept++;
+					$BAMID_included{$bamID}++;
+				}
+				$OBSERVED{$P[0]} = 1;
+			} else {
+				$reads_q10_to_other_chr++;
+			}
+		}
+	} close IN;
+	
+	if (defined $ARGV[1]) {system("rm -f $opt{'O'}.merged.nsrt.bam")};
+	
+} else { # standard
 	for ($bamID = 0; $bamID < @ARGV; $bamID++) {
 		open IN, "$samtools view -q 10 $ARGV[$bamID] |";
 		while ($l = <IN>) {
