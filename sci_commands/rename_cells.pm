@@ -143,7 +143,7 @@ for ($in_file = 0; $in_file < @ARGV; $in_file++) {
 					}
 					$out_line = join("\t", @P);
 					if (!defined $opt{'C'}) {
-						$out_line .= "\tCB:X:$origID";
+						$out_line .= "\tCB:Z:$origID";
 					}
 				}
 			}
