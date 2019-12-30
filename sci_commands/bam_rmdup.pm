@@ -143,6 +143,10 @@ if (defined $opt{'C'}) { # by chromosome
 		open OUT, "| $samtools view -bSu - | $samtools sort -@ $sort_threads -m $memory -T $opt{'O'}.TMP - > $opt{'O'}.bbrd.q10.bam";
 	}
 	
+	open HEAD, "$samtools view -H $ARGV[0] |";
+	while ($l = <HEAD>){print OUT "$l"};
+	close HEAD;
+	
 	$currentBarc = "null";
 	while ($l = <IN>) {
 		$q10_reads++;
