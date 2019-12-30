@@ -12,8 +12,9 @@ sub fastq_align {
 # Defaults
 $threads = 1;
 $memory = "2G";
+$sort_threads = 1;
 
-getopts("t:b:s:A:L:rO:m:n", \%opt);
+getopts("t:b:s:A:L:rO:m:nr:", \%opt);
 
 $die2 = "
 scitools fastq-align [options] [bwa reference] [output_prefix] [read1.fq] (read2.fq)
@@ -24,6 +25,7 @@ Produces a sorted bam file. Read 2 is optional.
 
 Options:
    -t   [INT]   Threads for alignment (def = $threads)
+   -r   [INT]   Threads for sorting (def = $sort_threads)
    -b   [STR]   Bwa call (def = $bwa)
    -s   [STR]   Samtools call (def = $samtools)
    -n           Sort reads by name / index (def = coordinate)
@@ -53,18 +55,19 @@ if (defined $opt{'b'}) {$bwa = $opt{'b'}};
 if (defined $opt{'s'}) {$samtools = $opt{'s'}};
 if (!defined $opt{'t'}) {$opt{'t'} = $threads};
 if (!defined $opt{'m'}) {$opt{'m'} = $memory};
+if (defined $opt{'r'}) {$sort_threads = $opt{'r'}};
 
 if (defined $ARGV[3]) {
 	if (defined $opt{'n'}) {
-		$align_command = "$bwa mem -t $opt{'t'} $ref_file $ARGV[2] $ARGV[3] 2>> $out_prefix.align.log | $samtools view -bSu - 2>> $out_prefix.align.log | $samtools sort -m $opt{'m'} -T $out_prefix.TMP -n - > $out_prefix.nsrt.bam 2>> $out_prefix.align.log";
+		$align_command = "$bwa mem -t $opt{'t'} $ref_file $ARGV[2] $ARGV[3] 2>> $out_prefix.align.log | $samtools view -bSu - 2>> $out_prefix.align.log | $samtools sort -@ $sort_threads -m $opt{'m'} -T $out_prefix.TMP -n - > $out_prefix.nsrt.bam 2>> $out_prefix.align.log";
 	} else {
-		$align_command = "$bwa mem -t $opt{'t'} $ref_file $ARGV[2] $ARGV[3] 2>> $out_prefix.align.log | $samtools view -bSu - 2>> $out_prefix.align.log | $samtools sort -m $opt{'m'} -T $out_prefix.TMP - > $out_prefix.bam 2>> $out_prefix.align.log";
+		$align_command = "$bwa mem -t $opt{'t'} $ref_file $ARGV[2] $ARGV[3] 2>> $out_prefix.align.log | $samtools view -bSu - 2>> $out_prefix.align.log | $samtools sort -@ $sort_threads -m $opt{'m'} -T $out_prefix.TMP - > $out_prefix.bam 2>> $out_prefix.align.log";
 	}
 } else { # single ended
 	if (defined $opt{'n'}) {
-		$align_command = "$bwa mem -t $opt{'t'} $ref_file $ARGV[2] 2>> $out_prefix.align.log | $samtools view -bSu - 2>> $out_prefix.align.log | $samtools sort -m $opt{'m'} -T $out_prefix.TMP -n - > $out_prefix.nsrt.bam 2>> $out_prefix.align.log";
+		$align_command = "$bwa mem -t $opt{'t'} $ref_file $ARGV[2] 2>> $out_prefix.align.log | $samtools view -bSu - 2>> $out_prefix.align.log | $samtools sort -@ $sort_threads -m $opt{'m'} -T $out_prefix.TMP -n - > $out_prefix.nsrt.bam 2>> $out_prefix.align.log";
 	} else {
-		$align_command = "$bwa mem -t $opt{'t'} $ref_file $ARGV[2] 2>> $out_prefix.align.log | $samtools view -bSu - 2>> $out_prefix.align.log | $samtools sort -m $opt{'m'} -T $out_prefix.TMP - > $out_prefix.bam 2>> $out_prefix.align.log";
+		$align_command = "$bwa mem -t $opt{'t'} $ref_file $ARGV[2] 2>> $out_prefix.align.log | $samtools view -bSu - 2>> $out_prefix.align.log | $samtools sort -@ $sort_threads -m $opt{'m'} -T $out_prefix.TMP - > $out_prefix.bam 2>> $out_prefix.align.log";
 	}
 }
 
