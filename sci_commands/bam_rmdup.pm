@@ -8,9 +8,10 @@ use Exporter "import";
 sub bam_rmdup {
 
 @ARGV = @_;
-getopts("s:O:xm:H:e:c:Cnr", \%opt);
+getopts("s:O:xm:H:e:c:Cnrt:X", \%opt);
 
 $memory = "2G";
+$sort_threads = 1;
 $chr_list = "chr1,chr2,chr3,chr4,chr5,chr6,chr7,chr8,chr9,chr10,chr11,chr12,chr13,chr14,chr15,chr16,chr17,chr18,chr19,chr20,chr21,chr22";
 
 $die2 = "
@@ -34,6 +35,7 @@ Options:
                 (def = chrM,chrY,chrUn,random,alt  can be set to 'none')
    -m   [MEM]   Samtools sort max memory K/M/G (def = $memory)
                  (only for multiple bams)
+   -t   [INT]   Threads for sorting (def = $sort_threads)
    -C           By chromosome (for large files)
                  Bams must be idnexed (if not will make index)
                  Will ignore -e and just use chroms in list -c
@@ -42,6 +44,7 @@ Options:
                  provide as a comma sep list, eg: chr1,chr2,...
    -n           Bam(s) are name sorted
    -r           If -n, retain name sort (def = chr/pos sort)
+   -X           Retain intermediate merged nsrt bam
    -H   [BAM]   Use header from this bam instead.
    -s   [STR]   Samtools call (def = $samtools)
 
@@ -54,13 +57,14 @@ if (defined $opt{'m'}) {$memory = $opt{'m'}};
 if (!defined $ARGV[1]) {$opt{'x'} = 1};
 if (defined $opt{'e'}) {@CHR_FILT = split(/,/, $opt{'e'})};
 if (defined $opt{'c'}) {$chr_list = $opt{'c'}};
+if (defined $opt{'t'}) {$sort_threads = $opt{'t'}};
 
 if (!defined $opt{'n'}) {
 	if (!defined $ARGV[1]) {
 		open OUT, "| $samtools view -bS - > $opt{'O'}.bbrd.q10.bam 2>/dev/null";
 	} else {
 		$out_prefix = "$opt{'O'}.bbrd.q10";
-		open OUT, "| $samtools view -bSu - | $samtools sort -m $memory -T $out_prefix.TMP - > $out_prefix.bam";
+		open OUT, "| $samtools view -bSu - | $samtools sort -@ $sort_threads -m $memory -T $out_prefix.TMP - > $out_prefix.bam";
 	}
 }
 
@@ -117,7 +121,7 @@ if (defined $opt{'C'}) { # by chromosome
 } elsif (defined $opt{'n'}) { # by namesort
 	$opt{'O'} =~ s/\.nsrt//;
 	if (defined $ARGV[1]) { # multiple bams - qfilt, add bamID and nsort
-		open OUT, "| $samtools view -bSu -n - > $opt{'O'}.merged.nsrt.bam";
+		open OUT, "| $samtools sort -@ $sort_threads -m $memory -T $opt{'O'}.merged.nsrt.TMP -n - > $opt{'O'}.merged.nsrt.bam";
 		for ($bamID = 0; $bamID < @ARGV; $bamID++) {
 			open IN, "$samtools view -q 10 $ARGV[$bamID] |";
 			while ($l = <IN>) {
@@ -136,7 +140,7 @@ if (defined $opt{'C'}) { # by chromosome
 	if (defined $opt{'r'}) {
 		open OUT, "| $samtools view -bS - > $opt{'O'}.bbrd.q10.nsrt.bam";
 	} else {
-		open OUT, "| $samtools view -bSu - | -m $memory -T $opt{'O'}.TMP - > $opt{'O'}.bbrd.q10.bam";
+		open OUT, "| $samtools view -bSu - | $samtools sort -@ $sort_threads -m $memory -T $opt{'O'}.TMP - > $opt{'O'}.bbrd.q10.bam";
 	}
 	
 	$currentBarc = "null";
@@ -185,7 +189,7 @@ if (defined $opt{'C'}) { # by chromosome
 		}
 	} close IN;
 	
-	if (defined $ARGV[1]) {system("rm -f $opt{'O'}.merged.nsrt.bam")};
+	if (defined $ARGV[1] && !defined $opt{'X'}) {system("rm -f $opt{'O'}.merged.nsrt.bam")};
 	
 } else { # standard
 	for ($bamID = 0; $bamID < @ARGV; $bamID++) {
