@@ -71,6 +71,14 @@ if (defined $ARGV[3]) {
 	}
 }
 
+$ts = localtime(time);
+open LOG, ">$out_prefix.align.log";
+print LOG "$ts Alignment started.
+Alignment command:
+$align_command
+
+"; close LOG;
+
 #print "Running: $align_command\n";
 system($align_command);
 
