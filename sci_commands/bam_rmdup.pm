@@ -66,13 +66,12 @@ if (!defined $opt{'n'}) {
 		$out_prefix = "$opt{'O'}.bbrd.q10";
 		open OUT, "| $samtools view -bSu - | $samtools sort -@ $sort_threads -m $memory -T $out_prefix.TMP - > $out_prefix.bam";
 	}
+	if (!defined $opt{'H'}) {$opt{'H'} = $ARGV[0]};
+	open H, "$samtools view -H $opt{'H'} |";
+	while ($l = <H>) {print OUT $l};
+	close H;
+	$reads_q10_to_other_chr = 0;
 }
-
-if (!defined $opt{'H'}) {$opt{'H'} = $ARGV[0]};
-open H, "$samtools view -H $opt{'H'} |";
-while ($l = <H>) {print OUT $l};
-close H;
-$reads_q10_to_other_chr = 0;
 
 if (defined $opt{'C'}) {
 	for ($bamID = 0; $bamID < @ARGV; $bamID++) {
