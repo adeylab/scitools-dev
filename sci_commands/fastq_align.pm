@@ -14,7 +14,7 @@ $threads = 1;
 $memory = "2G";
 $sort_threads = 1;
 
-getopts("t:b:s:A:L:rO:m:nr:", \%opt);
+getopts("t:b:s:A:L:O:m:nr:", \%opt);
 
 $die2 = "
 scitools fastq-align [options] [bwa reference] [output_prefix] [read1.fq] (read2.fq)
