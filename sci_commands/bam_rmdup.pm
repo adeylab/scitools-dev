@@ -121,6 +121,9 @@ if (defined $opt{'C'}) { # by chromosome
 	$opt{'O'} =~ s/\.nsrt//;
 	if (defined $ARGV[1]) { # multiple bams - qfilt, add bamID and nsort
 		open OUT, "| $samtools sort -@ $sort_threads -m $memory -T $opt{'O'}.merged.nsrt.TMP -n - > $opt{'O'}.merged.nsrt.bam";
+		open HEAD, "$samtools view -H $ARGV[0] |";
+		while ($l = <HEAD>){print OUT "$l"};
+		close HEAD;
 		for ($bamID = 0; $bamID < @ARGV; $bamID++) {
 			open IN, "$samtools view -q 10 $ARGV[$bamID] |";
 			while ($l = <IN>) {
