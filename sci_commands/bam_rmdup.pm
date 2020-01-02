@@ -94,7 +94,11 @@ if (defined $opt{'C'}) { # by chromosome
 				$q10_reads++;
 				chomp $l;
 				@P = split(/\t/, $l);
-				if (!defined $opt{'x'}) {$P[0] .= ":BAMID=$bamID"; $l = join("\t", @P)};
+				if (!defined $opt{'x'}) {
+					$P[0] =~ s/#.+$//;
+					$P[0] .= ":BAMID=$bamID";
+					$l = join("\t", @P);
+				}
 				$barc = $P[0]; $barc =~ s/:.+$//;
 				if (defined $KEEP{$P[0]}) {
 					print OUT "$l\n";
@@ -129,7 +133,11 @@ if (defined $opt{'C'}) { # by chromosome
 			while ($l = <IN>) {
 				chomp $l;
 				@P = split(/\t/, $l);
-				if (!defined $opt{'x'}) {$P[0] .= ":BAMID=$bamID"; $l = join("\t", @P)};
+				if (!defined $opt{'x'}) {
+					$P[0] =~ s/#.+$//;
+					$P[0] .= ":BAMID=$bamID";
+					$l = join("\t", @P);
+				}
 				print OUT "$l\n";
 			}
 			close IN;
@@ -204,7 +212,11 @@ if (defined $opt{'C'}) { # by chromosome
 			$q10_reads++;
 			chomp $l;
 			@P = split(/\t/, $l);
-			if (!defined $opt{'x'}) {$P[0] .= ":BAMID=$bamID"; $l = join("\t", @P)};
+			if (!defined $opt{'x'}) {
+				$P[0] =~ s/#.+$//;
+				$P[0] .= ":BAMID=$bamID";
+				$l = join("\t", @P);
+			}
 			$barc = $P[0]; $barc =~ s/:.+$//;
 			if (defined $KEEP{$P[0]}) {
 				print OUT "$l\n";
