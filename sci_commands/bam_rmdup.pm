@@ -8,7 +8,7 @@ use Exporter "import";
 sub bam_rmdup {
 
 @ARGV = @_;
-getopts("s:O:xm:H:e:c:Cnrt:X", \%opt);
+getopts("s:O:xm:H:e:c:Cnrt:XN", \%opt);
 
 $memory = "2G";
 $sort_threads = 1;
@@ -42,7 +42,11 @@ Options:
    -c   [STR]   List chr to include:
                  def is chr1 to chr22 and chrX
                  provide as a comma sep list, eg: chr1,chr2,...
-   -n           Bam(s) are name sorted
+   -n           Perform name-sorted rmdup
+                 Requires a name sorted bam for a single bam file
+                 or multiple bam files in any sort.
+   -N           If a single bam is provided and not name sorted,
+                 then name sort first
    -r           If -n, retain name sort (def = chr/pos sort)
    -X           Retain intermediate merged nsrt bam
    -H   [BAM]   Use header from this bam instead.
@@ -123,7 +127,7 @@ if (defined $opt{'C'}) { # by chromosome
 	}
 } elsif (defined $opt{'n'}) { # by namesort
 	$opt{'O'} =~ s/\.nsrt//;
-	if (defined $ARGV[1]) { # multiple bams - qfilt, add bamID and nsort
+	if (defined $ARGV[1] || defined $opt{'N'}) { # multiple bams - qfilt, add bamID and nsort
 		open OUT, "| $samtools sort -@ $sort_threads -m $memory -T $opt{'O'}.merged.nsrt.TMP -n - > $opt{'O'}.merged.nsrt.bam";
 		open HEAD, "$samtools view -H $ARGV[0] |";
 		while ($l = <HEAD>){print OUT "$l"};
