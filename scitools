@@ -184,6 +184,7 @@ sub load_aliases {
 	foreach $alias ("index_performance", "index_perform") {$COMMAND_ALIAS{$alias} = "index_performance"};
 	foreach $alias ("bam2sra", "bam2geo") {$COMMAND_ALIAS{$alias} = "bam2sra"};
 	foreach $alias ("complexity2log10", "log10complexity", "log10_unique") {$COMMAND_ALIAS{$alias} = "complexity2log10"};
+	foreach $alias ("bam_iswitch", "iswitch", "scrub_iswitch") {$COMMAND_ALIAS{$alias} = "bam_iswitch"};
 	
 	# Signal Commands
 	foreach $alias ("signal_make", "make_signal") {$COMMAND_ALIAS{$alias} = "signal_make"};
@@ -292,6 +293,7 @@ sub load_descriptions {
 	$COMMAND_DESCRIPTOR{"fastq_barcode_collapse"} = "Collapse barcodes in a fastq set -> sci format";
 	$COMMAND_DESCRIPTOR{"bam_bulk2sci"} = "Merge multiple bulk bam files to one SCI bam";
 	$COMMAND_DESCRIPTOR{"bam_addrg"} = "Add RG lines to bam";
+	$COMMAND_DESCRIPTOR{"bam_iswitch"} = "Detect and remove possibe index switch reads";
 	$COMMAND_DESCRIPTOR{"bam_isize"} = "Plot insert size distribution of bam";
 	$COMMAND_DESCRIPTOR{"bam_rmdup"} = "Barcode-based duplicate removal";
 	$COMMAND_DESCRIPTOR{"complexity2log10"} = "Complexity to log10 unique reads values file";

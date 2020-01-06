@@ -1,14 +1,27 @@
-package sci_commands::command_name;
+package sci_commands::empty_module;
 
 use sci_utils::general;
 use Getopt::Std; %opt = ();
 use Exporter "import";
-@EXPORT = ("command_name");
+@EXPORT = ("empty_module");
 
-sub command_name {
+sub empty_module {
 
 @ARGV = @_;
 
+# defaults
+
+getopts("O:", \%opt);
+
+$die2 = "
+scitools [command] [arguments]
+
+[Description]
+
+Options:
+   -O   [STR]   Output prefix (def = [def])
+
+";
 
 }
 1;
