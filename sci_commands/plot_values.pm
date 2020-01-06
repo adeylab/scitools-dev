@@ -13,9 +13,10 @@ $height = 4;
 $ptSize = 0.5;
 $color_mapping = "none";
 $alpha = 0.5;
+$ylab = "Feature value";
 
 @ARGV = @_;
-getopts("O:A:a:C:c:R:T:M:Xs:p:f:w:h:Wr:", \%opt);
+getopts("O:A:a:C:c:R:T:M:Xs:p:f:w:h:Wr:L:", \%opt);
 
 $die2 = "
 scitools plot-values [options] [values file / null if -M]
@@ -29,6 +30,7 @@ Options - general:
                       density/dens/d
    -p   [FLT]   Point size (def = $ptSize)
    -f   [FLT]   Alpha for fill (def = $alpha)
+   -L   [STR]   Name for values axis (def = $ylab)
    -w   [FLT]   Plot width (inches, def = $width)
    -h   [FLT]   Plot height (inches, def = $height)
    -W           If multiple types, plot in same file.
@@ -170,7 +172,7 @@ if ($color_mapping !~ /none/i) {
 print R "
 	guides(fill=FALSE,colour=FALSE) +
 	xlab(\"Annot\") +
-	ylab(\"Feature value\") + theme(axis.text.x = element_text(angle = 45, hjust = 1))
+	ylab(\"$ylab\") + theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ";
 if (!defined $opt{'W'}) {
 print R "ggsave(plot=VLN,filename=\"$opt{'O'}.violin.png\",width=$width,height=$height,dpi=900)
@@ -191,7 +193,7 @@ if ($color_mapping !~ /none/i) {
 print R "
 	guides(fill=FALSE,colour=FALSE) +
 	xlab(\"Annot\") +
-	ylab(\"Feature value\") + theme(axis.text.x = element_text(angle = 45, hjust = 1))
+	ylab(\"$ylab\") + theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ";
 if (!defined $opt{'W'}) {
 print R "ggsave(plot=BOX,filename=\"$opt{'O'}.boxplot.png\",width=$width,height=$height,dpi=900)
@@ -211,7 +213,7 @@ if ($color_mapping !~ /none/i) {
 }
 print R "
 	guides(fill=FALSE,colour=FALSE) +
-	xlab(\"Feature value\") +
+	xlab(\"$ylab\") +
 	ylab(\"Count\")
 ";
 if (!defined $opt{'W'}) {
@@ -233,7 +235,7 @@ if ($color_mapping !~ /none/i) {
 }
 print R "
 	guides(fill=FALSE,colour=FALSE) +
-	xlab(\"Feature value\") +
+	xlab(\"$ylab\") +
 	ylab(\"Density\")
 ";
 if (!defined $opt{'W'}) {
