@@ -8,7 +8,7 @@ use Exporter "import";
 sub plot_complexity {
 
 @ARGV = @_;
-getopts("O:A:a:C:c:R:Mf:p:k:h:w:T:K:y:", \%opt);
+getopts("O:A:a:C:c:R:Mf:p:k:h:w:T:K:y:t:D", \%opt);
 
 #defaults
 $alpha = 0.3;
@@ -17,7 +17,7 @@ $height = 6;
 $width = 7;
 $max = 6;
 $title = "Library Complexity";
-
+$contourCT = 30;
 $die2 = "
 scitools plot-complexity [options] [complexity file(s) can be comma separated]
 
@@ -35,6 +35,8 @@ Options:
    -f   [FLT]   Alpha for plotting points (def = $alpha)
    -k   [STR]   If defined will color density lines the specified color (def = same as points)
                  either #hexcolor, or colorName
+   -t   [INT]   Number of contours for 2d density (def = $contourCT)
+   -D           Do not plot points and just the density contours
    -w   [FLT]   Plot width (def = $width)
    -h   [FLT]   Plot height (def = $height)
    -y   [INT]   Max scale for plot in log10 unique reads (def = $max)
@@ -95,13 +97,15 @@ print R "
 library(ggplot2)
 IN<-read.table(\"$opt{'O'}.plot.txt\")
 PLT<-ggplot(data=subset(IN,V4<100&V4>0)) + theme_bw() +
-   geom_point(aes(V4,log10(V3),color=V2),size=$ptSize,alpha=$alpha,shape=16) +
+";
+if (!defined $opt{'D'}) {
+	print R "   geom_point(aes(V4,log10(V3),color=V2),size=$ptSize,alpha=$alpha,shape=16) +
 ";
 if (defined $opt{'k'}) {
-print R "   geom_density2d(aes(V4,log10(V3),color=$cont_col),size=0.3) +
+print R "   geom_density2d(aes(V4,log10(V3),color=$cont_col,n=$contourCT),size=0.3) +
 ";
 } else {
-print R "   geom_density2d(aes(V4,log10(V3),color=V2),size=0.3) +
+print R "   geom_density2d(aes(V4,log10(V3),color=V2,n=$contourCT),size=0.3) +
 ";
 }
 if (defined $opt{'C'} || defined $opt{'c'}) {
