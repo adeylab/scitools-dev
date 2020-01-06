@@ -102,6 +102,10 @@ while ($l = <IN>) {
 					$total_passing++;
 				}
 			}
+		} elsif ($read_set_count == 1) {
+			print OUT "$READS[0]\n";
+			$BARC_passing_reads{$BARC[0]}++;
+			$total_passing++;
 		}
 		@I5_IX = (); @I7_IX = (); @BARC = (); @READS = (); @PASS = (); @R12 = ();
 		$read_set_count = 0;

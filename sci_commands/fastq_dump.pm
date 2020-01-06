@@ -20,9 +20,7 @@ them into fastq files with matched barcodes.
 
 Options:
    -R   [STR]   Run name (preferred mode)
-   -r   [STR]   Run ID (if additional sequencing for some
-                libraries. Will add .[ID] to end of read
-                names; optional)
+   -r   [STR]   Do not include the original read name (def = yes)
    -A   [STR]   Annotation file (will split fastqs)
 
 Defaults:
@@ -175,6 +173,7 @@ open I2, "$zcat $i2 |";
 while ($r1tag = <R1>) {
 
 	$r2tag = <R2>; chomp $r1tag; chomp $r2tag;
+	$r1tag =~ s/\#.+$//; $r2tag =~ s/\#.+$//;
 	$r1seq = <R1>; $r2seq = <R2>; chomp $r1seq; chomp $r2seq;
 	$null = <R1>; $null = <R2>;
 	$r1qual = <R1>; $r2qual = <R2>; chomp $r1qual; chomp $r2qual;
@@ -199,11 +198,11 @@ while ($r1tag = <R1>) {
 		$totalCT++;
 		
 		if (defined $opt{'r'}) {
-			$r1out = "\@$barc:$totalCT.$opt{'r'}#0/1\n$r1seq\n\+\n$r1qual";
-			$r2out = "\@$barc:$totalCT.$opt{'r'}#0/2\n$r2seq\n\+\n$r2qual";
-		} else {
 			$r1out = "\@$barc:$totalCT#0/1\n$r1seq\n\+\n$r1qual";
 			$r2out = "\@$barc:$totalCT#0/2\n$r2seq\n\+\n$r2qual";
+		} else {
+			$r1out = "\@$barc:$r1tag:$totalCT#0/1\n$r1seq\n\+\n$r1qual";
+			$r2out = "\@$barc:$r2tag:$totalCT#0/2\n$r2seq\n\+\n$r2qual";
 		}
 		
 		if (!defined $opt{'A'}) {
@@ -228,11 +227,11 @@ while ($r1tag = <R1>) {
 		$barc = $ix1.$ix2.$ix3.$ix4;
 		
 		if (defined $opt{'r'}) {
-			print R1FAIL "\@$barc:F_$failCT.$opt{'r'}#0/1\n$r1seq\n\+\n$r1qual\n";
-			print R2FAIL "\@$barc:F_$failCT.$opt{'r'}#0/1\n$r2seq\n\+\n$r2qual\n";
-		} else {
 			print R1FAIL "\@$barc:F_$failCT#0/1\n$r1seq\n\+\n$r1qual\n";
-			print R2FAIL "\@$barc:F_$failCT#0/1\n$r2seq\n\+\n$r2qual\n";
+			print R2FAIL "\@$barc:F_$failCT#0/2\n$r2seq\n\+\n$r2qual\n";
+		} else {
+			print R1FAIL "\@$barc:$r1tag:F_$failCT#0/1\n$r1seq\n\+\n$r1qual\n";
+			print R2FAIL "\@$barc:$r2tag:F_$failCT#0/2\n$r2seq\n\+\n$r2qual\n";
 		}
 		
 		$failCT++;
