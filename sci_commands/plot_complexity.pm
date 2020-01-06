@@ -101,6 +101,7 @@ PLT<-ggplot(data=subset(IN,V4<100&V4>0)) + theme_bw() +
 if (!defined $opt{'D'}) {
 	print R "   geom_point(aes(V4,log10(V3),color=V2),size=$ptSize,alpha=$alpha,shape=16) +
 ";
+}
 if (defined $opt{'k'}) {
 print R "   geom_density2d(aes(V4,log10(V3),color=$cont_col,n=$contourCT),size=0.3) +
 ";
