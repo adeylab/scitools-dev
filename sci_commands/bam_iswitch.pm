@@ -14,7 +14,7 @@ $| = 1;
 $max_in_set = 20;
 $increment = 10000000;
 
-getopts("O:M:Tr:s:", \%opt);
+getopts("O:M:Tr:s:V", \%opt);
 
 $die2 = "
 
@@ -27,15 +27,16 @@ Options:
    -O   [STR]   Output prefix (def = input bam)
    -M   [INT]   Max allowed reads at identical position (def = $max_in_set)
    -T           Include Tn5 barcodes (def = just test PCR (outer) indexes)
-   -r   [INT]   Reads to report progress at (def = $increment)
    -s   [STR]   Samtools call (def = $samtools)
+   -V           Print progress to STDERR (def = only final)
+   -r   [INT]   Reads to report progress at (forces -V, def = $increment)
 
 ";
 
 if (!defined $ARGV[0]) {die $die2};
 if (!defined $opt{'O'}) {$opt{'O'} = $ARGV[0]; $opt{'O'} =~ s/\.bam$//};
 if (defined $opt{'M'}) {$max_in_set = $opt{'M'}};
-if (defined $opt{'r'}) {$increment = $opt{'r'}};
+if (defined $opt{'r'}) {$increment = $opt{'r'}; $opt{'V'} = 1};
 if (defined $opt{'s'}) {$samtools = $opt{'s'}};
 
 $prev_pos = "";
@@ -44,8 +45,6 @@ $reads_processed = 0;
 $report = $increment;
 $i5_length = -1*$i5_length;
 $positions_exceeding_max = 0;
-
-open LOG, ">$opt{'O'}.iSwitch_progress.log";
 
 open OUT, "| $samtools view -bS - > $opt{'O'}.iSwitch_scrubbed.bam";
 
@@ -115,10 +114,10 @@ while ($l = <IN>) {
 	}
 	$prev_pos = $pos;
 	$reads_processed++;
-	if ($reads_processed >= $report) {
+	if ($reads_processed >= $report && defined $opt{'V'}) {
 		$ts = localtime(time);
 		$percent_passing = sprintf("%.2f", $total_passing/$total_input);
-		print LOG "
+		print STDERR "
 $ts	$reads_processed reads processed
 	position = $pos
 	$i5_switches i5 switches, $i7_switches i7 switches
@@ -128,6 +127,7 @@ $ts	$reads_processed reads processed
 	}
 } close IN; close OUT;
 
+open LOG, ">$opt{'O'}.iSwitch_progress.log";
 $ts = localtime(time);
 $percent_passing = sprintf("%.2f", $total_passing/$total_input);
 print LOG "
