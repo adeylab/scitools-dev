@@ -12,11 +12,9 @@ $| = 1;
 
 # defaults
 $max_in_set = 20;
-$i5_length = 10;
-$i7_length = 10;
 $increment = 10000000;
 
-getopts("O:M:5:7:r:s:", \%opt);
+getopts("O:M:Tr:s:", \%opt);
 
 $die2 = "
 
@@ -28,8 +26,7 @@ Detect & remove index switch reads in standard sci bam files
 Options:
    -O   [STR]   Output prefix (def = input bam)
    -M   [INT]   Max allowed reads at identical position (def = $max_in_set)
-   -5   [INT]   Bases of i5 index to test (def = $i5_length)
-   -7   [INT]   Bases of i7 index to test (def = $i7_length)
+   -T           Include Tn5 barcodes (def = just test PCR (outer) indexes)
    -r   [INT]   Reads to report progress at (def = $increment)
    -s   [STR]   Samtools call (def = $samtools)
 
@@ -38,8 +35,6 @@ Options:
 if (!defined $ARGV[0]) {die $die2};
 if (!defined $opt{'O'}) {$opt{'O'} = $ARGV[0]; $opt{'O'} =~ s/\.bam$//};
 if (defined $opt{'M'}) {$max_in_set = $opt{'M'}};
-if (defined $opt{'5'}) {$i5_length = $opt{'5'}};
-if (defined $opt{'7'}) {$i5_length = $opt{'7'}};
 if (defined $opt{'r'}) {$increment = $opt{'r'}};
 if (defined $opt{'s'}) {$samtools = $opt{'s'}};
 
@@ -69,8 +64,13 @@ while ($l = <IN>) {
 	$pos = $P[2].":".$P[3];
 	if ($pos eq $prev_pos) {
 		if ($read_set_count<=$max_in_set) {
-			$i5_ix = substr($barc,$i5_length);
-			$i7_ix = substr($barc,8,$i7_length);
+			if (defined $opt{'T'}) {
+				$i5_ix = substr($barc,18,18);
+				$i7_ix = substr($barc,0,18);
+			} else {
+				$i5_ix = substr($barc,28,10);
+				$i7_ix = substr($barc,8,10);
+			}
 			if ($P[1] & 64) {push @R12, 1} else {push @R12, 2};
 			push @I5_IX, $i5_ix;
 			push @I7_IX, $i7_ix;
