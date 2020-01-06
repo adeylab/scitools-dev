@@ -104,8 +104,8 @@ while ($l = <IN>) {
 				}
 			}
 		} elsif ($read_set_count < 2) {
-			print OUT "$READS[0]\n";
-			$BARC_passing_reads{$BARC[0]}++;
+			print OUT "$l\n";
+			$BARC_passing_reads{$barc}++;
 			$total_passing++;
 		} elsif ($read_set_count>$max_in_set) {
 			$positions_exceeding_max++;
