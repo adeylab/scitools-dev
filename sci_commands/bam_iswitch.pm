@@ -48,6 +48,7 @@ $prev_pos = "";
 $reads_processed = 0;
 $report = $increment;
 $i5_length = -1*$i5_length;
+$positions_exceeding_max = 0;
 
 open LOG, ">$opt{'O'}.iSwitch_progress.log";
 
@@ -79,7 +80,7 @@ while ($l = <IN>) {
 		}
 		$read_set_count++;
 	} else {
-		if ($read_set_count>1&&$read_set_count<=$max_in_set) {
+		if ($read_set_count>1.5&&$read_set_count<=$max_in_set) {
 			for ($i = 0; $i < @PASS; $i++) {
 				for ($j = ($i+1); $j < @PASS; $j++) {
 					if ($R12[$i] eq $R12[$j]) {
@@ -102,10 +103,12 @@ while ($l = <IN>) {
 					$total_passing++;
 				}
 			}
-		} elsif ($read_set_count == 1) {
+		} elsif ($read_set_count < 2) {
 			print OUT "$READS[0]\n";
 			$BARC_passing_reads{$BARC[0]}++;
 			$total_passing++;
+		} elsif ($read_set_count>$max_in_set) {
+			$positions_exceeding_max++;
 		}
 		@I5_IX = (); @I7_IX = (); @BARC = (); @READS = (); @PASS = (); @R12 = ();
 		$read_set_count = 0;
@@ -115,14 +118,24 @@ while ($l = <IN>) {
 	if ($reads_processed >= $report) {
 		$ts = localtime(time);
 		$percent_passing = sprintf("%.2f", $total_passing/$total_input);
-		print LOG "$ts\t$reads_processed reads processed\n\tposition = $pos\n\t$i5_switches i5 switches\n\t$i7_switches i7 switches\n\tTotal retained = $total_passing ($percent_passing)\n";
+		print LOG "
+$ts	$reads_processed reads processed
+	position = $pos
+	$i5_switches i5 switches, $i7_switches i7 switches
+	Total retained = $total_passing ($percent_passing)
+	Positions exceeding max ($max_in_set) = $positions_exceeding_max";
 		$report+=$increment;
 	}
 } close IN; close OUT;
 
-$percent_passing = sprintf("%.2f", $total_passing/$total_input);
 $ts = localtime(time);
-print LOG "$ts\tCOMPLETE!\n\tTotal Input Reads = $total_input\n\tTotal Passing Reads = $total_passing ($percent_passing)\n";
+$percent_passing = sprintf("%.2f", $total_passing/$total_input);
+print LOG "
+$ts	COMPLETE! $reads_processed total reads processed
+	position = $pos
+	$i5_switches i5 switches, $i7_switches i7 switches
+	Total retained = $total_passing ($percent_passing)
+	Positions exceeding max ($max_in_set) = $positions_exceeding_max\n";
 close LOG;
 
 open OUT, ">$opt{'O'}.iSwitch_stats.txt";
