@@ -110,7 +110,8 @@ while ($l = <IN>) {
 	$reads_processed++;
 	if ($reads_processed >= $report) {
 		$ts = localtime(time);
-		print LOG "$ts\t$reads_processed reads processed\n\tposition = $pos\n\t$i5_switches i5 switches\n\t$i7_switches i7 switches.\n";
+		$percent_passing = sprintf("%.2f", $total_passing/$total_input);
+		print LOG "$ts\t$reads_processed reads processed\n\tposition = $pos\n\t$i5_switches i5 switches\n\t$i7_switches i7 switches\n\tTotal retained = $total_passing ($percent_passing)\n";
 		$report+=$increment;
 	}
 } close IN; close OUT;
