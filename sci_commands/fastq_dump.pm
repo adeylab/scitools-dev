@@ -9,7 +9,7 @@ sub fastq_dump {
 
 @ARGV = @_;
 
-getopts("R:F:O:o:I:1:2:A:i:j:r:", \%opt);
+getopts("R:F:O:o:I:1:2:A:i:j:r:v", \%opt);
 
 $die2 = "
 scitools fastq-dump [options]
@@ -22,6 +22,7 @@ Options:
    -R   [STR]   Run name (preferred mode)
    -r   [STR]   Do not include the original read name (def = yes)
    -A   [STR]   Annotation file (will split fastqs)
+   -v           Override read name matching error (not recommended!)
 
 Defaults:
    -F   [STR]   Fastq directory
@@ -173,15 +174,28 @@ open I2, "$zcat $i2 |";
 while ($r1tag = <R1>) {
 
 	$r2tag = <R2>; chomp $r1tag; chomp $r2tag;
+	$r1tag =~ s/^\@//; $r2tag =~ s/\s.+$//;
+	$r1tag =~ s/\s.+$//; $r2tag =~ s/\s.+$//;
 	$r1tag =~ s/\#.+$//; $r2tag =~ s/\#.+$//;
 	$r1seq = <R1>; $r2seq = <R2>; chomp $r1seq; chomp $r2seq;
 	$null = <R1>; $null = <R2>;
 	$r1qual = <R1>; $r2qual = <R2>; chomp $r1qual; chomp $r2qual;
 	
 	$i1tag = <I1>; chomp $i1tag; $i2tag = <I2>; chomp $i2tag;
+	$i1tag =~ s/\s.+$//; $i2tag =~ s/\s.+$//;
+	$i1tag =~ s/\#.+$//; $i2tag =~ s/\#.+$//;
 	$i1seq = <I1>; chomp $i1seq; $i2seq = <I2>; chomp $i2seq;
 	$null = <I1>; $null = <I1>;
 	$null = <I2>; $null = <I2>;
+	
+	if (!defined $opt{'v'}) {
+		if ($r1tag ne $r2tag || $r1tag ne $i1tag || $r1tag ne $i2tag) {
+			open ERROR, ">$opt{'O'}/$opt{'o'}/$opt{'o'}.FATAL_ERROR.txt";
+			print ERROR "FATAL ERROR: Read tags are not matching for a read set! Discrepant set:\n\tRead 1 = $r1tag\n\tRead 2 = $r2tag\n\tIndx 1 = $i1tag\n\tIndx 2 = $i2tag\n";
+			close ERROR;
+			die "FATAL ERROR: Read tags are not matching for a read set! Discrepant set:\n\tRead 1 = $r1tag\n\tRead 2 = $r2tag\n\tIndx 1 = $i1tag\n\tIndx 2 = $i2tag\n";
+		}
+	}
 	
 	$ix1 = substr($i1seq,0,$POS_length{'1'});
 	$ix2 = substr($i1seq,$POS_length{'1'},$POS_length{'2'});
