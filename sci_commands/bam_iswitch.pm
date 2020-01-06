@@ -70,7 +70,7 @@ while ($l = <IN>) {
 	if ($pos eq $prev_pos) {
 		if ($read_set_count<=$max_in_set) {
 			$i5_ix = substr($barc,$i5_length);
-			$i7_ix = substr($barc,0,$i7_length);
+			$i7_ix = substr($barc,8,$i7_length);
 			if ($P[1] & 64) {push @R12, 1} else {push @R12, 2};
 			push @I5_IX, $i5_ix;
 			push @I7_IX, $i7_ix;
