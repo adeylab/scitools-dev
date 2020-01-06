@@ -45,6 +45,7 @@ $reads_processed = 0;
 $report = $increment;
 $i5_length = -1*$i5_length;
 $positions_exceeding_max = 0;
+$reads_within_jackpot_positions = 0;
 
 open OUT, "| $samtools view -bS - > $opt{'O'}.iSwitch_scrubbed.bam";
 
@@ -108,6 +109,7 @@ while ($l = <IN>) {
 			$total_passing++;
 		} elsif ($read_set_count>$max_in_set) {
 			$positions_exceeding_max++;
+			$reads_within_jackpot_positions+=$read_set_count;
 		}
 		@I5_IX = (); @I7_IX = (); @BARC = (); @READS = (); @PASS = (); @R12 = ();
 		$read_set_count = 0;
@@ -122,7 +124,9 @@ $ts	$reads_processed reads processed
 	position = $pos
 	$i5_switches i5 switches, $i7_switches i7 switches
 	Total retained = $total_passing ($percent_passing)
-	Positions exceeding max ($max_in_set) = $positions_exceeding_max";
+	Positions exceeding max ($max_in_set) = $positions_exceeding_max
+	Reads in jackpot positions = $reads_within_jackpot_positions
+";
 		$report+=$increment;
 	}
 } close IN; close OUT;
@@ -135,7 +139,8 @@ $ts	COMPLETE! $reads_processed total reads processed
 	position = $pos
 	$i5_switches i5 switches, $i7_switches i7 switches
 	Total retained = $total_passing ($percent_passing)
-	Positions exceeding max ($max_in_set) = $positions_exceeding_max\n";
+	Positions exceeding max ($max_in_set) = $positions_exceeding_max
+	Reads in jackpot positions = $reads_within_jackpot_positions\n";
 close LOG;
 
 open OUT, ">$opt{'O'}.iSwitch_stats.txt";
