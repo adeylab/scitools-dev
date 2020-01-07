@@ -72,6 +72,7 @@ if (defined $opt{'T'}) {$title = $opt{'T'}; $title =~ s/"//g};
 if (!defined $opt{'O'}) {$opt{'O'} = $ARGV[0]};
 if (!defined $opt{'K'}) {$opt{'K'} = 500};
 if (defined $opt{'y'}) {$max = $opt{'y'}};
+if (defined $opt{'t'}) {$contourCT = $opt{'t'}};
 
 if (!defined $opt{'O'}) {$opt{'O'} = $ARGV[0]};
 $opt{'O'} =~ s/\.txt$//;
