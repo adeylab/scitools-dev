@@ -126,7 +126,7 @@ while ($l = <IN>) {
 		$percent_switch = sprintf("%.2f", $fail_by_switching/$total_input);
 		print STDERR "
 $ts	$reads_processed reads processed
-	position = $pos
+	Current position = $pos
 	$i5_switches i5 switches, $i7_switches i7 switches
 	Total reads filtered as index switching = $fail_by_switching ($percent_switch)
 	Positions exceeding max ($max_in_set) = $positions_exceeding_max
@@ -141,8 +141,7 @@ open LOG, ">$opt{'O'}.iSwitch_progress.log";
 $ts = localtime(time);
 $percent_passing = sprintf("%.2f", $total_passing/$total_input);
 print LOG "
-$ts	COMPLETE! $reads_processed reads processed
-	position = $pos
+$ts	$reads_processed reads processed
 	$i5_switches i5 switches, $i7_switches i7 switches
 	Total reads filtered as index switching = $fail_by_switching ($percent_switch)
 	Positions exceeding max ($max_in_set) = $positions_exceeding_max

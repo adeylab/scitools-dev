@@ -103,7 +103,7 @@ if (!defined $opt{'D'}) {
 ";
 }
 if (defined $opt{'k'}) {
-print R "   geom_density2d(aes(V4,log10(V3),color=$cont_col,n=$contourCT),size=0.3) +
+print R "   geom_density2d(aes(V4,log10(V3),color=$cont_col,bins=$contourCT),size=0.3) +
 ";
 } else {
 print R "   geom_density2d(aes(V4,log10(V3),color=V2,n=$contourCT),size=0.3) +
