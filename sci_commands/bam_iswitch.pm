@@ -46,6 +46,7 @@ $report = $increment;
 $i5_length = -1*$i5_length;
 $positions_exceeding_max = 0;
 $reads_within_jackpot_positions = 0;
+$fail_by_switching = 0;
 
 open OUT, "| $samtools view -bS - > $opt{'O'}.iSwitch_scrubbed.bam";
 
@@ -101,6 +102,8 @@ while ($l = <IN>) {
 					print OUT "$READS[$i]\n";
 					$BARC_passing_reads{$BARC[$i]}++;
 					$total_passing++;
+				} else {
+					$fail_by_switching++;
 				}
 			}
 		} elsif ($read_set_count < 2) {
@@ -119,13 +122,16 @@ while ($l = <IN>) {
 	if ($reads_processed >= $report && defined $opt{'V'}) {
 		$ts = localtime(time);
 		$percent_passing = sprintf("%.2f", $total_passing/$total_input);
+		$percent_jackpot = sprintf("%.2f", $reads_within_jackpot_positions/$total_input);
+		$percent_switch = sprintf("%.2f", $fail_by_switching/$total_input);
 		print STDERR "
 $ts	$reads_processed reads processed
 	position = $pos
 	$i5_switches i5 switches, $i7_switches i7 switches
-	Total retained = $total_passing ($percent_passing)
+	Total reads filtered as index switching = $fail_by_switching ($percent_switch)
 	Positions exceeding max ($max_in_set) = $positions_exceeding_max
-	Reads in jackpot positions = $reads_within_jackpot_positions
+	Reads in jackpot positions = $reads_within_jackpot_positions ($percent_jackpot)
+	Total retained = $total_passing ($percent_passing)
 ";
 		$report+=$increment;
 	}
@@ -135,12 +141,13 @@ open LOG, ">$opt{'O'}.iSwitch_progress.log";
 $ts = localtime(time);
 $percent_passing = sprintf("%.2f", $total_passing/$total_input);
 print LOG "
-$ts	COMPLETE! $reads_processed total reads processed
+$ts	COMPLETE! $reads_processed reads processed
 	position = $pos
 	$i5_switches i5 switches, $i7_switches i7 switches
-	Total retained = $total_passing ($percent_passing)
+	Total reads filtered as index switching = $fail_by_switching ($percent_switch)
 	Positions exceeding max ($max_in_set) = $positions_exceeding_max
-	Reads in jackpot positions = $reads_within_jackpot_positions\n";
+	Reads in jackpot positions = $reads_within_jackpot_positions ($percent_jackpot)
+	Total retained = $total_passing ($percent_passing)\n";
 close LOG;
 
 open OUT, ">$opt{'O'}.iSwitch_stats.txt";
