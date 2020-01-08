@@ -8,7 +8,7 @@ use Exporter "import";
 	"load_defaults",
 		qw($color_mapping),qw($ref_shortcuts),qw(@BASES),qw(%REF),qw(%VAR),qw($gzip),qw($zcat),
 		qw($bwa),qw($samtools),qw($scitools),qw($macs2),qw($bedtools),qw($Rscript),qw($Pscript),
-		qw($bismark),qw($bowtie2),qw($log_check),qw(%LOG_DIR),
+		qw($bismark),qw($bowtie2),qw($log_check),qw(%LOG_DIR),qw($snap_aligner),
 	"read_annot",
 		qw(%CELLID_annot),qw(%ANNOT_count),qw($annot_count),qw(@ANNOT_FILES),
 	"read_complexity",

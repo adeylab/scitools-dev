@@ -46,8 +46,29 @@ if (!defined $ARGV[0]) {die $die2};
 if (!defined $ARGV[1]) {die $die2};
 if (!defined $ARGV[2]) {die $die2};
 
-if (!defined $opt{'O'}) {$opt{'O'} = $ARGV[0]; $opt{'O'} =~ s/\.matrix$//};
+if (!defined $opt{'O'}) {$opt{'O'} = $ARGV[0]};
+$opt{'O'} =~ s/\.gz$//i;
+$opt{'O'} =~ s/\.(matrix|values|tfidf)$//i;
+$opt{'O'} =~ s/\.sparseMatrix$//i;
 $opt{'O'} =~ s/\.cds_files$//;
+
+if ($ARGV[0] =~ /sparse/i) {
+	$sparse = 1;
+	$sparse_prefix = $ARGV[0]; $sparse_prefix =~ s/\.gz$//; $sparse_prefix =~ s/\.(values|tfidf)$//;
+	$rowID_file = "na";
+	if (-e "$sparse_prefix.rows.gz") {$rowID_file = "$sparse_prefix.rows.gz"};
+	if (-e "$sparse_prefix.rows") {$rowID_file = "$sparse_prefix.rows"};
+	if ($rowID_file eq "na") {die "ERROR: SParse matrix provided ($ARGV[0]) but the rows file ($sparse_prefix.rows(.gz)) cannot be found!\n"};
+	$colID_file = "na";
+	if (-e "$sparse_prefix.cols.gz") {$colID_file = "$sparse_prefix.cols.gz"};
+	if (-e "$sparse_prefix.cols") {$colID_file = "$sparse_prefix.cols"};
+	if ($colID_file eq "na") {die "ERROR: SParse matrix provided ($ARGV[0]) but the cols file ($sparse_prefix.cols(.gz)) cannot be found!\n"};
+} else {
+	$sparse = 0;
+}
+
+
+##################### MAKING SPARSE & GZIP COMPATIBLE
 
 system("mkdir $opt{'O'}.cds_files");
 
