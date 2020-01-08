@@ -13,8 +13,9 @@ sub fastq_align {
 $threads = 1;
 $memory = "2G";
 $sort_threads = 1;
+$snap_min_max = "30,1200";
 
-getopts("t:b:s:A:L:O:m:nr:Sp:", \%opt);
+getopts("t:b:s:A:L:O:m:nr:Sp:R:", \%opt);
 
 $die2 = "
 scitools fastq-align [options] [aligner reference] [output_prefix] [read1.fq] (read2.fq)
@@ -32,6 +33,7 @@ Options:
                 (reference shortcuts must have a snap folder with
                  ref files in the same directory as the fasta)
    -p   [STR]   Snap-aligner call (def = $snap_aligner)
+   -R   [INT,INT] Snap min and max insert size, comma separated (def = $snap_min_max)
    -n           Sort reads by name / index (def = coordinate)
    -m   [MEM]   Samtools sort mex memory per thread, K/M/G (def = $memory)
 
@@ -49,7 +51,6 @@ if (defined $REF{$ARGV[0]}) {
 
 if (defined $opt{'S'}) {
 	$ref_file =~ s/[^\/]+$/snap/;
-	die "DEBUG: $ref_file is ref file. snap-aligner is $snap_aligner\n";
 }
 
 if (defined $opt{'O'}) {
@@ -66,19 +67,36 @@ if (!defined $opt{'t'}) {$opt{'t'} = $threads};
 if (!defined $opt{'m'}) {$opt{'m'} = $memory};
 if (defined $opt{'p'}) {$snap_aligner = $opt{'p'}};
 if (defined $opt{'r'}) {$sort_threads = $opt{'r'}};
+if (defined $opt{'R'}) {$snap_min_max = $opt{'R'}};
 
-if (defined $ARGV[3]) {
-	if (defined $opt{'n'}) {
-		$align_command = "$bwa mem -t $opt{'t'} $ref_file $ARGV[2] $ARGV[3] 2>> $out_prefix.align.log | $samtools view -bSu - 2>> $out_prefix.align.log | $samtools sort -@ $sort_threads -m $opt{'m'} -T $out_prefix.TMP -n - > $out_prefix.nsrt.bam 2>> $out_prefix.align.log";
-	} else {
-		$align_command = "$bwa mem -t $opt{'t'} $ref_file $ARGV[2] $ARGV[3] 2>> $out_prefix.align.log | $samtools view -bSu - 2>> $out_prefix.align.log | $samtools sort -@ $sort_threads -m $opt{'m'} -T $out_prefix.TMP - > $out_prefix.bam 2>> $out_prefix.align.log";
+if (!defined $opt{'S'}) { # BWA MEM as default
+	if (defined $ARGV[3]) {
+		if (defined $opt{'n'}) {
+			$align_command = "$bwa mem -t $opt{'t'} $ref_file $ARGV[2] $ARGV[3] 2>> $out_prefix.align.log | $samtools view -bSu - 2>> $out_prefix.align.log | $samtools sort -@ $sort_threads -m $opt{'m'} -T $out_prefix.TMP -n - > $out_prefix.nsrt.bam 2>> $out_prefix.align.log";
+		} else {
+			$align_command = "$bwa mem -t $opt{'t'} $ref_file $ARGV[2] $ARGV[3] 2>> $out_prefix.align.log | $samtools view -bSu - 2>> $out_prefix.align.log | $samtools sort -@ $sort_threads -m $opt{'m'} -T $out_prefix.TMP - > $out_prefix.bam 2>> $out_prefix.align.log";
+		}
+	} else { # single ended
+		if (defined $opt{'n'}) {
+			$align_command = "$bwa mem -t $opt{'t'} $ref_file $ARGV[2] 2>> $out_prefix.align.log | $samtools view -bSu - 2>> $out_prefix.align.log | $samtools sort -@ $sort_threads -m $opt{'m'} -T $out_prefix.TMP -n - > $out_prefix.nsrt.bam 2>> $out_prefix.align.log";
+		} else {
+			$align_command = "$bwa mem -t $opt{'t'} $ref_file $ARGV[2] 2>> $out_prefix.align.log | $samtools view -bSu - 2>> $out_prefix.align.log | $samtools sort -@ $sort_threads -m $opt{'m'} -T $out_prefix.TMP - > $out_prefix.bam 2>> $out_prefix.align.log";
+		}
 	}
-} else { # single ended
-	if (defined $opt{'n'}) {
-		$align_command = "$bwa mem -t $opt{'t'} $ref_file $ARGV[2] 2>> $out_prefix.align.log | $samtools view -bSu - 2>> $out_prefix.align.log | $samtools sort -@ $sort_threads -m $opt{'m'} -T $out_prefix.TMP -n - > $out_prefix.nsrt.bam 2>> $out_prefix.align.log";
-	} else {
-		$align_command = "$bwa mem -t $opt{'t'} $ref_file $ARGV[2] 2>> $out_prefix.align.log | $samtools view -bSu - 2>> $out_prefix.align.log | $samtools sort -@ $sort_threads -m $opt{'m'} -T $out_prefix.TMP - > $out_prefix.bam 2>> $out_prefix.align.log";
-	}
+} else { # SNAP aligner instead
+	($snap_min,$snap_max) = split(/,/, $snap_min_max);
+	if (defined $ARGV[3]) {
+		if (defined $opt{'n'}) {
+			$align_command = "$snap_aligner paired $ref_file $ARGV[2] $ARGV[3] -t $opt{'t'} -= -s $snap_min $snap_max -o -sam - 2>> $out_prefix.align.log | $samtools sort -@ $sort_threads -m $opt{'m'} -T $out_prefix.TMP -n - > $out_prefix.nsrt.bam 2>> $out_prefix.align.log";
+		} else {
+			$align_command = "$snap_aligner paired $ref_file $ARGV[2] $ARGV[3] -t $opt{'t'} -= -s $snap_min $snap_max -o -sam - 2>> $out_prefix.align.log | $samtools sort -@ $sort_threads -m $opt{'m'} -T $out_prefix.TMP - > $out_prefix.nsrt.bam 2>> $out_prefix.align.log";
+		}
+	} else { # single ended
+		if (defined $opt{'n'}) {
+			$align_command = "$snap_aligner single $ref_file $ARGV[2] -t $opt{'t'} -= -s $snap_min $snap_max -o -sam - 2>> $out_prefix.align.log | $samtools view -bSu - 2>> $out_prefix.align.log | $samtools sort -@ $sort_threads -m $opt{'m'} -T $out_prefix.TMP -n - > $out_prefix.nsrt.bam 2>> $out_prefix.align.log";
+		} else {
+			$align_command = "$snap_aligner single $ref_file $ARGV[2] -t $opt{'t'} -= -s $snap_min $snap_max -o -sam - 2>> $out_prefix.align.log | $samtools view -bSu - 2>> $out_prefix.align.log | $samtools sort -@ $sort_threads -m $opt{'m'} -T $out_prefix.TMP - > $out_prefix.nsrt.bam 2>> $out_prefix.align.log";
+		}
 }
 
 $ts = localtime(time);
