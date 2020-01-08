@@ -77,6 +77,7 @@ sub load_defaults {
 					elsif ($var eq "Pscript") {$Pscript = $val}
 					elsif ($var eq "bowtie2") {$bowtie2 = $val}
 					elsif ($var eq "bismark") {$bismark = $val}
+					elsif ($var eq "snap_aligner") {$snap_aligner = $val}
 					else {$VAR{$var} = $val};
 				}
 			}

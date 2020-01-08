@@ -14,10 +14,10 @@ $threads = 1;
 $memory = "2G";
 $sort_threads = 1;
 
-getopts("t:b:s:A:L:O:m:nr:", \%opt);
+getopts("t:b:s:A:L:O:m:nr:Sp:", \%opt);
 
 $die2 = "
-scitools fastq-align [options] [bwa reference] [output_prefix] [read1.fq] (read2.fq)
+scitools fastq-align [options] [aligner reference] [output_prefix] [read1.fq] (read2.fq)
    or    align-fastq
    or    align
 
@@ -28,10 +28,14 @@ Options:
    -r   [INT]   Threads for sorting (def = $sort_threads)
    -b   [STR]   Bwa call (def = $bwa)
    -s   [STR]   Samtools call (def = $samtools)
+   -S           Instead use the snap-aligner
+                (reference shortcuts must have a snap folder with
+                 ref files in the same directory as the fasta)
+   -p   [STR]   Snap-aligner call (def = $snap_aligner)
    -n           Sort reads by name / index (def = coordinate)
    -m   [MEM]   Samtools sort mex memory per thread, K/M/G (def = $memory)
 
-Bwa reference shortcuts:
+Reference shortcuts:
 $ref_shortcuts
 
 ";
@@ -41,6 +45,11 @@ if (defined $REF{$ARGV[0]}) {
 	$ref_file = $REF{$ARGV[0]};
 } else {
 	$ref_file = $ARGV[0];
+}
+
+if (defined $opt{'S'}) {
+	$ref_file =~ s/[^\/]+$/snap/;
+	die "DEBUG: $ref_file is ref file. snap-aligner is $snap_aligner\n";
 }
 
 if (defined $opt{'O'}) {
@@ -55,6 +64,7 @@ if (defined $opt{'b'}) {$bwa = $opt{'b'}};
 if (defined $opt{'s'}) {$samtools = $opt{'s'}};
 if (!defined $opt{'t'}) {$opt{'t'} = $threads};
 if (!defined $opt{'m'}) {$opt{'m'} = $memory};
+if (defined $opt{'p'}) {$snap_aligner = $opt{'p'}};
 if (defined $opt{'r'}) {$sort_threads = $opt{'r'}};
 
 if (defined $ARGV[3]) {
