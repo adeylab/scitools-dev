@@ -97,6 +97,7 @@ if (!defined $opt{'S'}) { # BWA MEM as default
 		} else {
 			$align_command = "$snap_aligner single $ref_file $ARGV[2] -t $opt{'t'} -= -s $snap_min $snap_max -o -sam - 2>> $out_prefix.align.log | $samtools view -bSu - 2>> $out_prefix.align.log | $samtools sort -@ $sort_threads -m $opt{'m'} -T $out_prefix.TMP - > $out_prefix.nsrt.bam 2>> $out_prefix.align.log";
 		}
+	}
 }
 
 $ts = localtime(time);
