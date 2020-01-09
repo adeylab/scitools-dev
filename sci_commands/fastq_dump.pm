@@ -9,7 +9,7 @@ sub fastq_dump {
 
 @ARGV = @_;
 
-getopts("R:F:O:o:I:1:2:A:i:j:r:N:", \%opt);
+getopts("R:F:O:o:I:1:2:A:i:j:r:N:x", \%opt);
 
 $die2 = "
 scitools fastq-dump [options]
@@ -25,6 +25,8 @@ Options:
                 names; optional)
    -A   [STR]   Annotation file (will split fastqs)
    -N   [INT]   Only process the first N reads (def = all)
+   -x           Do not check read name matching across
+                fastq file set (def = check)
 
 Defaults:
    -F   [STR]   Fastq directory
@@ -186,6 +188,24 @@ while ($r1tag = <R1> && ($reads_processed<$opt{'N'}||!defined $opt{'N'})) {
 	$i1seq = <I1>; chomp $i1seq; $i2seq = <I2>; chomp $i2seq;
 	$null = <I1>; $null = <I1>;
 	$null = <I2>; $null = <I2>;
+	
+	$r1tag =~ s/\s.+$//; $r1tag =~ s/#.+$//;
+	$r2tag =~ s/\s.+$//; $r2tag =~ s/#.+$//;
+	$i1tag =~ s/\s.+$//; $i1tag =~ s/#.+$//;
+	$i2tag =~ s/\s.+$//; $i2tag =~ s/#.+$//;
+	
+	if (!defined $opt{'x'}) {
+		if ($r1tag ne $r2tag || $r1tag ne $i1tag || $r1tag ne $i2tag) {
+			open ERR, ">$opt{'O'}/$opt{'o'}/$opt{'o'}.READ_NAME_ERROR.err";
+			print ERR "FATAL ERROR! Read names do not match for read number $reads_processed in the fastq file set!
+			Read 1: $r1tag
+			Read 2: $r2tag
+			Indx 1: $i1tag
+			Indx 2: $i2tag\n";
+			close ERR;
+			die "\nFATAL ERROR! Read number $reads_processed, Read names not matching! Exiting!\n";
+		}
+	}
 	
 	$ix1 = substr($i1seq,0,$POS_length{'1'});
 	$ix2 = substr($i1seq,$POS_length{'1'},$POS_length{'2'});
