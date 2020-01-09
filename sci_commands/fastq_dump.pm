@@ -175,8 +175,8 @@ open R2, "$zcat $r2 |";
 open I1, "$zcat $i1 |";
 open I2, "$zcat $i2 |";
 
-	
-while ($r1tag = <R1> && ($reads_processed<$opt{'N'}||!defined $opt{'N'})) {
+#while ($r1tag = <R1> && ($reads_processed<$opt{'N'}||!defined $opt{'N'})) {	
+while ($r1tag = <R1>) {
 
 	$reads_processed++;
 
