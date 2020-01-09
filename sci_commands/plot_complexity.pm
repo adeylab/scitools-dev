@@ -17,7 +17,7 @@ $height = 6;
 $width = 7;
 $max = 6;
 $title = "Library Complexity";
-$contourCT = 30;
+$contourCT = 50;
 $die2 = "
 scitools plot-complexity [options] [complexity file(s) can be comma separated]
 
@@ -107,7 +107,7 @@ if (defined $opt{'k'}) {
 print R "   geom_density2d(aes(V4,log10(V3),color=$cont_col,bins=$contourCT),size=0.3) +
 ";
 } else {
-print R "   geom_density2d(aes(V4,log10(V3),color=V2,n=$contourCT),size=0.3) +
+print R "   geom_density2d(aes(V4,log10(V3),color=V2,bins=$contourCT),size=0.3) +
 ";
 }
 if (defined $opt{'C'} || defined $opt{'c'}) {
