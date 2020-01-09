@@ -9,7 +9,7 @@ sub fastq_dump {
 
 @ARGV = @_;
 
-getopts("R:F:O:o:I:1:2:A:i:j:r:N:x", \%opt);
+getopts("R:F:O:o:I:1:2:A:i:j:r:N:xn", \%opt);
 
 $die2 = "
 scitools fastq-dump [options]
@@ -20,14 +20,15 @@ them into fastq files with matched barcodes.
 
 Options:
    -R   [STR]   Run name (preferred mode)
-   -r   [STR]   Run ID (if additional sequencing for some
-                libraries. Will add .[ID] to end of read
-                names; optional)
    -A   [STR]   Annotation file (will split fastqs)
    -N   [INT]   Only process the first N reads (def = all)
    -x           Do not check read name matching across
                 fastq file set (def = check)
-
+   -n           Include original read name as well
+                (def = read number)
+   -r   [STR]   Run ID (if additional sequencing for some
+                libraries. Will add .[ID] to end of read
+                names; optional)
 Defaults:
    -F   [STR]   Fastq directory
          ($VAR{'fastq_input_directory'})
@@ -221,12 +222,27 @@ while ($r1tag = <R1> && ($reads_processed<$opt{'N'}||!defined $opt{'N'})) {
 		
 		$totalCT++;
 		
-		if (defined $opt{'r'}) {
-			$r1out = "\@$barc:$totalCT.$opt{'r'}#0/1\n$r1seq\n\+\n$r1qual";
-			$r2out = "\@$barc:$totalCT.$opt{'r'}#0/2\n$r2seq\n\+\n$r2qual";
+		if (defined $opt{'n'}) {
+			$r1tag =~ s/^\@//; $r1tag =~ s/\:/_/g;
+			if (defined $opt{'r'}) {
+				$out_name = "\@$barc:$r1tag.$opt{'r'}";
+			} else {
+				$out_name = "\@$barc:$r1tag";
+			}
 		} else {
-			$r1out = "\@$barc:$totalCT#0/1\n$r1seq\n\+\n$r1qual";
-			$r2out = "\@$barc:$totalCT#0/2\n$r2seq\n\+\n$r2qual";
+			if (defined $opt{'r'}) {
+				$out_name = "\@$barc:$totalCT.$opt{'r'}";
+			} else {
+				$out_name = "\@$barc:$totalCT";
+			}
+		}
+		
+		if (defined $opt{'r'}) {
+			$r1out = "$out_name#0/1\n$r1seq\n\+\n$r1qual";
+			$r2out = "$out_name#0/2\n$r2seq\n\+\n$r2qual";
+		} else {
+			$r1out = "$out_name#0/1\n$r1seq\n\+\n$r1qual";
+			$r2out = "$out_name#0/2\n$r2seq\n\+\n$r2qual";
 		}
 		
 		if (!defined $opt{'A'}) {
@@ -249,13 +265,27 @@ while ($r1tag = <R1> && ($reads_processed<$opt{'N'}||!defined $opt{'N'})) {
 	} else {
 	
 		$barc = $ix1.$ix2.$ix3.$ix4;
+		if (defined $opt{'n'}) {
+			$r1tag =~ s/^\@//; $r1tag =~ s/\:/_/g;
+			if (defined $opt{'r'}) {
+				$out_name = "\@$barc:F.$r1tag.$opt{'r'}";
+			} else {
+				$out_name = "\@$barc:F.$r1tag";
+			}
+		} else {
+			if (defined $opt{'r'}) {
+				$out_name = "\@$barc:F_$failCT.$opt{'r'}";
+			} else {
+				$out_name = "\@$barc:F_$failCT";
+			}
+		}
 		
 		if (defined $opt{'r'}) {
-			print R1FAIL "\@$barc:F_$failCT.$opt{'r'}#0/1\n$r1seq\n\+\n$r1qual\n";
-			print R2FAIL "\@$barc:F_$failCT.$opt{'r'}#0/1\n$r2seq\n\+\n$r2qual\n";
+			print R1FAIL "$out_name#0/1\n$r1seq\n\+\n$r1qual\n";
+			print R2FAIL "$out_name#0/2\n$r2seq\n\+\n$r2qual\n";
 		} else {
-			print R1FAIL "\@$barc:F_$failCT#0/1\n$r1seq\n\+\n$r1qual\n";
-			print R2FAIL "\@$barc:F_$failCT#0/1\n$r2seq\n\+\n$r2qual\n";
+			print R1FAIL "$out_name#0/1\n$r1seq\n\+\n$r1qual\n";
+			print R2FAIL "$out_name#0/2\n$r2seq\n\+\n$r2qual\n";
 		}
 		
 		$failCT++;
