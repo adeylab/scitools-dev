@@ -244,11 +244,12 @@ while ($r1tag = <R1> && ($reads_processed<$opt{'N'}||!defined $opt{'N'})) {
 
 close R1; close R2; close I1; close I2;
 
+open LOG, ">$opt{'O'}/$opt{'o'}/$opt{'o'}.fasq_dump.stats.txt";
 if (defined $opt{'A'}) {
 	foreach $annot (keys %ANNOT_count) {
 		$out1_handle = $HANDLE1{$annot}; $out2_handle = $HANDLE2{$annot};
 		close $out1_handle; close $out2_handle;
-		print STDERR "Annot: $annot, count = $ANNOT_count{$annot}\n";
+		print LOG "Annot: $annot, count = $ANNOT_count{$annot}\n";
 	}
 	close O1; close O2;
 }
