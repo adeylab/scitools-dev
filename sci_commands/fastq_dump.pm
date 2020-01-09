@@ -9,7 +9,7 @@ sub fastq_dump {
 
 @ARGV = @_;
 
-getopts("R:F:O:o:I:1:2:A:i:j:r:", \%opt);
+getopts("R:F:O:o:I:1:2:A:i:j:r:N:", \%opt);
 
 $die2 = "
 scitools fastq-dump [options]
@@ -24,6 +24,7 @@ Options:
                 libraries. Will add .[ID] to end of read
                 names; optional)
    -A   [STR]   Annotation file (will split fastqs)
+   -N   [INT]   Only process the first N reads (def = all)
 
 Defaults:
    -F   [STR]   Fastq directory
@@ -164,7 +165,7 @@ if (defined $opt{'A'}) {
 open R1FAIL, "| $gzip > $opt{'O'}/$opt{'o'}/$opt{'o'}.fail.1.fq.gz";
 open R2FAIL, "| $gzip > $opt{'O'}/$opt{'o'}/$opt{'o'}.fail.2.fq.gz";
 
-$totalCT = 0; $failCT = 0;
+$totalCT = 0; $failCT = 0; $reads_processed = 0;
 
 open R1, "$zcat $r1 |";
 open R2, "$zcat $r2 |";
@@ -172,7 +173,9 @@ open I1, "$zcat $i1 |";
 open I2, "$zcat $i2 |";
 
 	
-while ($r1tag = <R1>) {
+while ($r1tag = <R1> && ($reads_processed<$opt{'N'}||!defined $opt{'N'})) {
+
+	$reads_processed++;
 
 	$r2tag = <R2>; chomp $r1tag; chomp $r2tag;
 	$r1seq = <R1>; $r2seq = <R2>; chomp $r1seq; chomp $r2seq;
