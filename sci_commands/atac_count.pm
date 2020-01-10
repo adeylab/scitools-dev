@@ -11,7 +11,7 @@ sub atac_count {
 $format = "S";
 
 @ARGV = @_;
-getopts("s:b:O:BC:XF:u", \%opt);
+getopts("s:b:O:BC:XF:un", \%opt);
 
 $die2 = "
 scitools atac-count [options] [bam file] [peaks bed file or matrix]
@@ -31,6 +31,7 @@ Options:
                 (file name will end in .binary.matrix)
    -C   [STR]   Complexity file (speeds up on-target calc)
    -F   [S/D]   Format: D = dense, S = sparse (def = $format)
+   -n           Do not sort positions (faster, def = sort)
    -u           Do not gzip output (defauly = yes)
    -X           Remove temp files
 
@@ -141,21 +142,41 @@ if ($ARGV[1] =~ /\.matrix$/) {
 			print OUT "\t$CELL_ID_LIST[$i]";
 		} print OUT "\n";
 		
-		foreach $siteID (sort keys %SITE_CELL_STATUS) {
-			print OUT "$siteID";
-			for ($i = 0; $i < @CELL_ID_LIST; $i++) {
-				if ($SITE_CELL_STATUS{$siteID}{$CELL_ID_LIST[$i]}>0.5) {
-					if (defined $opt{'B'}) {
-						print OUT "\t1";
+		if (!defined $opt{'n'}) {
+			foreach $siteID (sort keys %SITE_CELL_STATUS) {
+				print OUT "$siteID";
+				for ($i = 0; $i < @CELL_ID_LIST; $i++) {
+					if ($SITE_CELL_STATUS{$siteID}{$CELL_ID_LIST[$i]}>0.5) {
+						if (defined $opt{'B'}) {
+							print OUT "\t1";
+						} else {
+							print OUT "\t$SITE_CELL_STATUS{$siteID}{$CELL_ID_LIST[$i]}";
+						}
 					} else {
-						print OUT "\t$SITE_CELL_STATUS{$siteID}{$CELL_ID_LIST[$i]}";
+						print OUT "\t0";
 					}
-				} else {
-					print OUT "\t0";
 				}
+				print OUT "\n";
 			}
-			print OUT "\n";
-		} close OUT;
+		} else {
+			foreach $siteID (keys %SITE_CELL_STATUS) {
+				print OUT "$siteID";
+				for ($i = 0; $i < @CELL_ID_LIST; $i++) {
+					if ($SITE_CELL_STATUS{$siteID}{$CELL_ID_LIST[$i]}>0.5) {
+						if (defined $opt{'B'}) {
+							print OUT "\t1";
+						} else {
+							print OUT "\t$SITE_CELL_STATUS{$siteID}{$CELL_ID_LIST[$i]}";
+						}
+					} else {
+						print OUT "\t0";
+					}
+				}
+				print OUT "\n";
+			}
+		}
+		
+		close OUT;
 		
 	} elsif ($format =~ /S/i) {
 
@@ -187,17 +208,33 @@ if ($ARGV[1] =~ /\.matrix$/) {
 		} close CELLS;
 		
 		$siteNumber = 0;
-		foreach $siteID (sort keys %SITE_CELL_STATUS) {
-			print SITES "$siteID\n";
-			$siteNumber++;
-			for ($i = 0; $i < @CELL_ID_LIST; $i++) {
-				if ($SITE_CELL_STATUS{$siteID}{$CELL_ID_LIST[$i]}>0.5) {
-					if (defined $opt{'B'}) {$val = 1} else {$val = $SITE_CELL_STATUS{$siteID}{$CELL_ID_LIST[$i]}};
-					my $offset = $i + 1;
-					print VALS "$siteNumber\t$offset\t$val\n";
+		
+		if (!defined $opt{'n'}) {
+			foreach $siteID (sort keys %SITE_CELL_STATUS) {
+				print SITES "$siteID\n";
+				$siteNumber++;
+				for ($i = 0; $i < @CELL_ID_LIST; $i++) {
+					if ($SITE_CELL_STATUS{$siteID}{$CELL_ID_LIST[$i]}>0.5) {
+						if (defined $opt{'B'}) {$val = 1} else {$val = $SITE_CELL_STATUS{$siteID}{$CELL_ID_LIST[$i]}};
+						my $offset = $i + 1;
+						print VALS "$siteNumber\t$offset\t$val\n";
+					}
 				}
 			}
-		} close VALS; close SITES;
+		} else {
+			foreach $siteID (keys %SITE_CELL_STATUS) {
+				print SITES "$siteID\n";
+				$siteNumber++;
+				for ($i = 0; $i < @CELL_ID_LIST; $i++) {
+					if ($SITE_CELL_STATUS{$siteID}{$CELL_ID_LIST[$i]}>0.5) {
+						if (defined $opt{'B'}) {$val = 1} else {$val = $SITE_CELL_STATUS{$siteID}{$CELL_ID_LIST[$i]}};
+						my $offset = $i + 1;
+						print VALS "$siteNumber\t$offset\t$val\n";
+					}
+				}
+			}
+		}
+		close VALS; close SITES;
 		
 	}
 
