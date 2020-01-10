@@ -1,26 +1,28 @@
-package sci_commands::matrix_cistopic_tempwarplda;
+package sci_commands::matrix_cistopic3;
 
 use sci_utils::general;
 use Getopt::Std; %opt = ();
 use Exporter "import";
-@EXPORT = ("matrix_cistopic_tempwarplda");
+@EXPORT = ("matrix_cistopic3");
 
-sub matrix_cistopic_tempwarplda {
+sub matrix_cistopic3 {
 
     @ARGV = @_;
-    getopts("O:A:c:r:n:T:t:XR:P:L:W:", \%opt);
+    getopts("O:c:r:n:T:XR:P:a:b:L:W:", \%opt);
 
     $thrP = 0.975;
+    $cis_alpha = 50;
+    $cis_beta = 0.1;
 
 $die2 = "
-scitools matrix-cistopic-tempwarplda [options] [input matrix]
-   or    cistopic
+scitools matrix-cistopic3 [options] [input matrix]
 
 [input matrix] =A counts matrix generated from atac_count. 
     Can be filtered prior to this command call, or 
     can supply the filtering options during cisTopic processing.
 
 cisTopic serves as an alternative textmining algorithm to TFIDF-LSI processing.
+Version 3 uses Warp LDA implementation for topic modeling.
 It is to be run on a sciATAC counts matrix. For more information see:
 github.com/aertslab/cisTopic/
 
@@ -37,23 +39,25 @@ cisTopic consists of 4 main steps:
    -O   [STR]  Output prefix (default is [input].cistopic.dims)
    -c   [INT]  Number of nonZero sites per column (cell) to retain (def = 1)
    -r   [INT]  Number of nonZero sites per row (peak) to retain (def = 1)
-   -n   [INT] Number of cores for parallel processing. (def=1)
-   -L   [STR]  Columns file for sparseMatrix (will try to auto-detect)
-   -W   [STR]  Rows file for sparseMatrix (will try to auto-detect)
-   -t   [STR]  prefix for temporary topic RDS files for each model
+   -n   [INT]  Number of cores for parallel processing. (def=1)
+   -L   [STR]  Columns file for sparseMatrix (will try to auto-detect), currently unsupported
+   -W   [STR]  Rows file for sparseMatrix (will try to auto-detect), currently unsupported
    -T   [INT]  User defined number of Topics to use. 
                   If unspecified: will generate 15,20,25,30,50,65,100 Topics,
                   and use log-liklihood estimators to select the best.
                   Specification can be a single number of a comma separated list.
                   Will use a core for each number supplied (DO NOT EXCEED A LIST LENGTH OF 10)
    -P   [FLT]  ThrP (def = $thrP)
+   -a   [FLT]  cistopic alpha (def = $cis_alpha)
+   -b   [FLT]  cistopic beta (def = $cis_beta)
    -X          Retain intermediate files (def = delete)
    -R   [STR]  Rscript call (def = $Rscript)
 
-    Note: Requires cisTopic R package, use: /home/groups/oroaklab/src/R/R-3.5.1/library_arsn
+    Note: Requires cisTopic v3 R package
 
 ";
 
+###
 
 if (!defined $ARGV[0]) {die $die2};
 
@@ -63,18 +67,18 @@ $prefix =~ s/\.matrix$//;
 $prefix =~ s/\.values$//;
 $prefix =~ s/\.sparseMatrix$//;
 if (!defined $opt{'O'}) {
-$opt{'O'} = $prefix;
+   $opt{'O'} = $prefix;
 }
 
 if ($ARGV[0] =~ /sparseMatrix/i) {
    $sparse = 1;
-if (defined $opt{'L'}) {
-   $col_file = $opt{'L'};
-} else {
-   if (-e "$prefix.sparseMatrix.cols") {
-      $col_file = "$prefix.sparseMatrix.cols";
-   } elsif (-e "$prefix.sparseMatrix.cols.gz") {
-      $col_file = "$prefix.sparseMatrix.cols.gz";
+   if (defined $opt{'L'}) {
+      $col_file = $opt{'L'};
+   } else {
+      if (-e "$prefix.sparseMatrix.cols") {
+         $col_file = "$prefix.sparseMatrix.cols";
+      } elsif (-e "$prefix.sparseMatrix.cols.gz") {
+         $col_file = "$prefix.sparseMatrix.cols.gz";
    } else {
       die "ERROR: Cannot detect cols file (e.g. $prefix.sparseMatrix.cols), please provide as -C\n";
    }
@@ -96,54 +100,73 @@ if (!defined $opt{'c'}) {$opt{'c'} = 1};
 if (!defined $opt{'r'}) {$opt{'r'} = 1};
 if (!defined $opt{'n'}) {$opt{'n'} = 1};
 if (defined $opt{'P'}) {$thrP = $opt{'P'}};
+if (defined $opt{'a'}) {$cis_alpha = $opt{'a'}};
+if (defined $opt{'b'}) {$cis_beta = $opt{'b'}};
 if (!defined $opt{'T'}) {$opt{'T'} = "15,20,25,30,50,65,100"};
-if (!defined $opt{'t'}) {$opt{'t'} = "temp_cistopics_warplda/"};
 if (defined $opt{'R'}) {$Rscript = $opt{'R'}};
 
 ###
 
-system("mkdir $opt{'t'}");
-
 open R, ">$opt{'O'}.cistopic.r";
 print R "
-library(plyr)
-library(cisTopic)
+suppressWarnings(library(cisTopic))
 library(Matrix)
-source(\"/home/groups/oroaklab/nishida/scripts/cistopics_runWarpLDA.R\")
+library(ComplexHeatmap)
 ";
 
 if ($ARGV[0] =~ /sparseMatrix/i) {
-   print R "IN<-as.matrix(read.table(\"$ARGV[0]\"))
+print R "IN<-as.matrix(read.table(\"$ARGV[0]\"))
 IN<-sparseMatrix(i=IN[,1],j=IN[,2],x=IN[,3])
 COLS<-read.table(\"$col_file\")
 colnames(IN)<-COLS\$V1
 ROWS<-read.table(\"$row_file\")
 row.names(IN)<-ROWS\$V1\n";
 } else {
-   print R "IN<-as.matrix(read.table(\"$ARGV[0]\"))\n";
+print R "IN<-as.matrix(read.table(\"$ARGV[0]\"))\n";
 }
 
 print R "
 row.names(IN)<-sub(\"_\",\"-\",sub(\"_\",\":\",row.names(IN)))
+#Set up filtered binarized counts matrix
 cisTopicObject <- createcisTopicObject(IN,min.cells=$opt{'r'},min.regions=$opt{'c'}, keepCountsMatrix=FALSE)
-cisTopicObject <- runWarpLDA(cisTopicObject, topic=c($opt{'T'}), seed=2018, nCores=$opt{'n'}, iterations = 300, tmp=\"$opt{'t'}\")
+";
 
-if (length(c($opt{'T'}))>1){
-cisTopicObject <- selectModel(cisTopicObject)
+print R "
+cisTopicObject <- runWarpLDAModels(cisTopicObject, topic=c($opt{'T'}), seed=2020, nCores=$opt{'n'}, iterations=500, alpha=$cis_alpha, beta=$cis_beta, tmp=\"$opt{'O'}.temp\")
+
+pdf(file=\"$opt{'O'}.cistopic.modelselection.pdf\")
+par(mfrow=c(3,1))
+cisTopicObject <- selectModel(cisTopicObject, type='derivative')
+dev.off()
+
 modelMat <- scale(cisTopicObject\@selected.model\$document_expects, center = TRUE, scale = TRUE)
-} else {
-modelMat<-scale(cisTopicObject\@models\$document_expects,center=TRUE,scale=TRUE)
-}
-
-#Print out cisTopic Matrix#
 tModelmat<-as.data.frame(t(modelMat))
 Modeldf<-as.data.frame(modelMat)
 rownames(tModelmat)<-cisTopicObject\@cell.names
 colnames(Modeldf)<-cisTopicObject\@cell.names
 row.names(Modeldf)<-paste0(\"Topic_\",row.names(Modeldf))
+write.table(Modeldf,file=\"$opt{'O'}.cistopic.matrix\",col.names=T,row.names=T,quote=F,sep=\"\\t\")
+saveRDS(cisTopicObject,\"$opt{'O'}.cistopicObject.rds\")
 
-write.table(Modeldf,file=\"$opt{'O'}.cistopic_warplda.matrix\",col.names=T,row.names=T,quote=F,sep=\"\\t\")
-saveRDS(cisTopicObject,\"$opt{'O'}.cistopicObject_warplda.rds\")
+cisTopicObject <- getRegionsScores(cisTopicObject, method='Z-score', scale=TRUE)
+cisTopicObject <- binarizecisTopics(cisTopicObject, thrP=$thrP, plot=FALSE)
+getBedFiles(cisTopicObject, path='$opt{'O'}.topics')
+saveRDS(cisTopicObject,\"$opt{'O'}.cistopicObject.rds\")
+";
+
+print R "
+png(\"$opt{'O'}.Heatmap_prob_cistopic.png\",width=12,height=12,units=\"in\",res=600)
+cellTopicHeatmap(cisTopicObject, method=\'Probability\')
+dev.off()
+pdf(\"$opt{'O'}.Heatmap_prob_cistopic.pdf\",width=12,height=12)
+cellTopicHeatmap(cisTopicObject, method=\'Probability\')
+dev.off()
+png(\"$opt{'O'}.Heatmap_zscore_cistopic.png\",width=12,height=12,units=\"in\",res=600)
+cellTopicHeatmap(cisTopicObject, method=\'Z-score\')
+dev.off()
+pdf(\"$opt{'O'}.Heatmap_zscore_cistopic.pdf\",width=12,height=12)
+cellTopicHeatmap(cisTopicObject, method=\'Z-score\')
+dev.off()
 ";
 
 close R;
@@ -151,7 +174,7 @@ close R;
 system("$Rscript $opt{'O'}.cistopic.r");
 
 if (!defined $opt{'X'}) {
-    system("rm -f $opt{'O'}.cistopic.r");
+system("rm -f $opt{'O'}.cistopic.r");
 }
 
 }

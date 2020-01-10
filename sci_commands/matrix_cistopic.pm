@@ -136,6 +136,7 @@ print R "
 library(plyr)
 library(cisTopic)
 library(Matrix)
+library(ComplexHeatmap)
 ";
 
 if ($ARGV[0] =~ /sparseMatrix/i) {
