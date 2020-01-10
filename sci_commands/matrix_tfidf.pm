@@ -23,7 +23,7 @@ Options:
    -T           Use the natural log transformed TF value.
    -L   [BASE]  Log norm with base specified.
                 N for natural, def = no additional log norm
-   -z           Gzip output
+   -z           Do not gzip output (def = yes)
 
 ";
 
@@ -41,7 +41,7 @@ if ($ARGV[0] =~ /\.matrix/ || $ARGV[0] =~ /\.matrix\.gz/) {
 		open IN, "$ARGV[0]";
 	}
 	
-	if (defined $opt{'z'}) {
+	if (!defined $opt{'z'}) {
 		open OUT, "| $gzip > $opt{'O'}.tfidf.gz";
 	} else {
 		open OUT, ">$opt{'O'}.tfidf";
@@ -95,7 +95,7 @@ if ($ARGV[0] =~ /\.matrix/ || $ARGV[0] =~ /\.matrix\.gz/) {
 		$COLID_sum{$col}+=$val;
 	} close IN;
 	
-	if (defined $opt{'z'}) {
+	if (!defined $opt{'z'}) {
 		open OUT, "| $gzip > $opt{'O'}.sparseMatrix.tfidf.gz";
 	} else {
 		open OUT, ">$opt{'O'}.sparseMatrix.tfidf";
