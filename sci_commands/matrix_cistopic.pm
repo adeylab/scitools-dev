@@ -41,8 +41,8 @@ Options:
    -A   [STR]  Annotation file is useful. cisTopic will provide a PCA with the influence of and the heatmap of Topics
    -C   [STR]  color file 
    -S   [STR]  color string
-   -L   [STR]  Columns file for sparseMatrix (will try to auto-detect), currently unsupported
-   -W   [STR]  Rows file for sparseMatrix (will try to auto-detect), currently unsupported
+   -L   [STR]  Columns file for sparseMatrix (will try to auto-detect)
+   -W   [STR]  Rows file for sparseMatrix (will try to auto-detect)
    -T   [INT]  User defined number of Topics to use. 
                   If unspecified: will generate 15,20,25,30,50,65,100 Topics,
                   and use log-liklihood estimators to select the best.
