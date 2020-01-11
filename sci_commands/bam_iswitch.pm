@@ -156,6 +156,7 @@ while ($l = <IN>) {
 								$PASS[$i] = 1; $PASS[$j] = 1;
 							}
 						}
+					}
 				}
 				if ($PASS[$i]==0) {
 					if (!defined $opt{'N'}) {print OUT "$READS[$i]\n"};
