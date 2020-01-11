@@ -29,7 +29,9 @@ Options:
    -M   [INT]   Max allowed reads at identical position (def = $max_in_set)
    -T   [STR]   Switch filter(s), comma separated: (def = $filter)
                   T  = Matching both PCR, one or both Tn5 mismatches
-                  P  = Matching both Tn5, one or both PCR index mismatches
+                  P  = Matching both Tn5, one or both PCR index mismatches		
+                  (not implemented yet) T1 = Matching both PCR, one Tn5 matching
+                  (not implemented yet) P1 = Matching both Tn5, one PCR matching
                   7  = i5 side matching both, one or both i7 mismatch
                   5  = i7 side matching both, one or both i5 mismatch
                   A  = All of the above are filtered out (specify alone)
@@ -205,6 +207,8 @@ if (!defined $opt{'N'}) {close OUT};
 open LOG, ">$opt{'O'}.iSwitch_summary.txt";
 $ts = localtime(time);
 $percent_passing = sprintf("%.2f", $total_passing/$total_input);
+$percent_jackpot = sprintf("%.2f", $reads_within_jackpot_positions/$total_input);
+$percent_switch = sprintf("%.2f", $fail_by_switching/$total_input);
 print LOG "
 $ts	$reads_processed reads processed
 	Matching PCR, Mismatching one or both Tn5 = $FILT_COUNT{'T'}
@@ -217,11 +221,13 @@ $ts	$reads_processed reads processed
 	Total retained = $total_passing ($percent_passing)\n";
 close LOG;
 
-open OUT, ">$opt{'O'}.iSwitch_stats.txt";
-foreach $barc (sort {$BARC_passing_reads{$b}<=>$BARC_passing_reads{$a}} keys %BARC_passing_reads) {
-	$percent_passing = sprintf("%.2f", $BARC_passing_reads{$barc}/$BARC_input_reads{$barc});
-	print OUT "$barc\t$BARC_input_reads{$barc}\t$BARC_passing_reads{$barc}\t$percent_passing\n";
-} close OUT;
+if (!defined $opt{'N'}) {
+	open OUT, ">$opt{'O'}.iSwitch_stats.txt";
+	foreach $barc (sort {$BARC_passing_reads{$b}<=>$BARC_passing_reads{$a}} keys %BARC_passing_reads) {
+		$percent_passing = sprintf("%.2f", $BARC_passing_reads{$barc}/$BARC_input_reads{$barc});
+		print OUT "$barc\t$BARC_input_reads{$barc}\t$BARC_passing_reads{$barc}\t$percent_passing\n";
+	} close OUT;
+}
 
 }
 1;
