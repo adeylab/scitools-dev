@@ -19,7 +19,7 @@ Takes sequencer fastq files (from bcl2fastq) and will format
 them into fastq files with matched barcodes.
 
 Options:
-   -R   [STR]   Run name (preferred mode)
+   -R   [STR]   Run name / read directory name (preferred mode)
    -A   [STR]   Annotation file (will split fastqs)
    -H   [1|2]   Hamming distance for matching (1 or 2, def = 2)
    -N   [INT]   Only process the first N reads (def = all)
@@ -31,27 +31,32 @@ Options:
                 libraries. Will add .[ID] to end of read
                 names; optional)
 Defaults:
-   -F   [STR]   Fastq directory
+   -F   [STR]   Fastq directory (where -R directory lives)
          ($VAR{'fastq_input_directory'})
-   -O   [STR]   Output fastq directory
+   -O   [STR]   Output fastq directory (-o directory made)
          ($VAR{'SCI_fastq_directory'})
-   -o   [STR]   Output prefix
+   -o   [STR]   Output prefix / new directory
          (def = run name)
    -I   [STR]   SCI index master file
          ($VAR{'SCI_index_file'})
 
 To specify specific fastq files instead of defaults:
-   (can be comma sep for multiple)
+   (can be comma sep for multiple, -R not required)
    -1   [STR]   Read 1 fastq
    -2   [STR]   Read 2 fastq
    -i   [STR]   Index 1 fastq (opt)
    -j   [STR]   Index 2 fastq (opt)
 
-Will split with a hamming distance of 2
-
 ";
 
-if (!defined $opt{'R'}) {die $die2};
+if (!defined $opt{'R'}) {
+	if (!defined $opt{'1'} || 
+		!defined $opt{'2'} ||
+		!defined $opt{'i'} ||
+		!defined $opt{'j'}) {
+			die $die2;
+	}
+}
 if (!defined $opt{'F'}) {$opt{'F'} = $VAR{'fastq_input_directory'}};
 if (!defined $opt{'O'}) {$opt{'O'} = $VAR{'SCI_fastq_directory'}};
 if (!defined $opt{'o'}) {$opt{'o'} = $opt{'R'}};
