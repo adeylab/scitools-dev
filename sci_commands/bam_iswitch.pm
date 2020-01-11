@@ -210,7 +210,9 @@ $percent_passing = sprintf("%.2f", $total_passing/$total_input);
 $percent_jackpot = sprintf("%.2f", $reads_within_jackpot_positions/$total_input);
 $percent_switch = sprintf("%.2f", $fail_by_switching/$total_input);
 print LOG "
-$ts	$reads_processed reads processed
+$ts	COMPLETE!
+	Filter parameters = $filter
+	$reads_processed reads processed
 	Matching PCR, Mismatching one or both Tn5 = $FILT_COUNT{'T'}
 	Matching Tn5, Mismatching one or more PCR = $FILT_COUNT{'P'}
 	Matching all i7, Mismatching one or both i5 = $FILT_COUNT{'5'}
