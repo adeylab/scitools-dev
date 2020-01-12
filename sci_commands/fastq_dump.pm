@@ -21,7 +21,7 @@ them into fastq files with matched barcodes.
 Options:
    -R   [STR]   Run name / read directory name (preferred mode)
    -A   [STR]   Annotation file (will split fastqs)
-   -H   [1|2]   Hamming distance for matching (1 or 2, def = 2)
+   -H   [0-2]   Hamming distance for matching (0, 1 or 2; def = 2)
    -N   [INT]   Only process the first N reads (def = all)
    -x           Do not check read name matching across
                 fastq file set (def = check)
@@ -73,36 +73,39 @@ while ($l = <IN>) {
 } close IN;
 
 # make all-1-away hash
-foreach $pos (keys %POS_SEQ_seq) {
-	foreach $seq (keys %{$POS_SEQ_seq{$pos}}) {
-		@TRUE = split(//, $seq);
-		for ($i = 0; $i < @TRUE; $i++) {
-			if ($TRUE[$i] =~ /A/i) {
-				@NEW = @TRUE; $NEW[$i] = "C"; $new = join("", @NEW); $POS_SEQ_seq{$pos}{$new} = $seq;
-				@NEW = @TRUE; $NEW[$i] = "G"; $new = join("", @NEW); $POS_SEQ_seq{$pos}{$new} = $seq;
-				@NEW = @TRUE; $NEW[$i] = "T"; $new = join("", @NEW); $POS_SEQ_seq{$pos}{$new} = $seq;
-				@NEW = @TRUE; $NEW[$i] = "N"; $new = join("", @NEW); $POS_SEQ_seq{$pos}{$new} = $seq;
-			} elsif ($TRUE[$i] =~ /C/i) {
-				@NEW = @TRUE; $NEW[$i] = "A"; $new = join("", @NEW); $POS_SEQ_seq{$pos}{$new} = $seq;
-				@NEW = @TRUE; $NEW[$i] = "G"; $new = join("", @NEW); $POS_SEQ_seq{$pos}{$new} = $seq;
-				@NEW = @TRUE; $NEW[$i] = "T"; $new = join("", @NEW); $POS_SEQ_seq{$pos}{$new} = $seq;
-				@NEW = @TRUE; $NEW[$i] = "N"; $new = join("", @NEW); $POS_SEQ_seq{$pos}{$new} = $seq;
-			} elsif ($TRUE[$i] =~ /G/i) {
-				@NEW = @TRUE; $NEW[$i] = "C"; $new = join("", @NEW); $POS_SEQ_seq{$pos}{$new} = $seq;
-				@NEW = @TRUE; $NEW[$i] = "A"; $new = join("", @NEW); $POS_SEQ_seq{$pos}{$new} = $seq;
-				@NEW = @TRUE; $NEW[$i] = "T"; $new = join("", @NEW); $POS_SEQ_seq{$pos}{$new} = $seq;
-				@NEW = @TRUE; $NEW[$i] = "N"; $new = join("", @NEW); $POS_SEQ_seq{$pos}{$new} = $seq;
-			} elsif ($TRUE[$i] =~ /T/i) {
-				@NEW = @TRUE; $NEW[$i] = "C"; $new = join("", @NEW); $POS_SEQ_seq{$pos}{$new} = $seq;
-				@NEW = @TRUE; $NEW[$i] = "G"; $new = join("", @NEW); $POS_SEQ_seq{$pos}{$new} = $seq;
-				@NEW = @TRUE; $NEW[$i] = "A"; $new = join("", @NEW); $POS_SEQ_seq{$pos}{$new} = $seq;
-				@NEW = @TRUE; $NEW[$i] = "N"; $new = join("", @NEW); $POS_SEQ_seq{$pos}{$new} = $seq;
+if ($opt{'H'}>0) {
+	foreach $pos (keys %POS_SEQ_seq) {
+		foreach $seq (keys %{$POS_SEQ_seq{$pos}}) {
+			@TRUE = split(//, $seq);
+			for ($i = 0; $i < @TRUE; $i++) {
+				if ($TRUE[$i] =~ /A/i) {
+					@NEW = @TRUE; $NEW[$i] = "C"; $new = join("", @NEW); $POS_SEQ_seq{$pos}{$new} = $seq;
+					@NEW = @TRUE; $NEW[$i] = "G"; $new = join("", @NEW); $POS_SEQ_seq{$pos}{$new} = $seq;
+					@NEW = @TRUE; $NEW[$i] = "T"; $new = join("", @NEW); $POS_SEQ_seq{$pos}{$new} = $seq;
+					@NEW = @TRUE; $NEW[$i] = "N"; $new = join("", @NEW); $POS_SEQ_seq{$pos}{$new} = $seq;
+				} elsif ($TRUE[$i] =~ /C/i) {
+					@NEW = @TRUE; $NEW[$i] = "A"; $new = join("", @NEW); $POS_SEQ_seq{$pos}{$new} = $seq;
+					@NEW = @TRUE; $NEW[$i] = "G"; $new = join("", @NEW); $POS_SEQ_seq{$pos}{$new} = $seq;
+					@NEW = @TRUE; $NEW[$i] = "T"; $new = join("", @NEW); $POS_SEQ_seq{$pos}{$new} = $seq;
+					@NEW = @TRUE; $NEW[$i] = "N"; $new = join("", @NEW); $POS_SEQ_seq{$pos}{$new} = $seq;
+				} elsif ($TRUE[$i] =~ /G/i) {
+					@NEW = @TRUE; $NEW[$i] = "C"; $new = join("", @NEW); $POS_SEQ_seq{$pos}{$new} = $seq;
+					@NEW = @TRUE; $NEW[$i] = "A"; $new = join("", @NEW); $POS_SEQ_seq{$pos}{$new} = $seq;
+					@NEW = @TRUE; $NEW[$i] = "T"; $new = join("", @NEW); $POS_SEQ_seq{$pos}{$new} = $seq;
+					@NEW = @TRUE; $NEW[$i] = "N"; $new = join("", @NEW); $POS_SEQ_seq{$pos}{$new} = $seq;
+				} elsif ($TRUE[$i] =~ /T/i) {
+					@NEW = @TRUE; $NEW[$i] = "C"; $new = join("", @NEW); $POS_SEQ_seq{$pos}{$new} = $seq;
+					@NEW = @TRUE; $NEW[$i] = "G"; $new = join("", @NEW); $POS_SEQ_seq{$pos}{$new} = $seq;
+					@NEW = @TRUE; $NEW[$i] = "A"; $new = join("", @NEW); $POS_SEQ_seq{$pos}{$new} = $seq;
+					@NEW = @TRUE; $NEW[$i] = "N"; $new = join("", @NEW); $POS_SEQ_seq{$pos}{$new} = $seq;
+				}
 			}
 		}
 	}
 }
 
 # make all-2-away hash
+$hamming_collisions = 0;
 if ($opt{'H'}>1) {
 	foreach $pos (keys %POS_SEQ_seq) {
 		foreach $id_seq (keys %{$POS_SEQ_seq{$pos}}) {
@@ -110,25 +113,25 @@ if ($opt{'H'}>1) {
 			@TRUE = split(//, $seq);
 			for ($i = 0; $i < @TRUE; $i++) {
 				if ($TRUE[$i] =~ /A/i) {
-					@NEW = @TRUE; $NEW[$i] = "C"; $new = join("", @NEW); if (!defined $POS_SEQ_seq{$pos}{$new}) {$POS_SEQ_seq{$pos}{$new} = $seq};
-					@NEW = @TRUE; $NEW[$i] = "G"; $new = join("", @NEW); if (!defined $POS_SEQ_seq{$pos}{$new}) {$POS_SEQ_seq{$pos}{$new} = $seq};
-					@NEW = @TRUE; $NEW[$i] = "T"; $new = join("", @NEW); if (!defined $POS_SEQ_seq{$pos}{$new}) {$POS_SEQ_seq{$pos}{$new} = $seq};
-					@NEW = @TRUE; $NEW[$i] = "N"; $new = join("", @NEW); if (!defined $POS_SEQ_seq{$pos}{$new}) {$POS_SEQ_seq{$pos}{$new} = $seq};
+					@NEW = @TRUE; $NEW[$i] = "C"; $new = join("", @NEW); if (!defined $POS_SEQ_seq{$pos}{$new}) {$POS_SEQ_seq{$pos}{$new} = $seq} else {$POS_SEQ_seq{$pos}{$new} = "NA"; $hamming_collisions++};
+					@NEW = @TRUE; $NEW[$i] = "G"; $new = join("", @NEW); if (!defined $POS_SEQ_seq{$pos}{$new}) {$POS_SEQ_seq{$pos}{$new} = $seq} else {$POS_SEQ_seq{$pos}{$new} = "NA"; $hamming_collisions++};
+					@NEW = @TRUE; $NEW[$i] = "T"; $new = join("", @NEW); if (!defined $POS_SEQ_seq{$pos}{$new}) {$POS_SEQ_seq{$pos}{$new} = $seq} else {$POS_SEQ_seq{$pos}{$new} = "NA"; $hamming_collisions++};
+					@NEW = @TRUE; $NEW[$i] = "N"; $new = join("", @NEW); if (!defined $POS_SEQ_seq{$pos}{$new}) {$POS_SEQ_seq{$pos}{$new} = $seq} else {$POS_SEQ_seq{$pos}{$new} = "NA"; $hamming_collisions++};
 				} elsif ($TRUE[$i] =~ /C/i) {
-					@NEW = @TRUE; $NEW[$i] = "A"; $new = join("", @NEW); if (!defined $POS_SEQ_seq{$pos}{$new}) {$POS_SEQ_seq{$pos}{$new} = $seq};
-					@NEW = @TRUE; $NEW[$i] = "G"; $new = join("", @NEW); if (!defined $POS_SEQ_seq{$pos}{$new}) {$POS_SEQ_seq{$pos}{$new} = $seq};
-					@NEW = @TRUE; $NEW[$i] = "T"; $new = join("", @NEW); if (!defined $POS_SEQ_seq{$pos}{$new}) {$POS_SEQ_seq{$pos}{$new} = $seq};
-					@NEW = @TRUE; $NEW[$i] = "N"; $new = join("", @NEW); if (!defined $POS_SEQ_seq{$pos}{$new}) {$POS_SEQ_seq{$pos}{$new} = $seq};
+					@NEW = @TRUE; $NEW[$i] = "A"; $new = join("", @NEW); if (!defined $POS_SEQ_seq{$pos}{$new}) {$POS_SEQ_seq{$pos}{$new} = $seq} else {$POS_SEQ_seq{$pos}{$new} = "NA"; $hamming_collisions++};
+					@NEW = @TRUE; $NEW[$i] = "G"; $new = join("", @NEW); if (!defined $POS_SEQ_seq{$pos}{$new}) {$POS_SEQ_seq{$pos}{$new} = $seq} else {$POS_SEQ_seq{$pos}{$new} = "NA"; $hamming_collisions++};
+					@NEW = @TRUE; $NEW[$i] = "T"; $new = join("", @NEW); if (!defined $POS_SEQ_seq{$pos}{$new}) {$POS_SEQ_seq{$pos}{$new} = $seq} else {$POS_SEQ_seq{$pos}{$new} = "NA"; $hamming_collisions++};
+					@NEW = @TRUE; $NEW[$i] = "N"; $new = join("", @NEW); if (!defined $POS_SEQ_seq{$pos}{$new}) {$POS_SEQ_seq{$pos}{$new} = $seq} else {$POS_SEQ_seq{$pos}{$new} = "NA"; $hamming_collisions++};
 				} elsif ($TRUE[$i] =~ /G/i) {
-					@NEW = @TRUE; $NEW[$i] = "C"; $new = join("", @NEW); if (!defined $POS_SEQ_seq{$pos}{$new}) {$POS_SEQ_seq{$pos}{$new} = $seq};
-					@NEW = @TRUE; $NEW[$i] = "A"; $new = join("", @NEW); if (!defined $POS_SEQ_seq{$pos}{$new}) {$POS_SEQ_seq{$pos}{$new} = $seq};
-					@NEW = @TRUE; $NEW[$i] = "T"; $new = join("", @NEW); if (!defined $POS_SEQ_seq{$pos}{$new}) {$POS_SEQ_seq{$pos}{$new} = $seq};
-					@NEW = @TRUE; $NEW[$i] = "N"; $new = join("", @NEW); if (!defined $POS_SEQ_seq{$pos}{$new}) {$POS_SEQ_seq{$pos}{$new} = $seq};
+					@NEW = @TRUE; $NEW[$i] = "C"; $new = join("", @NEW); if (!defined $POS_SEQ_seq{$pos}{$new}) {$POS_SEQ_seq{$pos}{$new} = $seq} else {$POS_SEQ_seq{$pos}{$new} = "NA"; $hamming_collisions++};
+					@NEW = @TRUE; $NEW[$i] = "A"; $new = join("", @NEW); if (!defined $POS_SEQ_seq{$pos}{$new}) {$POS_SEQ_seq{$pos}{$new} = $seq} else {$POS_SEQ_seq{$pos}{$new} = "NA"; $hamming_collisions++};
+					@NEW = @TRUE; $NEW[$i] = "T"; $new = join("", @NEW); if (!defined $POS_SEQ_seq{$pos}{$new}) {$POS_SEQ_seq{$pos}{$new} = $seq} else {$POS_SEQ_seq{$pos}{$new} = "NA"; $hamming_collisions++};
+					@NEW = @TRUE; $NEW[$i] = "N"; $new = join("", @NEW); if (!defined $POS_SEQ_seq{$pos}{$new}) {$POS_SEQ_seq{$pos}{$new} = $seq} else {$POS_SEQ_seq{$pos}{$new} = "NA"; $hamming_collisions++};
 				} elsif ($TRUE[$i] =~ /T/i) {
-					@NEW = @TRUE; $NEW[$i] = "C"; $new = join("", @NEW); if (!defined $POS_SEQ_seq{$pos}{$new}) {$POS_SEQ_seq{$pos}{$new} = $seq};
-					@NEW = @TRUE; $NEW[$i] = "G"; $new = join("", @NEW); if (!defined $POS_SEQ_seq{$pos}{$new}) {$POS_SEQ_seq{$pos}{$new} = $seq};
-					@NEW = @TRUE; $NEW[$i] = "A"; $new = join("", @NEW); if (!defined $POS_SEQ_seq{$pos}{$new}) {$POS_SEQ_seq{$pos}{$new} = $seq};
-					@NEW = @TRUE; $NEW[$i] = "N"; $new = join("", @NEW); if (!defined $POS_SEQ_seq{$pos}{$new}) {$POS_SEQ_seq{$pos}{$new} = $seq};
+					@NEW = @TRUE; $NEW[$i] = "C"; $new = join("", @NEW); if (!defined $POS_SEQ_seq{$pos}{$new}) {$POS_SEQ_seq{$pos}{$new} = $seq} else {$POS_SEQ_seq{$pos}{$new} = "NA"; $hamming_collisions++};
+					@NEW = @TRUE; $NEW[$i] = "G"; $new = join("", @NEW); if (!defined $POS_SEQ_seq{$pos}{$new}) {$POS_SEQ_seq{$pos}{$new} = $seq} else {$POS_SEQ_seq{$pos}{$new} = "NA"; $hamming_collisions++};
+					@NEW = @TRUE; $NEW[$i] = "A"; $new = join("", @NEW); if (!defined $POS_SEQ_seq{$pos}{$new}) {$POS_SEQ_seq{$pos}{$new} = $seq} else {$POS_SEQ_seq{$pos}{$new} = "NA"; $hamming_collisions++};
+					@NEW = @TRUE; $NEW[$i] = "N"; $new = join("", @NEW); if (!defined $POS_SEQ_seq{$pos}{$new}) {$POS_SEQ_seq{$pos}{$new} = $seq} else {$POS_SEQ_seq{$pos}{$new} = "NA"; $hamming_collisions++};
 				}
 			}
 		}
@@ -225,10 +228,10 @@ while ($r1tag = <R1>) {
 	$ix3 = substr($i2seq,0,$POS_length{'3'});
 	$ix4 = substr($i2seq,$POS_length{'3'},$POS_length{'4'});
 	
-	if (defined $POS_SEQ_seq{'1'}{$ix1} &&
-		defined $POS_SEQ_seq{'2'}{$ix2} &&
-		defined $POS_SEQ_seq{'3'}{$ix3} &&
-		defined $POS_SEQ_seq{'4'}{$ix4}) {
+	if ((defined $POS_SEQ_seq{'1'}{$ix1} && $POS_SEQ_seq{'1'}{$ix1} ne "NA") &&
+		(defined $POS_SEQ_seq{'2'}{$ix2} && $POS_SEQ_seq{'2'}{$ix2} ne "NA") &&
+		(defined $POS_SEQ_seq{'3'}{$ix3} && $POS_SEQ_seq{'3'}{$ix3} ne "NA") &&
+		(defined $POS_SEQ_seq{'4'}{$ix4} && $POS_SEQ_seq{'4'}{$ix4} ne "NA")) {
 		
 		$barc = $POS_SEQ_seq{'1'}{$ix1}.$POS_SEQ_seq{'2'}{$ix2}.$POS_SEQ_seq{'3'}{$ix3}.$POS_SEQ_seq{'4'}{$ix4};
 		
