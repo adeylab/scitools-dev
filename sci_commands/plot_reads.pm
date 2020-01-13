@@ -17,7 +17,7 @@ $gene_scale_factor = 1;
 $gene_text_size = 1.5;
 $pt_alpha = 1;
 
-getopts("O:A:a:C:c:R:Xs:Dh:w:rp:B:G:S:f:t:V:v", \%opt);
+getopts("O:A:a:C:c:R:Xs:Dh:w:rp:B:G:S:f:t:V:vF:", \%opt);
 
 $die2 = "
 scitools plot-reads [options] [rmdup sci bam file] [chrN:start-end] [region 2] ...
