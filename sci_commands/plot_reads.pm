@@ -16,8 +16,9 @@ $flanking_size = 100000;
 $gene_scale_factor = 1;
 $gene_text_size = 1.5;
 $pt_alpha = 1;
+$pt_shape = 15;
 
-getopts("O:A:a:C:c:R:Xs:Dh:w:rp:B:G:S:f:t:V:vF:", \%opt);
+getopts("O:A:a:C:c:R:Xs:Dh:w:rp:B:G:S:f:t:V:vF:H:", \%opt);
 
 $die2 = "
 scitools plot-reads [options] [rmdup sci bam file] [chrN:start-end] [region 2] ...
@@ -39,6 +40,7 @@ Options:
    -h   [IN]    Height (inches, def = $height)
    -w   [IN]    Width (inches, def = $width)
    -p   [FLT]   Point size (def = $pt_size)
+   -H   [INT]   Point shape ID (ggplot shapes, def = $pt_shape)
    -F   [FLT]   Point alpha (def = $pt_alpha)
    -f   [FLT]   Gene plot spacing factor (def = $gene_scale_factor)
                   (for -G, larger values = more vertical spread)
@@ -62,6 +64,8 @@ if (defined $opt{'R'}) {$Rscript = $opt{'R'}};
 if (defined $opt{'s'}) {$samtools = $opt{'s'}};
 if (defined $opt{'h'}) {$height = $opt{'h'}};
 if (defined $opt{'w'}) {$width = $opt{'w'}};
+if (defined $opt{'F'}) {$pt_alpha = $opt{'F'}};
+if (defined $opt{'H'}) {$pt_shape = $opt{'H'}};
 if (defined $opt{'S'}) {$flanking_size = $opt{'S'}};
 if (defined $opt{'f'}) {$gene_scale_factor = $opt{'f'}};
 if (defined $opt{'p'}) {$pt_size = $opt{'p'}};
@@ -360,10 +364,10 @@ if (defined $opt{'G'} && $genes_in_region>0) {
 
 if (!defined $opt{'c'} && !defined $opt{'C'} && !defined $opt{'A'}) {
 	print R "
-	geom_point(aes(IN\$x,IN\$y),color=\"lightsteelblue4\",size=$pt_size,alpha=$pt_alpha,shape=15) +";
+	geom_point(aes(IN\$x,IN\$y),color=\"lightsteelblue4\",size=$pt_size,alpha=$pt_alpha,shape=$pt_shape) +";
 } else {
 	print R "
-	geom_point(aes(IN\$x,IN\$y,color=IN\$annot),size=$pt_size,alpha=$pt_alpha,shape=15) +"
+	geom_point(aes(IN\$x,IN\$y,color=IN\$annot),size=$pt_size,alpha=$pt_alpha,shape=$pt_shape) +"
 }
 
 if ($color_mapping !~ /none/i) {
