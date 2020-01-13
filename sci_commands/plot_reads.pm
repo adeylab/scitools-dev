@@ -15,6 +15,7 @@ $pt_size = 0.5;
 $flanking_size = 100000;
 $gene_scale_factor = 1;
 $gene_text_size = 1.5;
+$pt_alpha = 1;
 
 getopts("O:A:a:C:c:R:Xs:Dh:w:rp:B:G:S:f:t:V:v", \%opt);
 
@@ -38,6 +39,7 @@ Options:
    -h   [IN]    Height (inches, def = $height)
    -w   [IN]    Width (inches, def = $width)
    -p   [FLT]   Point size (def = $pt_size)
+   -F   [FLT]   Point alpha (def = $pt_alpha)
    -f   [FLT]   Gene plot spacing factor (def = $gene_scale_factor)
                   (for -G, larger values = more vertical spread)
    -t   [FLT]   Gene name text size (def = $gene_text_size)
@@ -358,10 +360,10 @@ if (defined $opt{'G'} && $genes_in_region>0) {
 
 if (!defined $opt{'c'} && !defined $opt{'C'} && !defined $opt{'A'}) {
 	print R "
-	geom_point(aes(IN\$x,IN\$y),color=\"lightsteelblue4\",size=$pt_size,shape=15) +";
+	geom_point(aes(IN\$x,IN\$y),color=\"lightsteelblue4\",size=$pt_size,alpha=$pt_alpha,shape=15) +";
 } else {
 	print R "
-	geom_point(aes(IN\$x,IN\$y,color=IN\$annot),size=$pt_size,shape=15) +"
+	geom_point(aes(IN\$x,IN\$y,color=IN\$annot),size=$pt_size,alpha=$pt_alpha,shape=15) +"
 }
 
 if ($color_mapping !~ /none/i) {
