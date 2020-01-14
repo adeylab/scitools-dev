@@ -300,7 +300,7 @@ if ($ARGV[1] =~ /\.matrix$/) { # THIS BLOCK IS DEPROCATED
 			}
 
 			foreach $siteNum (keys %SITENUM_CELLNUM_count) {
-				foreach $cellNum (keys %{$SITENUM_CELLNUM_count{$siteNum}) {
+				foreach $cellNum (keys %{$SITENUM_CELLNUM_count{$siteNum}}) {
 					if (defined $opt{'B'}) {
 						print VALS "$siteNum\t$cellNum\t1\n";
 					} else {
