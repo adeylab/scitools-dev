@@ -33,7 +33,8 @@ Options:
    -F   [S/D]   Format: D = dense, S = sparse (def = $format)
    -u           Do not gzip output (defauly = yes)
    -X           Remove temp files
-   -I           Index mode (experimental, sparse matrix only)
+   -I           Index mode (experimental)
+                (low memory footprint, sparse matrix only)
 
 ";
 

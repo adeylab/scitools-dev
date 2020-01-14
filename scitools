@@ -267,7 +267,8 @@ sub load_aliases {
 	foreach $alias ("matrix_makecds", "matrix_makeCDS","makeCDS_matrix","makecds_matrix") {$COMMAND_ALIAS{$alias} = "matrix_makecds"};
 	foreach $alias ("cds_monocle","monocle_cds") {$COMMAND_ALIAS{$alias} = "cds_monocle"};
 	foreach $alias ("matrix_makeCDS","matrix_make_cds","matrix2cds","matrix_makecds","makecds","make-cds","cds-make") {$COMMAND_ALIAS{$alias} = "matrix_make_cds"};
-	foreach $alias ("matrix_cistopic","cistopic","cistopic_matrix","matrix-cistopic") {$COMMAND_ALIAS{$alias} = "matrix_cistopic"};
+	foreach $alias ("matrix_cistopic","cistopic","cistopic_matrix") {$COMMAND_ALIAS{$alias} = "matrix_cistopic"};
+	foreach $alias ("matrix_cistopic3","cistopic3","cistopic3_matrix") {$COMMAND_ALIAS{$alias} = "matrix_cistopic3"};
 	foreach $alias ("da_enrichment","da-enrichment","enrichment-da","enrichment_da") {$COMMAND_ALIAS{$alias} = "da_enrichment"};
 	foreach $alias ("atac_genehancer","atac-genehancer","genehancer","genehancer_atac","genehancer-atac") {$COMMAND_ALIAS{$alias} = "atac_genehancer"};
 	foreach $alias ("atac_refcount","refcount","refcount_atac") {$COMMAND_ALIAS{$alias} = "atac_refcount"};
