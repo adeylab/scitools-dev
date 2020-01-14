@@ -144,7 +144,7 @@ if ($ARGV[1] =~ /\.matrix$/) { # THIS BLOCK IS DEPROCATED
 			while ($int_l = <INT>) {
 				chomp $int_l;
 				@INT_P = split(/\t/, $int_l);
-				$cellID = $P[0]; $cellID =~ s/:.+$//;
+				$cellID = $INT_P[0]; $cellID =~ s/:.+$//;
 				if (!defined $CELLID_number{$cellID}) {
 					$cellNum++;
 					$CELLID_number{$cellID} = $cellNum;
