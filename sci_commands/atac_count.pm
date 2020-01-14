@@ -11,7 +11,7 @@ sub atac_count {
 $format = "S";
 
 @ARGV = @_;
-getopts("s:b:O:BC:XF:unI", \%opt);
+getopts("s:b:O:BC:XF:uI", \%opt);
 
 $die2 = "
 scitools atac-count [options] [bam file] [peaks bed file]
@@ -31,7 +31,6 @@ Options:
                 (file name will end in .binary.matrix)
    -C   [STR]   Complexity file (speeds up on-target calc)
    -F   [S/D]   Format: D = dense, S = sparse (def = $format)
-   -n           Do not sort positions (faster, def = sort)
    -u           Do not gzip output (defauly = yes)
    -X           Remove temp files
    -I           Index mode (experimental, sparse matrix only)
@@ -162,29 +161,29 @@ if ($ARGV[1] =~ /\.matrix$/) { # THIS BLOCK IS DEPROCATED
 		
 	} else {
 
-		open IN, "$bedtools intersect -abam $ARGV[0] -b $ARGV[1] -bed -wa -wb |";
-		while ($l = <IN>) {
-			chomp $l;
-			@P = split(/\t/, $l);
-			$cellID = $P[3]; $cellID =~ s/:.+$//;
-			$siteID = $P[12]."_".$P[13]."_".$P[14];
-			if (!defined $SITE_CELL_STATUS{$siteID}{$cellID}) {
-				$SITE_CELL_STATUS{$siteID}{$cellID} = 1;
-			} else {
-				if (defined $opt{'B'}) {
+		if ($format =~ /D/i) {
+		
+			open IN, "$bedtools intersect -abam $ARGV[0] -b $ARGV[1] -bed -wa -wb |";
+			while ($l = <IN>) {
+				chomp $l;
+				@P = split(/\t/, $l);
+				$cellID = $P[3]; $cellID =~ s/:.+$//;
+				$siteID = $P[12]."_".$P[13]."_".$P[14];
+				if (!defined $SITE_CELL_STATUS{$siteID}{$cellID}) {
 					$SITE_CELL_STATUS{$siteID}{$cellID} = 1;
 				} else {
-					$SITE_CELL_STATUS{$siteID}{$cellID}++;
+					if (defined $opt{'B'}) {
+						$SITE_CELL_STATUS{$siteID}{$cellID} = 1;
+					} else {
+						$SITE_CELL_STATUS{$siteID}{$cellID}++;
+					}
 				}
-			}
-			$CELLID_onTarget{$cellID}++;
-			if (!defined $CELL_IDS{$cellID}) {
-				push @CELL_ID_LIST, $cellID;
-				$CELL_IDS{$cellID} = 1;
-			}
-		} close IN;
-
-		if ($format =~ /D/i) {
+				$CELLID_onTarget{$cellID}++;
+				if (!defined $CELL_IDS{$cellID}) {
+					push @CELL_ID_LIST, $cellID;
+					$CELL_IDS{$cellID} = 1;
+				}
+			} close IN;
 
 			if (!defined $opt{'u'}) {
 				if (defined $opt{'B'}) {
@@ -242,62 +241,75 @@ if ($ARGV[1] =~ /\.matrix$/) { # THIS BLOCK IS DEPROCATED
 			close OUT;
 			
 		} elsif ($format =~ /S/i) {
-
+		
 			if (!defined $opt{'u'}) {
 				if (defined $opt{'B'}) {
 					open CELLS, "| $gzip > $opt{'O'}.binary.sparseMatrix.cols.gz";
 					open SITES, "| $gzip > $opt{'O'}.binary.sparseMatrix.rows.gz";
-					open VALS, "| $gzip > $opt{'O'}.binary.sparseMatrix.values.gz";
 				} else {
 					open CELLS, "| $gzip > $opt{'O'}.counts.sparseMatrix.cols.gz";
 					open SITES, "| $gzip > $opt{'O'}.counts.sparseMatrix.rows.gz";
-					open VALS, "| $gzip > $opt{'O'}.counts.sparseMatrix.values.gz";
 				}
 			} else {
 				if (defined $opt{'B'}) {
 					open CELLS, ">$opt{'O'}.binary.sparseMatrix.cols";
 					open SITES, ">$opt{'O'}.binary.sparseMatrix.rows";
-					open VALS, ">$opt{'O'}.binary.sparseMatrix.values";
 				} else {
 					open CELLS, ">$opt{'O'}.counts.sparseMatrix.cols";
 					open SITES, ">$opt{'O'}.counts.sparseMatrix.rows";
+				}
+			}
+			
+			$cellNum = 1; $siteNum = 1;
+			open IN, "$bedtools intersect -abam $ARGV[0] -b $ARGV[1] -bed -wa -wb |";
+			while ($l = <IN>) {
+				chomp $l;
+				@P = split(/\t/, $l);
+				$cellID = $P[3]; $cellID =~ s/:.+$//;
+				$siteID = $P[12]."_".$P[13]."_".$P[14];
+				
+				if (!defined $SITEID_number{$siteID}) {
+					$SITEID_number{$siteID} = $siteNum;
+					print SITES "$siteID\n";
+					$siteNum++;
+				}
+				
+				if (!defined $CELLID_number{$cellID}) {
+					$CELLID_number{$cellID} = $siteNum;
+					print CELLS "$cellID\n";
+					$cellNum++;
+				}
+				
+				$SITENUM_CELLNUM_count{$SITEID_number{$siteID}}{$CELLID_number{$cellID}}++;
+				$CELLID_onTarget{$cellID}++;
+				
+			} close IN; close CELLS; close SITES;
+
+			if (!defined $opt{'u'}) {
+				if (defined $opt{'B'}) {
+					open VALS, "| $gzip > $opt{'O'}.binary.sparseMatrix.values.gz";
+				} else {
+					open VALS, "| $gzip > $opt{'O'}.counts.sparseMatrix.values.gz";
+				}
+			} else {
+				if (defined $opt{'B'}) {
+					open VALS, ">$opt{'O'}.binary.sparseMatrix.values";
+				} else {
 					open VALS, ">$opt{'O'}.counts.sparseMatrix.values";
 				}
 			}
-			
-			for ($i = 0; $i < @CELL_ID_LIST; $i++) {
-				print CELLS "$CELL_ID_LIST[$i]\n";
-				$CELLID_number{$$CELL_ID_LIST[$i]} = $i;
-			} close CELLS;
-			
-			$siteNumber = 0;
-			
-			if (!defined $opt{'n'}) {
-				foreach $siteID (sort keys %SITE_CELL_STATUS) {
-					print SITES "$siteID\n";
-					$siteNumber++;
-					for ($i = 0; $i < @CELL_ID_LIST; $i++) {
-						if ($SITE_CELL_STATUS{$siteID}{$CELL_ID_LIST[$i]}>0.5) {
-							if (defined $opt{'B'}) {$val = 1} else {$val = $SITE_CELL_STATUS{$siteID}{$CELL_ID_LIST[$i]}};
-							my $offset = $i + 1;
-							print VALS "$siteNumber\t$offset\t$val\n";
-						}
-					}
-				}
-			} else {
-				foreach $siteID (keys %SITE_CELL_STATUS) {
-					print SITES "$siteID\n";
-					$siteNumber++;
-					for ($i = 0; $i < @CELL_ID_LIST; $i++) {
-						if ($SITE_CELL_STATUS{$siteID}{$CELL_ID_LIST[$i]}>0.5) {
-							if (defined $opt{'B'}) {$val = 1} else {$val = $SITE_CELL_STATUS{$siteID}{$CELL_ID_LIST[$i]}};
-							my $offset = $i + 1;
-							print VALS "$siteNumber\t$offset\t$val\n";
-						}
+
+			foreach $siteNum (keys %SITENUM_CELLNUM_count) {
+				foreach $cellNum (keys %{$SITENUM_CELLNUM_count{$siteNum}) {
+					if (defined $opt{'B'}) {
+						print VALS "$siteNum\t$cellNum\t1\n";
+					} else {
+						print VALS "$siteNum\t$cellNum\t$SITENUM_CELLNUM_count{$siteNum}{$cellNum}\n";
 					}
 				}
 			}
-			close VALS; close SITES;
+
+			close VALS;
 			
 		}
 	}
