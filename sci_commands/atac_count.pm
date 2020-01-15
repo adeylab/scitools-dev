@@ -322,7 +322,7 @@ if ($ARGV[1] =~ /\.matrix$/) { # THIS BLOCK IS DEPROCATED
 			close VALS;
 			
 			open OUT, ">$opt{'O'}.fracOnTarget.values";
-			foreach $cellID (keys %CELLID_uniq_reads) {
+			foreach $cellID (keys %CELLID_onTarget) {
 				if ($CELLID_uniq_reads{$cellID}>0) {
 					$frac = sprintf("%.3f", $CELLID_onTarget{$cellID}/$CELLID_uniq_reads{$cellID});
 					print OUT "$cellID\t$frac\n";
