@@ -241,6 +241,15 @@ if ($ARGV[1] =~ /\.matrix$/) { # THIS BLOCK IS DEPROCATED
 			
 			close OUT;
 			
+			open OUT, ">$opt{'O'}.fracOnTarget.values";
+			for ($i = 0; $i < @CELL_ID_LIST; $i++) {
+				if ($CELLID_uniq_reads{$cellID}>0) {
+					$cellID = $CELL_ID_LIST[$i];
+					$frac = sprintf("%.3f", $CELLID_onTarget{$cellID}/$CELLID_uniq_reads{$cellID});
+					print OUT "$cellID\t$frac\n";
+				} 
+			} close OUT;
+			
 		} elsif ($format =~ /S/i) {
 		
 			if (!defined $opt{'u'}) {
@@ -276,7 +285,7 @@ if ($ARGV[1] =~ /\.matrix$/) { # THIS BLOCK IS DEPROCATED
 				}
 				
 				if (!defined $CELLID_number{$cellID}) {
-					$CELLID_number{$cellID} = $siteNum;
+					$CELLID_number{$cellID} = $cellNum;
 					print CELLS "$cellID\n";
 					$cellNum++;
 				}
@@ -312,17 +321,17 @@ if ($ARGV[1] =~ /\.matrix$/) { # THIS BLOCK IS DEPROCATED
 
 			close VALS;
 			
+			open OUT, ">$opt{'O'}.fracOnTarget.values";
+			foreach $cellID (keys %CELLID_uniq_reads) {
+				if ($CELLID_uniq_reads{$cellID}>0) {
+					$frac = sprintf("%.3f", $CELLID_onTarget{$cellID}/$CELLID_uniq_reads{$cellID});
+					print OUT "$cellID\t$frac\n";
+				} 
+			} close OUT;
+			
 		}
 	}
 
-	open OUT, ">$opt{'O'}.fracOnTarget.values";
-	for ($i = 0; $i < @CELL_ID_LIST; $i++) {
-		if ($CELLID_uniq_reads{$cellID}>0) {
-			$cellID = $CELL_ID_LIST[$i];
-			$frac = sprintf("%.3f", $CELLID_onTarget{$cellID}/$CELLID_uniq_reads{$cellID});
-			print OUT "$cellID\t$frac\n";
-		} 
-	} close OUT;
 }
 
 }
