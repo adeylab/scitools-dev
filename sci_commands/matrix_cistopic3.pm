@@ -133,6 +133,7 @@ cisTopicObject <- createcisTopicObject(IN,min.cells=$opt{'r'},min.regions=$opt{'
 
 print R "
 cisTopicObject <- runWarpLDAModels(cisTopicObject, topic=c($opt{'T'}), seed=2020, nCores=$opt{'n'}, iterations=500, alpha=$cis_alpha, beta=$cis_beta, tmp=\"$opt{'O'}.temp\")
+saveRDS(cisTopicObject,\"$opt{'O'}.cistopicObject.rds\")
 
 pdf(file=\"$opt{'O'}.cistopic.modelselection.pdf\")
 par(mfrow=c(3,1))
