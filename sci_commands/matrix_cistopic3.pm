@@ -135,19 +135,22 @@ print R "
 cisTopicObject <- runWarpLDAModels(cisTopicObject, topic=c($opt{'T'}), seed=2020, nCores=$opt{'n'}, iterations=500, alpha=$cis_alpha, beta=$cis_beta, tmp=\"$opt{'O'}.temp\")
 saveRDS(cisTopicObject,\"$opt{'O'}.cistopicObject.rds\")
 
+# output all matrices
+for (i in 1:length(cisTopicObject\@models)) {
+    model <- cisTopicObject\@models[i]
+    modelMat <- scale(model[[1]]\$document_expects, center = TRUE, scale = TRUE)
+    tModelmat<-as.data.frame(t(modelMat))
+    Modeldf<-as.data.frame(modelMat)
+    rownames(tModelmat)<-cisTopicObject\@cell.names
+    colnames(Modeldf)<-cisTopicObject\@cell.names
+    row.names(Modeldf)<-paste0(\"Topic_\",row.names(Modeldf))
+    write.table(Modeldf,file=paste(\"$opt{'O'}.cistopic.\",nrow(Modeldf),\".matrix\",sep=\"\"),col.names=T,row.names=T,quote=F,sep=\"\t\")
+}
+
 pdf(file=\"$opt{'O'}.cistopic.modelselection.pdf\")
 par(mfrow=c(3,1))
 cisTopicObject <- selectModel(cisTopicObject, type='derivative')
 dev.off()
-
-modelMat <- scale(cisTopicObject\@selected.model\$document_expects, center = TRUE, scale = TRUE)
-tModelmat<-as.data.frame(t(modelMat))
-Modeldf<-as.data.frame(modelMat)
-rownames(tModelmat)<-cisTopicObject\@cell.names
-colnames(Modeldf)<-cisTopicObject\@cell.names
-row.names(Modeldf)<-paste0(\"Topic_\",row.names(Modeldf))
-write.table(Modeldf,file=\"$opt{'O'}.cistopic.matrix\",col.names=T,row.names=T,quote=F,sep=\"\\t\")
-saveRDS(cisTopicObject,\"$opt{'O'}.cistopicObject.rds\")
 
 cisTopicObject <- getRegionsScores(cisTopicObject, method='Z-score', scale=TRUE)
 cisTopicObject <- binarizecisTopics(cisTopicObject, thrP=$thrP, plot=FALSE)
