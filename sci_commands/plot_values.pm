@@ -70,6 +70,7 @@ if (defined $opt{'f'}) {$alpha = $opt{'f'}};
 if (defined $opt{'h'}) {$height = $opt{'h'}};
 if (defined $opt{'w'}) {$width = $opt{'w'}};
 if (defined $opt{'r'}) {$panel_nrow = $opt{'r'}};
+if (defined $opt{'L'}) {$ylab = $opt{'L'}};
 
 read_dims($ARGV[0]);
 
