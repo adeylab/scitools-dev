@@ -405,7 +405,7 @@ print R "IN\$V2<-factor(IN\$V2, levels = $panel_levels)
 
 PLT<-ggplot() +
 	geom_point(aes(IN\$V3,IN\$V4,color=IN\$V2),size=$ptSize,alpha=$alpha,shape=16) +
-	guides(colour = guide_legend(override.aes = list(size=4,alpha=1))) +";
+	guides(colour = FALSE) +";
 
 if ($theme =~ /Clean/i) {
 	print R "
@@ -429,7 +429,7 @@ if ($theme =~ /Clean/i) {
 
 $panel_values =~ s/,$//;
 print R "
-ALL<-PLT + scale_color_manual(values=c($panel_values))\n";
+ALL<-PLT + scale_color_manual(values=c($panel_values)) + ggtitle(\"All Cells\")\n";
 $grid_list = "ALL";
 @value_list = split(/,/, $panel_values);
 for ($plotID = 0; $plotID < @value_list; $plotID++) {
@@ -441,13 +441,14 @@ for ($plotID = 0; $plotID < @value_list; $plotID++) {
 			$panel_values .= "\"$panel_neg_color\",";
 		}
 	}
+	$annot = $level_list[$plotID];
 	$panel_values =~ s/,$//;
 	# reorder so select annot is plotted on top
 #	print R "SELECT<-subset(IN, V2==\"$level_list[$plotID]\")
 #OTHER<-subset(IN, V2==\"$level_list[$plotID]\")
 #IN<-rbind(OTHER,SELECT)\n";
 	# plot
-	print R "PLT_$plotID<-PLT + scale_color_manual(values=c($panel_values))\n";
+	print R "PLT_$plotID<-PLT + scale_color_manual(values=c($panel_values)) + ggtitle(\"$annot\")\n";
 	$grid_list .= ",PLT_$plotID";
 }
 
