@@ -68,6 +68,7 @@ if (!defined $opt{'O'}) {$opt{'O'} = $ARGV[0]};
 $opt{'O'} =~ s/\.bam$//; $opt{'O'} =~ s/\.rand_reads.txt$//;
 if (defined $opt{'s'}) {$samtools = $opt{'s'}};
 if (defined $opt{'t'}) {$training_increment = $opt{'t'}};
+if (defined $opt{'r'}) {$read_increment = $opt{'r'}};
 if (defined $opt{'n'}) {$min_unique = $opt{'n'}};
 if (defined $opt{'c'}) {$complexity_increment = $opt{'c'}};
 if (!defined $opt{'G'}) {$opt{'G'} = $gradient_def};
