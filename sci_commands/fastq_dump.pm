@@ -7,9 +7,19 @@ use Exporter "import";
 
 sub fastq_dump {
 
+%REVCOMP = ("A" => "T", "C" => "G", "G" => "C", "T" => "A");
+sub RevComp {
+	@INSEQ = split(//, uc($_[0]));
+	$revcomp = "";
+	for ($pos = (@INSEQ-1); $pos >= 0; $pos--) {
+		$revcomp .= $REVCOMP{$INSEQ[$pos]};
+	}
+	return $revcomp;
+}
+
 @ARGV = @_;
 
-getopts("R:F:O:o:I:1:2:A:i:j:r:N:xnH:", \%opt);
+getopts("R:F:O:o:I:1:2:A:i:j:r:N:xnH:Vm", \%opt);
 
 $die2 = "
 scitools fastq-dump [options]
@@ -30,6 +40,8 @@ Options:
    -r   [STR]   Run ID (if additional sequencing for some
                 libraries. Will add .[ID] to end of read
                 names; optional)
+   -V           Index 2 revcomp, e.g. NovaSeq run
+   -m           Indexes are in read name not as separate files.
 Defaults:
    -F   [STR]   Fastq directory (where -R directory lives)
          ($VAR{'fastq_input_directory'})
@@ -50,11 +62,12 @@ To specify specific fastq files instead of defaults:
 ";
 
 if (!defined $opt{'R'}) {
-	if (!defined $opt{'1'} || 
-		!defined $opt{'2'} ||
-		!defined $opt{'i'} ||
-		!defined $opt{'j'}) {
+	if ((!defined $opt{'1'} || !defined $opt{'2'}) ||
+		((!defined $opt{'i'} || !defined $opt{'j'}) && !defined $opt{'m'}))  {
 			die $die2;
+	}
+	if (!defined $opt{'o'}) {
+		die "ERROR: Must provide either -R and -o, or at least -o\n$die2";
 	}
 }
 if (!defined $opt{'F'}) {$opt{'F'} = $VAR{'fastq_input_directory'}};
@@ -142,19 +155,25 @@ if (!defined $opt{'1'}) {
 	if (-e "$opt{'F'}/$opt{'R'}/Undetermined_S0_L001_R1_001.fastq.gz") {
 		$r1 = "$opt{'F'}/$opt{'R'}/Undetermined_S0_L001_R1_001.fastq.gz $opt{'F'}/$opt{'R'}/Undetermined_S0_L002_R1_001.fastq.gz $opt{'F'}/$opt{'R'}/Undetermined_S0_L003_R1_001.fastq.gz $opt{'F'}/$opt{'R'}/Undetermined_S0_L004_R1_001.fastq.gz";
 		$r2 = "$opt{'F'}/$opt{'R'}/Undetermined_S0_L001_R2_001.fastq.gz $opt{'F'}/$opt{'R'}/Undetermined_S0_L002_R2_001.fastq.gz $opt{'F'}/$opt{'R'}/Undetermined_S0_L003_R2_001.fastq.gz $opt{'F'}/$opt{'R'}/Undetermined_S0_L004_R2_001.fastq.gz";
-		$i1 = "$opt{'F'}/$opt{'R'}/Undetermined_S0_L001_I1_001.fastq.gz $opt{'F'}/$opt{'R'}/Undetermined_S0_L002_I1_001.fastq.gz $opt{'F'}/$opt{'R'}/Undetermined_S0_L003_I1_001.fastq.gz $opt{'F'}/$opt{'R'}/Undetermined_S0_L004_I1_001.fastq.gz";
-		$i2 = "$opt{'F'}/$opt{'R'}/Undetermined_S0_L001_I2_001.fastq.gz $opt{'F'}/$opt{'R'}/Undetermined_S0_L002_I2_001.fastq.gz $opt{'F'}/$opt{'R'}/Undetermined_S0_L003_I2_001.fastq.gz $opt{'F'}/$opt{'R'}/Undetermined_S0_L004_I2_001.fastq.gz";
+		if (!defined $opt{'m'}) {
+			$i1 = "$opt{'F'}/$opt{'R'}/Undetermined_S0_L001_I1_001.fastq.gz $opt{'F'}/$opt{'R'}/Undetermined_S0_L002_I1_001.fastq.gz $opt{'F'}/$opt{'R'}/Undetermined_S0_L003_I1_001.fastq.gz $opt{'F'}/$opt{'R'}/Undetermined_S0_L004_I1_001.fastq.gz";
+			$i2 = "$opt{'F'}/$opt{'R'}/Undetermined_S0_L001_I2_001.fastq.gz $opt{'F'}/$opt{'R'}/Undetermined_S0_L002_I2_001.fastq.gz $opt{'F'}/$opt{'R'}/Undetermined_S0_L003_I2_001.fastq.gz $opt{'F'}/$opt{'R'}/Undetermined_S0_L004_I2_001.fastq.gz";
+		}
 	} elsif (-e "$opt{'F'}/$opt{'R'}/Undetermined_S0_R1_001.fastq.gz") {
 		$r1 = "$opt{'F'}/$opt{'R'}/Undetermined_S0_R1_001.fastq.gz";
 		$r2 = "$opt{'F'}/$opt{'R'}/Undetermined_S0_R2_001.fastq.gz";
-		$i1 = "$opt{'F'}/$opt{'R'}/Undetermined_S0_I1_001.fastq.gz";
-		$i2 = "$opt{'F'}/$opt{'R'}/Undetermined_S0_I2_001.fastq.gz";
+		if (!defined $opt{'m'}) {
+			$i1 = "$opt{'F'}/$opt{'R'}/Undetermined_S0_I1_001.fastq.gz";
+			$i2 = "$opt{'F'}/$opt{'R'}/Undetermined_S0_I2_001.fastq.gz";
+		}
 	}
 } else {
 	$r1 = "$opt{'1'}";
 	$r2 = "$opt{'2'}";
-	$i1 = "$opt{'i'}";
-	$i2 = "$opt{'j'}";
+	if (!defined $opt{'m'}) {
+		$i1 = "$opt{'i'}";
+		$i2 = "$opt{'j'}";
+	}
 }
 
 system("mkdir $opt{'O'}/$opt{'o'}");
@@ -184,8 +203,10 @@ $totalCT = 0; $failCT = 0; $reads_processed = 0;
 
 open R1, "$zcat $r1 |";
 open R2, "$zcat $r2 |";
-open I1, "$zcat $i1 |";
-open I2, "$zcat $i2 |";
+if (!defined $opt{'m'}) {
+	open I1, "$zcat $i1 |";
+	open I2, "$zcat $i2 |";
+}
 	
 while ($r1tag = <R1>) {
 	
@@ -200,10 +221,17 @@ while ($r1tag = <R1>) {
 	$null = <R1>; $null = <R2>;
 	$r1qual = <R1>; $r2qual = <R2>; chomp $r1qual; chomp $r2qual;
 	
-	$i1tag = <I1>; chomp $i1tag; $i2tag = <I2>; chomp $i2tag;
-	$i1seq = <I1>; chomp $i1seq; $i2seq = <I2>; chomp $i2seq;
-	$null = <I1>; $null = <I1>;
-	$null = <I2>; $null = <I2>;
+	if (!defined $opt{'m'}) {
+		$i1tag = <I1>; chomp $i1tag; $i2tag = <I2>; chomp $i2tag;
+		$i1seq = <I1>; chomp $i1seq; $i2seq = <I2>; chomp $i2seq;
+		$null = <I1>; $null = <I1>;
+		$null = <I2>; $null = <I2>;
+	} else {
+		$i1tag = $r1tag;
+		$i2tag = $r1tag;
+		($name,$indexes) = split(/\s/, $r1tag);
+		($i1seq,$i2seq) = split(/\+/, $indexes);
+	}
 	
 	$r1tag =~ s/\s.+$//; $r1tag =~ s/#.+$//;
 	$r2tag =~ s/\s.+$//; $r2tag =~ s/#.+$//;
@@ -221,6 +249,11 @@ while ($r1tag = <R1>) {
 			close ERR;
 			die "\nFATAL ERROR! Read number $reads_processed, Read names not matching! Exiting!\n";
 		}
+	}
+	
+	if (defined $opt{'V'}) {
+		$rev_i2seq = revcomp($i2seq);
+		$i2seq = $rev_i2seq;
 	}
 	
 	$ix1 = substr($i1seq,0,$POS_length{'1'});
