@@ -230,6 +230,7 @@ while ($r1tag = <R1>) {
 		$i1tag = $r1tag;
 		$i2tag = $r1tag;
 		($name,$indexes) = split(/\s/, $r1tag);
+		$indexes =~ s/^.+://;
 		($i1seq,$i2seq) = split(/\+/, $indexes);
 	}
 	
