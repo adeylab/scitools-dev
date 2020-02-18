@@ -8,7 +8,7 @@ use Exporter "import";
 sub fastq_dump {
 
 %REVCOMP = ("A" => "T", "C" => "G", "G" => "C", "T" => "A");
-sub RevComp {
+sub revcomp {
 	@INSEQ = split(//, uc($_[0]));
 	$revcomp = "";
 	for ($pos = (@INSEQ-1); $pos >= 0; $pos--) {
