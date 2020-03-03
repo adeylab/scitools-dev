@@ -47,6 +47,7 @@ cisTopic consists of 4 main steps:
                   and use log-liklihood estimators to select the best.
                   Specification can be a single number of a comma separated list.
                   Will use a core for each number supplied (DO NOT EXCEED A LIST LENGTH OF 10)
+                  Requires a minimum of 3 topics to test.
    -P   [FLT]  ThrP (def = $thrP)
    -a   [FLT]  cistopic alpha (def = $cis_alpha)
    -b   [FLT]  cistopic beta (def = $cis_beta)
@@ -96,13 +97,21 @@ if (defined $opt{'W'}) {
 }
 } else {$sparse = 0};
 
+if (!defined $opt{'T'}) {
+   $opt{'T'} = "15,20,25,30,50,65,100";
+} else {
+   $numcommas = $opt{'T'} =~ tr/,//;
+   if ($numcommas < 2) {
+      die "ERROR: A minimum of three topics is necessary to run.";
+   }
+}
+
 if (!defined $opt{'c'}) {$opt{'c'} = 1};
 if (!defined $opt{'r'}) {$opt{'r'} = 1};
 if (!defined $opt{'n'}) {$opt{'n'} = 1};
 if (defined $opt{'P'}) {$thrP = $opt{'P'}};
 if (defined $opt{'a'}) {$cis_alpha = $opt{'a'}};
 if (defined $opt{'b'}) {$cis_beta = $opt{'b'}};
-if (!defined $opt{'T'}) {$opt{'T'} = "15,20,25,30,50,65,100"};
 if (defined $opt{'R'}) {$Rscript = $opt{'R'}};
 
 ###
