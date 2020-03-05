@@ -102,6 +102,7 @@ if (defined $opt{'N'}) {
 		$newNum++;
 		$CELLNUM_newNum{$cellNum} = $newNum;
 		print COL_OUT "$CELLNUM_name{$cellNum}\n";
+		$included++;
 	}
 }
 
