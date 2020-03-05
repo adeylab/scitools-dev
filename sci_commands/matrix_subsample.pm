@@ -8,7 +8,7 @@ use Exporter "import";
 sub matrix_subsample {
 
 @ARGV = @_;
-getopts("O:r:L:W:", \%opt);
+getopts("O:r:L:W:N:", \%opt);
 
 $sample_frac = 0.1;
 
@@ -24,6 +24,7 @@ Options:
    -L   [STR]  Columns file for sparseMatrix (will try to auto-detect)
    -W   [STR]  Rows file for sparseMatrix (will try to auto-detect)
    -r   [FLT]  Approximate fraction of cells to retain (def = $sample_frac)
+   -N   [INT]  Target number of cells (overrides -r)
 
 ";
 
@@ -66,7 +67,7 @@ if (defined $opt{'W'}) {
 
 $prefix .= ".subsampled";
 
-open COL_OUT, "| gzip > $prefix.sparseMatrix.cols.gz";
+open COL_OUT, "| gzip > $opt{'O'}.sparseMatrix.cols.gz";
 
 $cellNum = 0; $newNum = 0;
 if ($col_file =~ /\.gz$/) {
@@ -74,17 +75,39 @@ if ($col_file =~ /\.gz$/) {
 } else {
 	open COLS, "$col_file";
 }
+%CELLNUM_newNum = ();
 while ($cellID = <COLS>) {
 	$cellNum++;
-	$check = rand(1);
-	if ($check <= $sample_frac) {
+	if (!defined $opt{'N'}) {
+		$check = rand(1);
+		if ($check <= $sample_frac) {
+			$newNum++;
+			$CELLNUM_newNum{$cellNum} = $newNum;
+			print COL_OUT "$cellID";
+		}
+	} else {
+		chomp $l;
+		$CELLNUM_name{$cellNum} = $l;
+	}
+} close COLS;
+
+if (defined $opt{'N'}) {
+	$cellCT = $cellNum+1;
+	$included = 0;
+	while ($included < $opt{'N'}) {
+		$cellNum = int(rand($cellCT));
+		while (defined $CELLNUM_newNum{$cellNum}) {
+			$cellNum = int(rand($cellCT));
+		}
 		$newNum++;
 		$CELLNUM_newNum{$cellNum} = $newNum;
-		print COL_OUT "$cellID";
+		print COL_OUT "$CELLNUM_name{$cellNum}\n";
 	}
-} close COLS; close COL_OUT;
+}
 
-open VALS_OUT, "| gzip > $prefix.sparseMatrix.values.gz";
+close COL_OUT;
+
+open VALS_OUT, "| gzip > $opt{'O'}.sparseMatrix.values.gz";
 
 if ($ARGV[0] =~ /\.gz$/) {
 	open VALS, "zcat $ARGV[0] |";
@@ -101,9 +124,9 @@ while ($l = <VALS>) {
 } close VALS; close VALS_OUT;
 
 if ($row_file =~ /\.gz$/) {
-	system("cp $row_file $prefix.sparseMatrix.rows.gz");
+	system("cp $row_file $opt{'O'}.sparseMatrix.rows.gz");
 } else {
-	system("cp $row_file $prefix.sparseMatrix.rows");
+	system("cp $row_file $opt{'O'}.sparseMatrix.rows");
 }
 
 }
