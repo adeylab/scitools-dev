@@ -86,8 +86,8 @@ while ($cellID = <COLS>) {
 			print COL_OUT "$cellID";
 		}
 	} else {
-		chomp $l;
-		$CELLNUM_name{$cellNum} = $l;
+		chomp $cellID;
+		$CELLNUM_name{$cellNum} = $cellID;
 	}
 } close COLS;
 
