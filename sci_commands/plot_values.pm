@@ -80,7 +80,8 @@ if (defined $opt{'h'}) {$height = $opt{'h'}};
 if (defined $opt{'w'}) {$width = $opt{'w'}};
 if (defined $opt{'r'}) {$panel_nrow = $opt{'r'}};
 if (defined $opt{'L'}) {$ylab = $opt{'L'}};
-if (defined $opt{'l'}) {$pull_col = $opt{'l'}};
+if (defined $opt{'l'}) {$val_col = $opt{'l'}};
+if (defined $opt{'i'}) {$cell_col = $opt{'i'}};
 
 if (defined $opt{'M'}) {
 	print STDERR "SCITOOLS: Matrix file plotting detected! Will plot a separate value-based plot for each row entry of the matrix.\n";
