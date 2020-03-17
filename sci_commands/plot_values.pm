@@ -14,12 +14,11 @@ $ptSize = 0.5;
 $color_mapping = "none";
 $alpha = 0.5;
 $ylab = "Feature value";
-$max_val = "na";
 $val_col = 2;
 $cell_col = 1;
 
 @ARGV = @_;
-getopts("O:A:a:C:c:R:T:M:Xs:p:f:w:h:Wr:L:l:m:P:", \%opt);
+getopts("O:A:a:C:c:R:T:M:Xs:p:f:w:h:Wr:L:l:m:P:n:", \%opt);
 
 $die2 = "
 scitools plot-values [options] [values file / null if -M]
@@ -34,7 +33,8 @@ Options - general:
    -l   [INT]   Column with values
                 (def = $val_col, i.e. cellID (tab) value)
    -i   [INT]   CellID column (def = $cell_col)
-   -m   [FLT]   Maximum value (def = $max_val)
+   -m   [FLT]   Maximum value (def = none)
+   -n   [FLT]   Minimum value (def = none)
    -P   [STR]   Operation (def = none)
                   log2, log10, inv/inverse, ln
    -p   [FLT]   Point size (def = $ptSize)
@@ -151,7 +151,10 @@ while ($l = <IN>) {
 	@P = split(/\t/, $l);
 	$cellID = $P[$cell_col];
 	$value = $P[$val_col];
-	if (!defined $opt{'m'} || $value <= $opt{'m'}) {
+	$pass = 1;
+	if (defined $opt{'m'} && $value > $opt{'M'}) {$pass = 0};
+	if (defined $opt{'n'} && $value < $opt{'n'}) {$pass = 0};
+	if ($pass>0) {
 		if (defined $opt{'P'}) {
 			$oval = $value;
 			if ($opt{'P'} =~ /log2/) {$value = log($oval)/log(2)};
