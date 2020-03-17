@@ -18,7 +18,7 @@ $val_col = 2;
 $cell_col = 1;
 
 @ARGV = @_;
-getopts("O:A:a:C:c:R:T:M:Xs:p:f:w:h:Wr:L:l:m:P:n:", \%opt);
+getopts("O:A:a:C:c:R:T:M:Xs:p:f:w:h:Wr:L:l:m:P:n:i:", \%opt);
 
 $die2 = "
 scitools plot-values [options] [values file / null if -M]
