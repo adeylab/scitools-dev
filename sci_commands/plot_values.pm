@@ -14,9 +14,12 @@ $ptSize = 0.5;
 $color_mapping = "none";
 $alpha = 0.5;
 $ylab = "Feature value";
+$max_val = "na";
+$val_col = 2;
+$cell_col = 1;
 
 @ARGV = @_;
-getopts("O:A:a:C:c:R:T:M:Xs:p:f:w:h:Wr:L:", \%opt);
+getopts("O:A:a:C:c:R:T:M:Xs:p:f:w:h:Wr:L:l:m:P:", \%opt);
 
 $die2 = "
 scitools plot-values [options] [values file / null if -M]
@@ -24,10 +27,16 @@ scitools plot-values [options] [values file / null if -M]
 Options - general:
    -O   [STR]   Output prefix (def: vals prefix; adds type suffix)
    -T   [STR]   Type, comma separated list: (def = $type)
-                      violin/vln/v
-                      boxplot/box/b
-                      histogram/hist/h
-                      density/dens/d
+                  violin/vln/v
+                  boxplot/box/b
+                  histogram/hist/h
+                  density/dens/d
+   -l   [INT]   Column with values
+                (def = $val_col, i.e. cellID (tab) value)
+   -i   [INT]   CellID column (def = $cell_col)
+   -m   [FLT]   Maximum value (def = $max_val)
+   -P   [STR]   Operation (def = none)
+                  log2, log10, inv/inverse, ln
    -p   [FLT]   Point size (def = $ptSize)
    -f   [FLT]   Alpha for fill (def = $alpha)
    -L   [STR]   Name for values axis (def = $ylab)
@@ -47,9 +56,9 @@ Plotting by annotations:
 
 To plot multiple values specified in a matrix file:
    -M   [STR]   Matrix file (e.g. deviation z-scores from chromVAR)
-                  Will create a folder as -O option and produce
-                  a plot for each row of the matrix.
-                  Only includes rows with at least one non-zero value.
+                Will create a folder as -O option and produce
+                a plot for each row of the matrix.
+                Only includes rows with at least one non-zero value.
 
 Other options:
    -R   [STR]   Rscript call (def = $Rscript)
@@ -71,8 +80,7 @@ if (defined $opt{'h'}) {$height = $opt{'h'}};
 if (defined $opt{'w'}) {$width = $opt{'w'}};
 if (defined $opt{'r'}) {$panel_nrow = $opt{'r'}};
 if (defined $opt{'L'}) {$ylab = $opt{'L'}};
-
-read_dims($ARGV[0]);
+if (defined $opt{'l'}) {$pull_col = $opt{'l'}};
 
 if (defined $opt{'M'}) {
 	print STDERR "SCITOOLS: Matrix file plotting detected! Will plot a separate value-based plot for each row entry of the matrix.\n";
@@ -134,7 +142,26 @@ if (defined $opt{'c'}) {read_color_string($opt{'c'})};
 if (defined $opt{'T'}) {$type = $opt{'T'}};
 @TYPES = split(/,/, $type);
 
-read_values($ARGV[0]);
+$cell_col--;
+$val_col--;
+%CELLID_value = ();
+open IN, "$ARGV[0]";
+while ($l = <IN>) {
+	chomp $l;
+	@P = split(/\t/, $l);
+	$cellID = $P[$cell_col];
+	$value = $P[$val_col];
+	if (!defined $opt{'m'} || $value <= $opt{'m'}) {
+		if (defined $opt{'P'}) {
+			$oval = $value;
+			if ($opt{'P'} =~ /log2/) {$value = log($oval)/log(2)};
+			if ($opt{'P'} =~ /log10/) {$value = log($oval)/log(10)};
+			if ($opt{'P'} =~ /ln/) {$value = log($oval)};
+			if ($opt{'P'} =~ /^inv/) {$value = 1/$oval};
+		}
+		$CELLID_value{$cellID} = $value;
+	}
+} close IN;
 
 open OUT, ">$opt{'O'}.plot.txt";
 foreach $cellID (keys %CELLID_value) {
