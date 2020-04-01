@@ -101,8 +101,10 @@ if (!defined $opt{'T'}) {
    $opt{'T'} = "15,20,25,30,50,65,100";
 } else {
    $numcommas = $opt{'T'} =~ tr/,//;
-   if ($numcommas < 2) {
-      die "ERROR: A minimum of three topics is necessary to run.";
+   if ($numcommas < 3) {
+	  print STDERR "WARNING: A minimum of three topics is required to run the complete workflow, 2 topics will produce topic matrixes but cannot perform topic selection!\n";
+   } elsif ($numcommas < 2) {
+	  die "ERROR: A minimum of two topics is necessary to run.";
    }
 }
 
