@@ -64,7 +64,7 @@ write.table(dat_out,file=\"$opt{'O'}.k$opt{'k'}.pg.annot\",col.names=F,row.names
 close OUT;
 system("$Rscript $opt{'O'}.k$opt{'k'}.phenograph.R");
 
-if (defined $opt{'X'}) {
+if (! defined $opt{'X'}) {
 	system("rm -f $opt{'O'}.k$opt{'k'}.phenograph.R");
 }
 
