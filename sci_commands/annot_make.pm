@@ -262,7 +262,7 @@ if (defined $opt{'D'}) {
 				}
 			} # else it is description info & skip it
 		} else {
-			print STDERR "WARNING! A line was read that has no header associated with it! line: $l\n":
+			print STDERR "WARNING! A line was read that has no header associated with it! line: $l\n";
 		}
 	} close IN;
 	
