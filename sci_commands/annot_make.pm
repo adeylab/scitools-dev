@@ -8,7 +8,7 @@ use Exporter "import";
 sub annot_make {
 
 @ARGV = @_;
-getopts("O:I:P:ph", \%opt);
+getopts("O:I:P:phD:d", \%opt);
 
 # DEFAULTS
 @LETTERS = ("0", "A", "B", "C", "D", "E", "F", "G", "H");
@@ -41,6 +41,9 @@ Options:
    -P   [STR]   Plate descriptor file (instead of written descriptors)
    -p           Print out sample plate file for modificaiton and exit
                 (ExamplePlateDescriptor.csv)
+   -D   [STR]   Dense plate descriptor
+   -d           Print out example dense plate descriptor file
+                (ExamplePlateDescriptor.dense.csv)
    -h           More detailed description of plate / combo specification
 
 Annotation descriptors are provided as:
@@ -155,7 +158,73 @@ while ($l = <IN>) {
 
 if (defined $opt{'O'}) {open OUT, ">$opt{'O'}"};
 
-if (defined $opt{'P'}) {
+if (defined $opt{'D'}) {
+	open IN, "$opt{'D'}";
+	while ($l = <IN>) {
+		chomp $l;
+		if ($l =~ /^#/) {
+			@P = split(/,/, $l);
+			if ($P[0] =~ /(Tn5|Nex)/i) {
+				($i5_set,$i7_set) = split(//, $P[1]);
+				for ($rowNum = 1; $rowNum <= 8; $rowNum++) {
+					$row = <IN>; chomp $row; $rowLetter = $LETTERS[$rowNum];
+					@ROW_COLS = split(/,/, $row); unshift @ROW_COLS, "0";
+					for ($colNum = 1; $colNum <= 12; $colNum++) {
+						$annot = $ROW_COLS[$colNum];
+						if ($annot !~ /(null|0|empty|unused)/i) {
+							$pair = "$TN5SET_i5WELLS_seq{$i5_set}{$rowLetter},$TN5SET_i7WELLS_seq{$i7_set}{$colNum}";
+							$ANNOT_Tn5_pairs{$annot}{$pair} = 1;
+						}
+					}
+				}
+			}
+		} elsif ($P[0] =~ /pcr/i) {
+			($i5_set,$i7_set) = split(//, $P[1]);
+			if ($P[2] =~ /^a/i) { # all PCR wells
+				for ($rowNum = 1; $rowNum <= 8; $rowNum++) {
+					$rowLetter = $LETTERS[$rowNum];
+					for ($colNum = 1; $colNum <= 12; $colNum++) {
+						$ix4 = $PCRSET_i5WELLS_seq{$i5_set}{$rowLetter};
+						$ix2 = $PCRSET_i7WELLS_seq{$i7_set}{$colNum};
+						foreach $annot (keys %ANNOT_Tn5_pairs) {
+							foreach $pair (keys %{$ANNOT_Tn5_pairs{$annot}}) {
+								($ix3,$ix1) = split(/,/, $pair);
+								if (defined $opt{'O'}) {
+									print OUT "$ix1$ix2$ix3$ix4\t$annot\n";
+								} else {
+									print "$ix1$ix2$ix3$ix4\t$annot\n";
+								}
+							}
+						}
+					}
+				}
+			} else { # partial PCR wells
+				for ($rowNum = 1; $rowNum <= 8; $rowNum++) {
+					$row = <IN>; chomp $row; $rowLetter = $LETTERS[$rowNum];
+					@ROW_COLS = split(/,/, $row); unshift @ROW_COLS, "0";
+					for ($colNum = 1; $colNum <= 12; $colNum++) {
+						if ($ROW_COLS[$colNum]>0) {
+							$ix4 = $PCRSET_i5WELLS_seq{$i5_set}{$rowLetter};
+							$ix2 = $PCRSET_i7WELLS_seq{$i7_set}{$colNum};
+							foreach $annot (keys %ANNOT_Tn5_pairs) {
+								foreach $pair (keys %{$ANNOT_Tn5_pairs{$annot}}) {
+									($ix3,$ix1) = split(/,/, $pair);
+									if (defined $opt{'O'}) {
+										print OUT "$ix1$ix2$ix3$ix4\t$annot\n";
+									} else {
+										print "$ix1$ix2$ix3$ix4\t$annot\n";
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		} # else it is description info & skip it
+		
+	} close IN;
+	
+} elsif (defined $opt{'P'}) {
 	%NEX_ID_i5_i7_pair = ();
 	%PCR_ID_i5_i7_pair = ();
 	open IN, "$opt{'P'}";
