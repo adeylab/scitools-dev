@@ -26,6 +26,9 @@ Options:
    -P   [STR]   Plate descriptor file (instead of written descriptors)
    -p           Print out sample plate file for modificaiton and exit
                 (ExamplePlateDescriptor.csv)
+   -D   [STR]   Dense plate descriptor
+   -d           Print out example dense plate descriptor file
+                (ExamplePlateDescriptor.dense.csv)
    -h           More detailed description of plate / combo specification
 
 ";
@@ -126,7 +129,7 @@ close OUT;
 exit;
 }
 
-if (!defined $ARGV[0] && !defined $opt{'P'}) {die $die2};
+if (!defined $ARGV[0] && !defined $opt{'P'} && !defined $opt{'D'}) {die $die2};
 
 # Read in index file
 
