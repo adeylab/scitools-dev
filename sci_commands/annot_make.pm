@@ -85,6 +85,44 @@ My_Sample_1+NEX,AA=ALL+PCR,AC=1-8+PCR,AD=1:A-D,2-5,6:ACDFH,7-12 My_Sample_2+NEX,
 
 if (defined $opt{'h'}) {die $die3};
 
+if (defined $opt{'d'}) {
+open OUT, ">ExamplePlateDescriptor.dense.csv";
+print OUT "#INFO, This is the dense format for 'sci' plate descriptions.
+#INFO, <- 'INFO' lines are ignored and can be used to comment.
+#INFO, Each NEX section must start with '#NEX' then have a comma and then
+#INFO, the two letter i5i7 combo for the index set. It then must be followed
+#INFO, by a complete description of all wells, with the sample name entered
+#INFO, into each well. ANy empty wells can be listed as 'empty' or 'null'
+#INFO, ALL NEX sections must precede any #PCR sections!
+#INFO, All NEX plates are assumed to be used for all PCR plates.
+#INFO, A #PCR section has the header, then the 2-letter combo, then either
+#INFO, 'all' for all wells of the plate, in which case no further lines are
+#INFO, needed int he section, OR 'partial' and then 8 more rows with 12
+#INFO, columns each, with a '0' for empty wells and '1' for used wells.
+#INFO,
+#NEX,AA
+sample1,sample2,sample3,sample4,sample1,sample2,sample3,sample4
+sample1,sample2,sample3,sample4,sample1,sample2,sample3,sample4
+sample1,sample2,sample3,sample4,sample1,sample2,sample3,sample4
+sample1,sample2,sample3,sample4,sample1,sample2,sample3,sample4
+sample1,sample2,sample3,sample4,sample1,sample2,sample3,sample4
+sample1,sample2,sample3,sample4,sample1,sample2,sample3,sample4
+sample1,sample2,sample3,sample4,sample1,sample2,sample3,sample4
+sample1,sample2,sample3,sample4,sample1,sample2,sample3,sample4
+#PCR,AC,all
+#PCR,AD,partial
+1,1,1,1,1,1,0,0,0,0,0,0
+1,1,1,1,1,1,0,0,0,0,0,0
+1,1,1,1,1,1,0,0,0,0,0,0
+1,1,1,1,1,1,0,0,0,0,0,0
+1,1,1,1,1,1,0,0,0,0,0,0
+1,1,1,1,1,1,0,0,0,0,0,0
+1,1,1,1,1,1,0,0,0,0,0,0
+1,1,1,1,1,1,0,0,0,0,0,0";
+close OUT;
+exit;
+}
+
 if (defined $opt{'p'}) {
 open OUT, ">ExamplePlateDescriptor.csv";
 	print OUT "#NEX,MySampleID1,AA,Partial
@@ -166,7 +204,7 @@ if (defined $opt{'D'}) {
 	while ($l = <IN>) {
 		chomp $l;
 		if ($l =~ /^#/) {
-			@P = split(/,/, $l);
+			@P = split(/,/, $l);		
 			if ($P[0] =~ /(Tn5|Nex)/i) {
 				($i5_set,$i7_set) = split(//, $P[1]);
 				for ($rowNum = 1; $rowNum <= 8; $rowNum++) {
@@ -180,33 +218,12 @@ if (defined $opt{'D'}) {
 						}
 					}
 				}
-			}
-		} elsif ($P[0] =~ /pcr/i) {
-			($i5_set,$i7_set) = split(//, $P[1]);
-			if ($P[2] =~ /^a/i) { # all PCR wells
-				for ($rowNum = 1; $rowNum <= 8; $rowNum++) {
-					$rowLetter = $LETTERS[$rowNum];
-					for ($colNum = 1; $colNum <= 12; $colNum++) {
-						$ix4 = $PCRSET_i5WELLS_seq{$i5_set}{$rowLetter};
-						$ix2 = $PCRSET_i7WELLS_seq{$i7_set}{$colNum};
-						foreach $annot (keys %ANNOT_Tn5_pairs) {
-							foreach $pair (keys %{$ANNOT_Tn5_pairs{$annot}}) {
-								($ix3,$ix1) = split(/,/, $pair);
-								if (defined $opt{'O'}) {
-									print OUT "$ix1$ix2$ix3$ix4\t$annot\n";
-								} else {
-									print "$ix1$ix2$ix3$ix4\t$annot\n";
-								}
-							}
-						}
-					}
-				}
-			} else { # partial PCR wells
-				for ($rowNum = 1; $rowNum <= 8; $rowNum++) {
-					$row = <IN>; chomp $row; $rowLetter = $LETTERS[$rowNum];
-					@ROW_COLS = split(/,/, $row); unshift @ROW_COLS, "0";
-					for ($colNum = 1; $colNum <= 12; $colNum++) {
-						if ($ROW_COLS[$colNum]>0) {
+			} elsif ($P[0] =~ /pcr/i) {
+				($i5_set,$i7_set) = split(//, $P[1]);
+				if ($P[2] =~ /^a/i) { # all PCR wells
+					for ($rowNum = 1; $rowNum <= 8; $rowNum++) {
+						$rowLetter = $LETTERS[$rowNum];
+						for ($colNum = 1; $colNum <= 12; $colNum++) {
 							$ix4 = $PCRSET_i5WELLS_seq{$i5_set}{$rowLetter};
 							$ix2 = $PCRSET_i7WELLS_seq{$i7_set}{$colNum};
 							foreach $annot (keys %ANNOT_Tn5_pairs) {
@@ -221,10 +238,32 @@ if (defined $opt{'D'}) {
 							}
 						}
 					}
+				} else { # partial PCR wells
+					for ($rowNum = 1; $rowNum <= 8; $rowNum++) {
+						$row = <IN>; chomp $row; $rowLetter = $LETTERS[$rowNum];
+						@ROW_COLS = split(/,/, $row); unshift @ROW_COLS, "0";
+						for ($colNum = 1; $colNum <= 12; $colNum++) {
+							if ($ROW_COLS[$colNum]>0) {
+								$ix4 = $PCRSET_i5WELLS_seq{$i5_set}{$rowLetter};
+								$ix2 = $PCRSET_i7WELLS_seq{$i7_set}{$colNum};
+								foreach $annot (keys %ANNOT_Tn5_pairs) {
+									foreach $pair (keys %{$ANNOT_Tn5_pairs{$annot}}) {
+										($ix3,$ix1) = split(/,/, $pair);
+										if (defined $opt{'O'}) {
+											print OUT "$ix1$ix2$ix3$ix4\t$annot\n";
+										} else {
+											print "$ix1$ix2$ix3$ix4\t$annot\n";
+										}
+									}
+								}
+							}
+						}
+					}
 				}
-			}
-		} # else it is description info & skip it
-		
+			} # else it is description info & skip it
+		} else {
+			print STDERR "WARNING! A line was read that has no header associated with it! line: $l\n":
+		}
 	} close IN;
 	
 } elsif (defined $opt{'P'}) {
