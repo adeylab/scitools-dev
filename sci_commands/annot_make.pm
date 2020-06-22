@@ -29,25 +29,14 @@ Options:
    -D   [STR]   Dense plate descriptor
    -d           Print out example dense plate descriptor file
                 (ExamplePlateDescriptor.dense.csv)
+   -U   [STR]   Unique Dual Index Tn5 (UDI-Tn5) setup
+   -u           Print example UDI-Tn5 sample sheet file
+                (Example_UDI_Tn5_Sample_Sheet.csv)
    -h           More detailed description of plate / combo specification
 
 ";
 
 $die3 = "
-scitools annot-make [options] [annotation_description_1] [annotaiton_description_2] ...
-
-Options:
-   -O   [STR]   Output annotation file (default = STDOUT)
-   -I   [STR]   Index file
-         (default = $VAR{'SCI_index_file'})
-         (Index names must be in form of: [Tier]_[set]_[i5/i7]_[A-H/1-12])
-   -P   [STR]   Plate descriptor file (instead of written descriptors)
-   -p           Print out sample plate file for modificaiton and exit
-                (ExamplePlateDescriptor.csv)
-   -D   [STR]   Dense plate descriptor
-   -d           Print out example dense plate descriptor file
-                (ExamplePlateDescriptor.dense.csv)
-   -h           More detailed description of plate / combo specification
 
 Annotation descriptors are provided as:
 
@@ -83,7 +72,7 @@ My_Sample_1+NEX,AA=ALL+PCR,AC=1-8+PCR,AD=1:A-D,2-5,6:ACDFH,7-12 My_Sample_2+NEX,
 
 ";
 
-if (defined $opt{'h'}) {die $die3};
+if (defined $opt{'h'}) {die $die2.$die3};
 
 if (defined $opt{'d'}) {
 open OUT, ">ExamplePlateDescriptor.dense.csv";
@@ -97,7 +86,7 @@ print OUT "#INFO, This is the dense format for 'sci' plate descriptions.
 #INFO, All NEX plates are assumed to be used for all PCR plates.
 #INFO, A #PCR section has the header, then the 2-letter combo, then either
 #INFO, 'all' for all wells of the plate, in which case no further lines are
-#INFO, needed int he section, OR 'partial' and then 8 more rows with 12
+#INFO, needed in the section, OR 'partial' and then 8 more rows with 12
 #INFO, columns each, with a '0' for empty wells and '1' for used wells.
 #INFO,
 #NEX,AA
@@ -167,7 +156,7 @@ close OUT;
 exit;
 }
 
-if (!defined $ARGV[0] && !defined $opt{'P'} && !defined $opt{'D'}) {die $die2};
+if (!defined $ARGV[0] && !defined $opt{'P'} && !defined $opt{'D'} && !defined $opt{'U'}) {die $die2};
 
 # Read in index file
 
@@ -212,7 +201,7 @@ if (defined $opt{'D'}) {
 					@ROW_COLS = split(/,/, $row); unshift @ROW_COLS, "0";
 					for ($colNum = 1; $colNum <= 12; $colNum++) {
 						$annot = $ROW_COLS[$colNum];
-						if ($annot !~ /(null|empty|unused)/i) {
+						if ($annot !~ /(null|empty|unused)/i && $annot != 0) {
 							$pair = "$TN5SET_i5WELLS_seq{$i5_set}{$rowLetter},$TN5SET_i7WELLS_seq{$i7_set}{$colNum}";
 							$ANNOT_Tn5_pairs{$annot}{$pair} = 1;
 						}
