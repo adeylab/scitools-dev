@@ -12,52 +12,113 @@ sub bam_tssenrich {
 # Defaults:
     $bedtools = "bedtools";
 
-    getopts("O:T:B:b:EX", \%opt);
+    getopts("O:T:B:b:S:r:n:s:EX", \%opt);
 
 $die2 = "
 scitools bam_tssenrich [options] [duplicate removed and filtered bam file] [genome -- either 'hg38' or 'mm10' or 'dm6']
 
 Options:
    -O   [STR]   Output prefix (default is bam file prefix)
-   -T   [STR]   An alternative BED file for TSS signal
-   -B   [STR]   An alternative BED file for background signal
+   -T   [STR]   An alternative BED file for TSS signal (def = reference signal file for genome)
+   -B   [STR]   An alternative BED file for background (def = reference background file for genome)
    -b   [STR]   Bedtools call (def = $bedtools)
-   -E           Run using ENCODE ATAC-seq definitions to get a bulk signal (warning: makes and uses large output from bam2bed)
+   -E           Run using ENCODE ATAC-seq definitions to get a bulk signal
+   -S   [STR]   An alternate BED file for unique TSS locations (def = reference tss file for genome)
+   -r   [INT]   Range in bp for ENCODE ATAC-seq bulk signal (def = 1000)
+   -n   [INT]   Bin in bp size for ENCODE ATAC-seq bulk signal (def = 5)
+   -s   [STR]   Selection criteria for ENCODE ATAC-seq bulk signal. MID for middle constrained or MAX for max in range (def = MID)
    -X           Retain intermediate files, this includes individual value files for the TSS and background (def = remove)
 
 ";
 
     if (!defined $ARGV[0]) {die $die2};
+
     if (!defined $ARGV[1]) {die $die2};
     if ($ARGV[1] eq "hg38") {
-        $tss_signal = "/home/groups/oroaklab/refs/hg38/ensembl_tss/ensembl.hg38.tss.chr100bpWINDOW.bed";
+        $tss_list = "/home/groups/oroaklab/refs/hg38/ensembl_tss/ensembl.hg38.uniqtss.chr.bed";
+	$tss_signal = "/home/groups/oroaklab/refs/hg38/ensembl_tss/ensembl.hg38.tss.chr100bpWINDOW.bed";
         $bg_signal = "/home/groups/oroaklab/refs/hg38/ensembl_tss/ensembl.hg38.tss.chr.b1_b2.bed";
     } elsif ($ARGV[1] eq "mm10") {
-        $tss_signal = "/home/groups/oroaklab/refs/mm10/ensembl_tss/ensembl.mm10.tss.chr100bpWINDOW.bed";
+        $tss_list = "/home/groups/oroaklab/refs/mm10/ensembl_tss/ensembl.mm10.uniqtss.chr.bed";
+	$tss_signal = "/home/groups/oroaklab/refs/mm10/ensembl_tss/ensembl.mm10.tss.chr100bpWINDOW.bed";
         $bg_signal = "/home/groups/oroaklab/refs/mm10/ensembl_tss/ensembl.mm10.tss.chr.b1_b2.bed";
     } elsif ($ARGV[1] eq "dm6") {
-        $tss_signal = "/home/groups/oroaklab/refs/dm6/ensembl_tss/ensembl.dm6.tss.chr100bpWINDOW.bed";
+        $tss_list = "/home/groups/oroaklab/refs/dm6/ensembl_tss/ensembl.hg38.uniqtss.chr.bed";
+	$tss_signal = "/home/groups/oroaklab/refs/dm6/ensembl_tss/ensembl.dm6.tss.chr100bpWINDOW.bed";
         $bg_signal = "/home/groups/oroaklab/refs/dm6/ensembl_tss/ensembl.dm6.tss.chr.b1_b2.bed";
     } else {
         die $die2;
     }
-    if (!defined $opt{'O'}) {$opt{'O'} = $ARGV[0]; $opt{'O'} =~ s/\.bam$//};
-    if (defined $opt{'b'}) {$bedtools = $opt{'b'}};
+    if (defined $opt{'S'}) {$tss_list = $opt{'S'}};
     if (defined $opt{'T'}) {$tss_signal = $opt{'T'}};
     if (defined $opt{'B'}) {$bg_signal = $opt{'B'}};
 
+    if (defined $opt{'r'}) {$bulk_range = $opt{'r'};} else {$bulk_range = 1000;}
+    if (defined $opt{'n'}) {$bulk_binsize = $opt{'n'};} else {$bulk_binsize = 5;}
+    if (defined $opt{'s'}) {
+	if ($opt{'s'} eq "MID" || $opt{'s'} eq "MAX") {
+	    $bulk_select = $opt{'s'};
+	} else {
+	    die $die2;
+	}
+    } else {
+	$bulk_select = "MID";
+    }
+
+    if (!defined $opt{'O'}) {$opt{'O'} = $ARGV[0]; $opt{'O'} =~ s/\.bam$//};
+    if (defined $opt{'b'}) {$bedtools = $opt{'b'}};
+
     if (defined $opt{'E'}) {
-        system("cat $tss_signal | awk '\$2 > 2000' > $opt{'O'}.temp_signal");
-        system("cat $opt{'O'}.temp_signal | awk '{print \$1,\$2-1900,\$2-1800}' | tr ' ' '\t' > $opt{'O'}.temp_b1");
-        system("cat $opt{'O'}.temp_signal | awk '{print \$1,\$3+1800,\$3+1900}' | tr ' ' '\t' > $opt{'O'}.temp_b2");
-        system("bedtools bamtobed -i $ARGV[0] > $opt{'O'}.temp.bed");
-        system("bedmap --count $opt{'O'}.temp_signal $opt{'O'}.temp.bed > $opt{'O'}.signal.value");
-        system("bedmap --count $opt{'O'}.temp_b1 $opt{'O'}.temp.bed > $opt{'O'}.b1.value");
-        system("bedmap --count $opt{'O'}.temp_b2 $opt{'O'}.temp.bed > $opt{'O'}.b2.value");
-        system("paste $opt{'O'}.signal.value $opt{'O'}.b1.value $opt{'O'}.b2.value | awk '{print \$1/(\$2+\$3+1)}' | awk '{sum+=\$1}END{print \"ENCODE Average TSS Enrichment: \" sum/NR}' > $opt{'O'}.TSSenrich_ENCODE.log");
-        if (!defined $opt{'X'}) {
-            system("rm -f $opt{'O'}.temp_signal $opt{'O'}.temp_b1 $opt{'O'}.temp_b2 $opt{'O'}.temp.bed $opt{'O'}.signal.value $opt{'O'}.b1.value $opt{'O'}.b2.value");
-        }
+	system("cat $tss_list | awk -v range='$bulk_range' '\$2 > range+2' | awk -v range='$bulk_range' '{print \$1,\$2-range,\$3+range}' | tr ' ' '\t' > $opt{'O'}.temp_tss_range.bed");
+	system("bedtools bamtobed -i $ARGV[0] | awk '{print \$1,\$2,\$2+1}' | bedops -e 1 - $opt{'O'}.temp_tss_range.bed | closest-features --closest --dist --delim \'\t\' - $tss_list > $opt{'O'}.temp.tss_range.closestfeatures");
+	system("cat $opt{'O'}.temp.tss_range.closestfeatures | cut -f 7 | sort | uniq -c | sed -e 's/^[ ]*//g' | awk '{print \$2,\$1}' | tr ' ' '\t' | sort -n > $opt{'O'}.bulkTSSdist_$bulk_range.txt");
+
+	open R, ">$opt{'O'}.bulkTSSenrich.r";
+	print R "
+rangeR <- read.table(\"$opt{'O'}.bulkTSSdist_$bulk_range.txt\")
+bins <- seq(from=min(as.numeric(rangeR\$V1)),to=max(as.numeric(rangeR\$V1)),by=as.numeric($bulk_binsize))
+
+all <- rep(rangeR\$V1,rangeR\$V2)
+groups <- table(cut(all,bins))
+
+num_endbins <- 100/$bulk_binsize
+average_endbins <- (sum(head(groups,n=num_endbins))+sum(tail(groups,n=num_endbins)))/(num_endbins*2)
+num_middlebin <- round(length(bins)/2)
+a <- num_middlebin-num_endbins
+b <- num_middlebin+num_endbins
+
+";
+
+	if ($bulk_select eq "MID") {
+	    print R "
+TSS <- max(groups[a:b]/average_endbins)
+TSSwhich <- which.max(groups[a:b]/average_endbins)
+";
+	} else {
+	    print R "
+TSS <- max(groups/average_endbins)
+TSSwhich <- which.max(groups/average_endbins)
+";
+	}
+	print R "
+df <- data.frame(TSS)
+rownames(df) <- \"bulk_TSS_enrichment\"
+write.table(df,\"$opt{'O'}.bulkTSSenrich.log\",row.names=T,col.names=F,quote=F,sep=\"\t\",)
+
+png(\"$opt{'O'}.bulkTSSenrich.png\",800,600)
+par(mfrow=c(2,1))
+par(mar=c(5.1,4.1,4.1,2.1))
+plot(rangeR\$V1,rangeR\$V2,pch=16,cex=.5,xlab=\"Distance to TSS (bp)\",ylab=\"Count\",main=\"Plot of Reads from TSS\")
+hist(all,breaks=length(groups),xlab=\"Distance to TSS (bp)\",ylab=\"Count\",main=\"Binned Hist of Reads from TSS\")
+dev.off()
+";
+
+	close R;
+	system("$Rscript $opt{'O'}.bulkTSSenrich.r");
+	if (!defined $opt{'X'}) {
+	    system("rm -f $opt{'O'}.temp.tss_range.closestfeatures $opt{'O'}.temp_tss_range.bed $opt{'O'}.bulkTSSenrich.r");
+	}
+
     } else { 
         system("$bedtools intersect -bed -u -a $ARGV[0] -b $tss_signal | cut -f 4 | sed -e 's/:.*//g' | sort | uniq -c | sed -e 's/^[ ]*//g' | awk '{print \$2,\$1}' | tr ' ' '\t' > $opt{'O'}.tss_reads.value");
         system("$bedtools intersect -bed -u -a $ARGV[0] -b $bg_signal | cut -f 4 | sed -e 's/:.*//g' | sort | uniq -c | sed -e 's/^[ ]*//g' | awk '{print \$2,\$1}' | tr ' ' '\t' > $opt{'O'}.bg_reads.value");
