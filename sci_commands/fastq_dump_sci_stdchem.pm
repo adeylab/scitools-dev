@@ -9,7 +9,7 @@ sub fastq_dump_sci_stdchem {
 
 @ARGV = @_;
 
-getopts("R:F:O:o:1:2:A:i:j:r:NV", \%opt);
+getopts("R:F:O:o:1:2:A:i:j:r:Nv", \%opt);
 
 # defaults
 $hd_s = 2;
