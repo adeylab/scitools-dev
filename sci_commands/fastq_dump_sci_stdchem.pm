@@ -7,16 +7,6 @@ use Exporter "import";
 
 sub fastq_dump_sci_stdchem {
 
-%REVCOMP = ("A" => "T", "C" => "G", "G" => "C", "T" => "A");
-sub revcomp {
-	@INSEQ = split(//, uc($_[0]));
-	$revcomp = "";
-	for ($pos = (@INSEQ-1); $pos >= 0; $pos--) {
-		$revcomp .= $REVCOMP{$INSEQ[$pos]};
-	}
-	return $revcomp;
-}
-
 @ARGV = @_;
 
 getopts("R:F:O:o:1:2:A:i:j:r:NV", \%opt);
@@ -213,7 +203,8 @@ while ($r1tag = <R1>) {
 	$null = <I2>; $null = <I2>;
 	
 	if (defined $opt{'V'}) {
-		$rev_i2seq = revcomp($i2seq);
+		$rev_i2seq = reverse $i2seq;
+		$rev_i2seq =~ tr/ATGCatgc/TACGtacg/;
 		$i2seq = $rev_i2seq;
 	}
 	
