@@ -79,10 +79,12 @@ if (defined $opt{'v'}) {
 	foreach $pos (keys %POS_SEQ_seq){
 	if ($pos == 2) {
 		foreach $seq (keys %{$POST_SEQ_seq{$pos}}) {
+		print $seq;
 		$seq = reverse $seq;
 		$seq =~ tr/ATGCatgcNn/TACGtacgNn/;
 		$POS_SEQ_seq{$pos}{$seq} = $seq;
 		}
+		print $seq
 	}
 	}
 }
