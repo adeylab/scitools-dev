@@ -9,7 +9,7 @@ sub fastq_dump_sci_stdchem {
 
 @ARGV = @_;
 
-getopts("R:F:O:o:1:2:A:i:j:r:N", \%opt);
+getopts("R:F:O:o:1:2:A:i:j:r:NV", \%opt);
 
 # defaults
 $hd_s = 2;
@@ -36,6 +36,9 @@ Options:
                 (max 2, def = $hd_s)
    -d   [INT]   Hamming distance for sci index
                 (max 2, def = $hd_x)
+   -v 	[FLAG] 	Flag, if triggered will use reverse compliment for index 2 (i5). 
+   				This is used for sequencing platforms NovaSeq 6000,
+				MiSeq, HiSeq 2500, or HiSeq 2000 System. (Default: no)
 
 Defaults:
    -F   [STR]   Fastq directory
@@ -70,6 +73,19 @@ while ($l = <IN>) {
 	$POS_length{$pos} = length($seq);
 } close IN;
 if (defined $opt{'N'}) {$POS_SEQ_seq{'3'}{'null'} = ""};
+
+#Make i5 index reverse compliment
+if (defined $opt{'v'}) {
+	foreach $pos (keys %POS_SEQ_seq){
+	if ($pos == 2) {
+		foreach $seq (keys %{$POST_SEQ_seq{$pos}}) {
+		$seq = reverse $seq;
+		$seq =~ tr/ATGCatgcNn/TACGtacgNn/;
+		$POS_SEQ_seq{$pos}{$seq} = $seq;
+		}
+	}
+	}
+}
 
 # make all-1-away hash
 foreach $pos (keys %POS_SEQ_seq) {
