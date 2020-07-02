@@ -9,7 +9,7 @@ sub fastq_dump_sci_stdchem {
 
 @ARGV = @_;
 
-getopts("R:F:O:o:1:2:A:i:j:r:Nv", \%opt);
+getopts("R:F:O:o:1:2:A:i:j:r:NV", \%opt);
 
 # defaults
 $hd_s = 2;
@@ -36,7 +36,7 @@ Options:
                 (max 2, def = $hd_s)
    -d   [INT]   Hamming distance for sci index
                 (max 2, def = $hd_x)
-   -v 	[FLG] 	If flagged will use reverse compliment for index 2 (i5). 
+   -V 	[FLG] 	If flagged will use reverse compliment for index 2 (i5). 
    				This is used for sequencing platforms NovaSeq 6000,
 				MiSeq, HiSeq 2500, or HiSeq 2000 System. (Default: no)
 
@@ -73,17 +73,6 @@ while ($l = <IN>) {
 	$POS_length{$pos} = length($seq);
 } close IN;
 if (defined $opt{'N'}) {$POS_SEQ_seq{'3'}{'null'} = ""};
-
-#Make i5 index reverse compliment
-if (defined $opt{'v'}) {
-	print "using -v flag\n";
-	foreach $seq (keys %{$POST_SEQ_seq{'2'}}) {
-		$revcomp_seq = reverse $seq;
-		$revcomp_seq =~ tr/ATGCatgc/TACGtacg/;
-		$POS_SEQ_seq{'2'}{$seq} = $revcomp_seq;
-		print "$seq is now $revcomp_seq\n";
-	}
-}
 
 # make all-1-away hash
 foreach $pos (keys %POS_SEQ_seq) {
@@ -212,6 +201,12 @@ while ($r1tag = <R1>) {
 	$i1seq = <I1>; chomp $i1seq; $i2seq = <I2>; chomp $i2seq;
 	$null = <I1>; $null = <I1>;
 	$null = <I2>; $null = <I2>;
+	
+	if (defined $opt{'V'}) {
+		$rev_i2seq = reverse $seq;
+		$rev_i2seq =~ tr/ATGCatgc/TACGtacg/;
+		$i2seq = $rev_i2seq;
+	}
 	
 	$ix1 = substr($i1seq,0,$POS_length{'1'});
 	$ix2 = substr($i2seq,0,$POS_length{'2'});
