@@ -76,16 +76,12 @@ if (defined $opt{'N'}) {$POS_SEQ_seq{'3'}{'null'} = ""};
 
 #Make i5 index reverse compliment
 if (defined $opt{'v'}) {
-	print "using -v flag";
-	foreach $pos (keys %POS_SEQ_seq){
-		if ($pos == 2) {
-			foreach $seq (keys %{$POST_SEQ_seq{$pos}}) {
-				$revcomp_seq = reverse $seq;
-				$revcomp_seq =~ tr/ATGCatgc/TACGtacg/;
-				$POS_SEQ_seq{$pos}{$seq} = $revcomp_seq;
-				print "$seq is now $revcomp_seq\n";
-			}
-		}
+	print "using -v flag\n";
+	foreach $seq (keys %{$POST_SEQ_seq{'2'}}) {
+		$revcomp_seq = reverse $seq;
+		$revcomp_seq =~ tr/ATGCatgc/TACGtacg/;
+		$POS_SEQ_seq{'2'}{$seq} = $revcomp_seq;
+		print "$seq is now $revcomp_seq\n";
 	}
 }
 
