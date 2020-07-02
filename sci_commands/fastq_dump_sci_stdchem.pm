@@ -80,11 +80,11 @@ if (defined $opt{'v'}) {
 	if ($pos == 2) {
 		foreach $seq (keys %{$POST_SEQ_seq{$pos}}) {
 		print $seq;
-		$seq = reverse $seq;
-		$seq =~ tr/ATGCatgcNn/TACGtacgNn/;
-		$POS_SEQ_seq{$pos}{$seq} = $seq;
+		$revcomp_seq = reverse $seq;
+		$revcomp_seq =~ tr/ATGCatgcNn/TACGtacgNn/;
+		$POS_SEQ_seq{$pos}{$seq} = $revcomp_seq;
 		}
-		print $seq
+		print $revcomp_seq;
 	}
 	}
 }
