@@ -203,7 +203,7 @@ while ($r1tag = <R1>) {
 	$null = <I2>; $null = <I2>;
 	
 	if (defined $opt{'V'}) {
-		$rev_i2seq = reverse $seq;
+		$rev_i2seq = reverse $i2seq;
 		$rev_i2seq =~ tr/ATGCatgc/TACGtacg/;
 		$i2seq = $rev_i2seq;
 	}
