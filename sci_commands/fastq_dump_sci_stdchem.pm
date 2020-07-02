@@ -9,7 +9,7 @@ sub fastq_dump_sci_stdchem {
 
 @ARGV = @_;
 
-getopts("R:F:O:o:1:2:A:i:j:r:Nv", \%opt);
+getopts("R:F:O:o:1:2:A:i:j:r:Nv:", \%opt);
 
 # defaults
 $hd_s = 2;
@@ -36,9 +36,9 @@ Options:
                 (max 2, def = $hd_s)
    -d   [INT]   Hamming distance for sci index
                 (max 2, def = $hd_x)
-   -v 	[FLAG] 	Flag, if triggered will use reverse compliment for index 2 (i5). 
+   -v 	[INT] 	If v=1 will use reverse compliment for index 2 (i5). 
    				This is used for sequencing platforms NovaSeq 6000,
-				MiSeq, HiSeq 2500, or HiSeq 2000 System. (Default: no)
+				MiSeq, HiSeq 2500, or HiSeq 2000 System. (Default: v=0)
 
 Defaults:
    -F   [STR]   Fastq directory
@@ -75,17 +75,15 @@ while ($l = <IN>) {
 if (defined $opt{'N'}) {$POS_SEQ_seq{'3'}{'null'} = ""};
 
 #Make i5 index reverse compliment
-if (defined $opt{'v'}) {
+if ($opt{'v'}>0) {
 	foreach $pos (keys %POS_SEQ_seq){
-	if ($pos == 2) {
-		foreach $seq (keys %{$POST_SEQ_seq{$pos}}) {
-		print $seq;
-		$revcomp_seq = reverse $seq;
-		$revcomp_seq =~ tr/ATGCatgcNn/TACGtacgNn/;
-		$POS_SEQ_seq{$pos}{$seq} = $revcomp_seq;
+		if ($pos == 2) {
+			foreach $seq (keys %{$POST_SEQ_seq{$pos}}) {
+				$revcomp_seq = reverse $seq;
+				$revcomp_seq =~ tr/ATGCatgcNn/TACGtacgNn/;
+				$POS_SEQ_seq{$pos}{$seq} = $revcomp_seq;
+			}
 		}
-		print $revcomp_seq;
-	}
 	}
 }
 
