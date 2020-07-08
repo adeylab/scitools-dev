@@ -48,34 +48,40 @@ if (defined $opt{'A'} || defined $opt{'L'}) {
 		$CELLID_include{$cellID} = 1;
 	}
 } else {
-	open IN, "$samtools view $ARGV[0] |";
+        open IN, "$samtools view $ARGV[0] | ";
 	while ($l = <IN>) {
 		chomp $l;
 		@P = split(/\t/, $l);
 		$cellID = $P[0]; $cellID =~ s/:.*$//;
-		$RG_header .= "\@RG\tID:$cellID\tSM:$cellID\tLB:$cellID\tPL:SCI\n";
-		$CELLID_include{$cellID} = 1;
+		if (! defined $CELLID_include{$cellID}) {
+		    $RG_header .= "\@RG\tID:$cellID\tSM:$cellID\tLB:$cellID\tPL:SCI\n";
+		    $CELLID_include{$cellID} = 1;
+		}
 	} close IN;
 }
 
 $out_header = "";
 open IN, "$samtools view -h $ARGV[0] 2>/dev/null |";
-open OUT, "| $samtools view -bS - 2>/dev/null > $opt{'O'}.RG.bam";
+open OUT, "> $opt{'O'}.RG.temp";
 while ($l = <IN>) {
 	chomp $l;
+
 	if ($l =~ /^\@/) {
 		$out_header .= "$l\n";
 	} else {
 		if ($out_header ne "done") {
-			print OUT $out_header.$RG_header."\@PG\tID:scitools_bam-addrg\tVN:$version\n";
-			$out_header = "done";
+		    print OUT $out_header.$RG_header."\@PG\tID:scitools_bam-addrg\tVN:$version\n";
+		    $out_header = "done";
 		} else {
-			@P = split(/\t/, $l);
-			$cellID = $P[0]; $cellID =~ s/:.*$//;
-			print OUT "$l\tRG:Z:$cellID\n";
+		    @P = split(/\t/, $l);
+		    $cellID = $P[0]; $cellID =~ s/:.*$//;
+		    print OUT "$l\tRG:Z:$cellID\n";
 		}
 	}
 } close IN; close OUT;
+
+system("$samtools view -bS $opt{'O'}.RG.temp 2>/dev/null > $opt{'O'}.RG.bam");
+system("rm $opt{'O'}.RG.temp");
 
 }
 1;
