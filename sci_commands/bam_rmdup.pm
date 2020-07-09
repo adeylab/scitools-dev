@@ -8,7 +8,7 @@ use Exporter "import";
 sub bam_rmdup {
 
 @ARGV = @_;
-getopts("s:O:xm:H:e:c:Cnrt:XNS:", \%opt);
+getopts("s:O:xm:H:e:c:Cnrt:XNS", \%opt);
 
 $memory = "2G";
 $sort_threads = 1;
