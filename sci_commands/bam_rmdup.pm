@@ -8,7 +8,7 @@ use Exporter "import";
 sub bam_rmdup {
 
 @ARGV = @_;
-getopts("s:O:xm:H:e:c:Cnrt:XN", \%opt);
+getopts("s:O:xm:H:e:c:Cnrt:XNS:", \%opt);
 
 $memory = "2G";
 $sort_threads = 1;
@@ -48,6 +48,8 @@ Options:
    -N           If a single bam is provided and not name sorted,
                  then name sort first
    -r           If -n, retain name sort (def = chr/pos sort)
+   -S           Discard reads with the same coordinates but
+                 opposite strands (def = retain)
    -X           Retain intermediate merged nsrt bam
    -H   [BAM]   Use header from this bam instead.
    -s   [STR]   Samtools call (def = $samtools)
@@ -62,6 +64,7 @@ if (!defined $ARGV[1]) {$opt{'x'} = 1};
 if (defined $opt{'e'}) {@CHR_FILT = split(/,/, $opt{'e'})};
 if (defined $opt{'c'}) {$chr_list = $opt{'c'}};
 if (defined $opt{'t'}) {$sort_threads = $opt{'t'}};
+if (defined $opt{'N'}) {$opt{'n'} = 1};
 
 if (!defined $opt{'n'}) {
 	if (!defined $ARGV[1]) {
@@ -111,8 +114,17 @@ if (defined $opt{'C'}) { # by chromosome
 					$total_kept++;
 				} else {
 					$BARC_total{$barc}++;
-					if (!defined $BARC_POS_ISIZE{$barc}{"$P[3]:$P[8]"} && !defined $OBSERVED{$P[0]}) {
-						$BARC_POS_ISIZE{$barc}{"$P[3]:$P[8]"} = 1;
+					if (defined $opt{'S'}) {
+						$pos_isize = "$P[3]:$P[8]";
+					} else {
+						if ($P[1] & 16) {
+							$pos_isize = "$P[3]:$P[8]:r";
+						} else {
+							$pos_isize = "$P[3]:$P[8]:f";
+						}
+					}
+					if (!defined $BARC_POS_ISIZE{$barc}{$pos_isize} && !defined $OBSERVED{$P[0]}) {
+						$BARC_POS_ISIZE{$barc}{$pos_isize} = 1;
 						$KEEP{$P[0]} = 1;
 						print OUT "$l\n";
 						$BARC_kept{$barc}++;
@@ -192,8 +204,17 @@ if (defined $opt{'C'}) { # by chromosome
 			
 			if ($filt_chrom < 1) {
 				$BARC_total{$barc}++;
-				if (!defined $POS_ISIZE{"$P[2]:$P[3]:$P[8]"} && !defined $OBSERVED{$P[0]}) {
-					$POS_ISIZE{"$P[2]:$P[3]:$P[8]"} = 1;
+				if (defined $opt{'S'}) {
+					$pos_isize = "$P[2]:$P[3]:$P[8]";
+				} else {
+					if ($P[1] & 16) {
+						$pos_isize = "$P[2]:$P[3]:$P[8]:r";
+					} else {
+						$pos_isize = "$P[2]:$P[3]:$P[8]:f";
+					}
+				}
+				if (!defined $POS_ISIZE{$pos_isize} && !defined $OBSERVED{$P[0]}) {
+					$POS_ISIZE{$pos_isize} = 1;
 					$KEEP{$P[0]} = 1;
 					print OUT "$l\n";
 					$BARC_kept{$barc}++;
@@ -241,8 +262,17 @@ if (defined $opt{'C'}) { # by chromosome
 				
 				if ($filt_chrom < 1) {
 					$BARC_total{$barc}++;
-					if (!defined $BARC_POS_ISIZE{$barc}{"$P[2]:$P[3]:$P[8]"} && !defined $OBSERVED{$P[0]}) {
-						$BARC_POS_ISIZE{$barc}{"$P[2]:$P[3]:$P[8]"} = 1;
+					if (defined $opt{'S'}) {
+						$pos_isize = "$P[2]:$P[3]:$P[8]";
+					} else {
+						if ($P[1] & 16) {
+							$pos_isize = "$P[2]:$P[3]:$P[8]:r";
+						} else {
+							$pos_isize = "$P[2]:$P[3]:$P[8]:f";
+						}
+					}
+					if (!defined $BARC_POS_ISIZE{$barc}{$pos_isize} && !defined $OBSERVED{$P[0]}) {
+						$BARC_POS_ISIZE{$barc}{$pos_isize} = 1;
 						$KEEP{$P[0]} = 1;
 						print OUT "$l\n";
 						$BARC_kept{$barc}++;
