@@ -8,9 +8,6 @@ import irlb
 from scipy import sparse
 from scipy.sparse import dok_matrix
 
-def load_mip_info(armfile):
-    return mip_list
-
 def main():
     p = argparse.ArgumentParser(description='IRLB on TFIDF in sparse format')
     p.add_argument('input', action='store', type=str,  
