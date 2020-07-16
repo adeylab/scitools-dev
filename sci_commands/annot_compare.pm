@@ -69,6 +69,7 @@ print OUT "$out_header\n";
 foreach $annot2 (@ANNOT2) {
 	print OUT "$annot2";
 	for ($i = 0; $i < @ANNOT1; $i++) {
+		if (!defined $ANNOT1_ANNOT2_ct{$ANNOT1[$i]}{$annot2}) {$ANNOT1_ANNOT2_ct{$ANNOT1[$i]}{$annot2}=0};
 		print OUT "\t$ANNOT1_ANNOT2_ct{$ANNOT1[$i]}{$annot2}";
 	}
 	print OUT "\n";
