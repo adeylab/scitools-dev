@@ -14,8 +14,11 @@ $die2 = "
 scitools annot-compare [options] [annot1] [annot2]
    or    compare-annot
 
-Will compare the proportions in each of the annotaitons across files.
-CellIDs must be the same (will take the intersect only)
+Will produce a table of the number of cells present
+in each annotaiton combination. Only cells in both
+annot files will be included.
+
+Rows are annot1, columns are annot2.
 
 Options:
    -O   [STR]   Output prefix (def = annot1.annot2)
@@ -32,39 +35,48 @@ if (!defined $opt{'O'}) {
 }
 $opt{'O'} =~ s/\.txt$//; $opt{'O'} =~ s/\.compare$//;
 
+$out_header = "#"; @ANNOT1 = ();
 open IN, "$ARGV[0]";
 while ($l = <IN>) {
 	chomp $l;
 	($cellID,$annot) = split(/\t/, $l);
 	$CELLID_annot1{$cellID} = $annot;
+	if (!defined $ANNOT1_check{$annot}) {
+		$out_header .= "\t$annot";
+		push @ANNOT1, $annot;
+		$ANNOT1_check{$annot} = 1;
+	}
 } close IN;
 
-$cell_match_ct = 0;
+$cell_match_ct = 0; @ANNOT2 = ();
 open IN, "$ARGV[1]";
 while ($l = <IN>) {
 	chomp $l;
 	($cellID,$annot2) = split(/\t/, $l);
+	if (!defined $ANNOT2_check{$annot2}) {
+		push @ANNOT2, $annot2;
+		$ANNOT2_check{$annot2} = 1;
+	}
 	if (defined $CELLID_annot1{$cellID}) {
 		$annot1 = $CELLID_annot1{$cellID};
 		$cell_match_ct++;
 		$ANNOT1_ANNOT2_ct{$annot1}{$annot2}++;
-		$ANNOT1_ANNOT2_ct{$annot2}{$annot1}++;
 	}
 } close IN;
 
 open OUT, ">$opt{'O'}.compare.txt";
-print OUT "Annot1\tAnnot2\tN_A2_in_A1\tPct_A2_in_A1\tPct_total\n";
-foreach $annot1 (keys %ANNOT1_ANNOT2_ct) {
-	$annot_ct = 0;
-	foreach $annot2 (keys %{$ANNOT1_ANNOT2_ct{$annot1}}) {
-		$annot_ct += $ANNOT1_ANNOT2_ct{$annot1}{$annot2};
+print OUT "$out_header\n";
+foreach $annot2 (@ANNOT2) {
+	print OUT "$annot2";
+	for ($i = 0; $i < @ANNOT1; $i++) {
+		if (!defined $ANNOT1_ANNOT2_ct{$ANNOT1[$i]}{$annot2}) {$ANNOT1_ANNOT2_ct{$ANNOT1[$i]}{$annot2}=0};
+		print OUT "\t$ANNOT1_ANNOT2_ct{$ANNOT1[$i]}{$annot2}";
 	}
-	foreach $annot2 (keys %{$ANNOT1_ANNOT2_ct{$annot1}}) {
-		$A1_pct = sprintf("%.3f", ($ANNOT1_ANNOT2_ct{$annot1}{$annot2}/$annot_ct)*100);
-		$G_pct = sprintf("%.3f", ($ANNOT1_ANNOT2_ct{$annot1}{$annot2}/$cell_match_ct)*100);
-		print OUT "$annot1\t$annot2\t$ANNOT1_ANNOT2_ct{$annot1}{$annot2}\t$A1_pct\t$G_pct\n";
-	}
-} close OUT;
+	print OUT "\n";
+}
+close OUT;
+
+exit;
 
 }
 1;
