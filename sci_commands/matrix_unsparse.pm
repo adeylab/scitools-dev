@@ -68,7 +68,6 @@ if ($ARGV[0] =~ /\.gz$/) {
 } else {
 	open MTX, "$ARGV[0]";
 }
-$null = <MTX>;
 while ($l = <MTX>) {
 	chomp $l;
 	($rowID,$cellID,$value) = split(/\s/, $l);

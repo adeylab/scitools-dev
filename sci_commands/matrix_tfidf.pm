@@ -15,7 +15,7 @@ $die2 = "
 scitools matrix-tfidf [options] [counts matrix or sparseMatrix values file]
    or    tfidf
 
-If a regular or a sparseMatrix is provided, the optput will be in the same
+If a regular or a sparseMatrix is provided, the output will be in the same
 format as the input.
 
 Options:
