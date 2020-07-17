@@ -31,7 +31,7 @@ $gif_height = 600;
 $gif_width = 600;
 $panel_nrow = 2;
 
-getopts("O:A:a:C:c:R:x:y:T:V:M:XS:s:G:p:f:Bb:k:w:h:m:Wr:N:F:j:zu:dt", \%opt);
+getopts("O:A:a:C:c:R:x:y:T:V:M:XS:s:G:p:f:Bb:k:w:h:m:Wr:N:F:j:zu:d", \%opt);
 
 $die2 = "
 scitools plot-dims [options] [dimensions file(s), comma sep]
@@ -53,7 +53,6 @@ Plotting by annotations:
    -A   [STR]   Annotation file (to color code points)
    -a   [STR]   Comma separated list of annotations to include in plot
                   (requires -A to be specified)
-   -t           Retain cells with no annotation (def = exclude)
    -C   [STR]   Color coding file (annot (tab) #hexColor)
    -c   [STR]   Color coding string
                   Annot=#hexColor,Annot2=#hexColor
@@ -244,25 +243,11 @@ foreach $cellID (keys %CELLID_DIMS) {
 				if (defined $ANNOT_include{$CELLID_annot{$cellID}}) {
 					$annot = $CELLID_annot{$cellID}
 				} else {$exclude_cell = 1};
-			} else {
-				if (defined $opt{'t'}) {
-					$annot = "Unannotated";
-					$CELLID_annot{$cellID} = $annot;
-				} else {
-					$exclude_cell = 1;
-				}
-			}
+			} else {$exclude_cell = 1};
 		} else {
 			if (defined $CELLID_annot{$cellID}) {
 				$annot = $CELLID_annot{$cellID};
-			} else {
-				if (defined $opt{'t'}) {
-					$annot = "Unannotated";
-					$CELLID_annot{$cellID} = $annot;
-				} else {
-					$exclude_cell = 1;
-				}
-			}
+			} else {$exclude_cell = 1};
 		}
 	} else {
 		$annot = "Cell";
