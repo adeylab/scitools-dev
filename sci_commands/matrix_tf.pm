@@ -92,12 +92,6 @@ if ($ARGV[0] =~ /\.matrix/ || $ARGV[0] =~ /\.matrix\.gz/) {
 		open OUT, ">$opt{'O'}.sparseMatrix.tf";
 	}
 
-	print "test info\n";
-	foreach my $key (keys %COLID_sum) {
-		print "$key\t$COLID_sum{$key}\n";
-	}
-	print "$lastrow\n";
-		
 	# read matrix values and normalize
 	while ($l = <IN>) {
 		chomp $l;

@@ -58,7 +58,7 @@ def main():
 
    for comp in comps:
       if (meta2[meta2[1]==comp].shape[0] > 0):
-         print("Comparison feature " + comp + " has " + str(meta[meta2[1]==comp].shape[0]) + " elements found in matrix.")
+         print("Comparison feature " + comp + " has " + str(meta2[meta2[1]==comp].shape[0]) + " elements found in matrix.")
       else:
          print("Comparison feature " + comp + " is not found in matrix. Exiting.")
          exit()
