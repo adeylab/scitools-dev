@@ -201,7 +201,7 @@ if (defined $opt{'D'}) {
 					@ROW_COLS = split(/,/, $row); unshift @ROW_COLS, "0";
 					for ($colNum = 1; $colNum <= 12; $colNum++) {
 						$annot = $ROW_COLS[$colNum];
-						if ($annot ne "empty" && $annot ne "null" && $annot != 0 && $annot != "") {
+						if ($annot ne "empty" && $annot ne "null" && $annot ne "0" && $annot ne "") {
 							$pair = "$TN5SET_i5WELLS_seq{$i5_set}{$rowLetter},$TN5SET_i7WELLS_seq{$i7_set}{$colNum}";
 							$ANNOT_Tn5_pairs{$annot}{$pair} = 1;
 							if (defined $opt{'x'}) {
