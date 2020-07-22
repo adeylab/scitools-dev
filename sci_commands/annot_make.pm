@@ -8,7 +8,7 @@ use Exporter "import";
 sub annot_make {
 
 @ARGV = @_;
-getopts("O:I:P:phD:dx", \%opt);
+getopts("O:I:P:phD:dxuU:", \%opt);
 
 # DEFAULTS
 @LETTERS = ("0", "A", "B", "C", "D", "E", "F", "G", "H");
