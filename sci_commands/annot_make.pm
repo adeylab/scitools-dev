@@ -8,7 +8,7 @@ use Exporter "import";
 sub annot_make {
 
 @ARGV = @_;
-getopts("O:I:P:phD:d", \%opt);
+getopts("O:I:P:phD:dx", \%opt);
 
 # DEFAULTS
 @LETTERS = ("0", "A", "B", "C", "D", "E", "F", "G", "H");
@@ -201,9 +201,12 @@ if (defined $opt{'D'}) {
 					@ROW_COLS = split(/,/, $row); unshift @ROW_COLS, "0";
 					for ($colNum = 1; $colNum <= 12; $colNum++) {
 						$annot = $ROW_COLS[$colNum];
-						if ($annot !~ /(null|empty|unused)/i && $annot != 0) {
+						if ($annot !~ /(null|empty|unused)/i && $annot != 0 && $annot != "") {
 							$pair = "$TN5SET_i5WELLS_seq{$i5_set}{$rowLetter},$TN5SET_i7WELLS_seq{$i7_set}{$colNum}";
 							$ANNOT_Tn5_pairs{$annot}{$pair} = 1;
+							if (defined $opt{'x'}) {
+								print STDERR "DEBUG: Row: $rowLetter, Col: $colNum, included as annot $annot\n";
+							}
 						}
 					}
 				}
