@@ -207,6 +207,8 @@ if (defined $opt{'D'}) {
 							if (defined $opt{'x'}) {
 								print STDERR "DEBUG: Row: $rowLetter, Col: $colNum, included as annot $annot\n";
 							}
+						} elsif (defined $opt{'x'}) {
+							print STDERR "DEBUG: Row: $rowLetter, Col: $colNum, EXCLUDED ($annot)\n";
 						}
 					}
 				}
