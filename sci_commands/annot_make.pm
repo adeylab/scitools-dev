@@ -156,6 +156,24 @@ close OUT;
 exit;
 }
 
+if (defined $opt{'u'}) {
+open OUT, ">Example_UDI_Tn5_Sample_Sheet.csv";
+	print OUT "#INFO, this format assumes that i5 and i7 indexes are used
+#INFO, going from A-H (i5) and 1-8 (i7). So each combination
+#INFO, of index letters has 8 total samples, where the first listed
+#INFO, is (i5 A, i7 1); then (i5 B, i7 2), etc... positions.
+#INFO, PCR indexes are the plate combination, then a comma-separated
+#INFO, list of the wells on the plate that are used.
+#Nex,AA
+sample1,sample2,sample3,sample4,sample5,sample6,sample7,sample8
+#Nex,BB
+sample9,sample10,sample11,empty,empty,empty,empty,empty
+#PCR,CD
+A1,A2\n";
+close OUT;
+exit;
+}
+
 if (!defined $ARGV[0] && !defined $opt{'P'} && !defined $opt{'D'} && !defined $opt{'U'}) {die $die2};
 
 # Read in index file
@@ -188,7 +206,52 @@ while ($l = <IN>) {
 
 if (defined $opt{'O'}) {open OUT, ">$opt{'O'}"};
 
-if (defined $opt{'D'}) {
+# PROCESS ANNOT DESCRIPTOR FILE / INFO
+
+if (defined $opt{'U'}) { # Tn5-UDI format
+	open IN, "$opt{'U'}";
+	while ($l = <IN>) {
+		chomp $l;
+		if ($l =~ /^#/) {
+			@P = split(/,/, $l);		
+			if ($P[0] =~ /(Tn5|Nex)/i) {
+				($i5_set,$i7_set) = split(//, $P[1]);
+				$l = <IN>; chomp $l;
+				@SAMPLES = split(/,/, $l); unshift @SAMPLES, "0";
+				for ($pos = 1; $pos <= 8; $pos++) {
+					$annot = $SAMPLES[$pos];
+					$rowLetter = $LETTERS[$pos];
+					if ($annot ne "empty" && $annot ne "null" && $annot ne "0" && $annot ne "") {
+						$pair = "$TN5SET_i5WELLS_seq{$i5_set}{$rowLetter},$TN5SET_i7WELLS_seq{$i7_set}{$pos}";
+						$ANNOT_Tn5_pairs{$annot}{$pair} = 1;
+					}
+				}
+			} elsif ($P[0] =~ /pcr/i) {
+				($i5_set,$i7_set) = split(//, $P[1]);
+				$l = <IN>; chomp $l;
+				@PCR_SET = split(/,/, $l);
+				for ($i = 0; $i < @PCR_SET; $i++) {
+					$ix4 = $PCRSET_i5WELLS_seq{$i5_set}{substr($PCR_SET[$i],0,1)};
+					$ix2 = $PCRSET_i7WELLS_seq{$i7_set}{substr($PCR_SET[$i],1)};
+					foreach $annot (keys %ANNOT_Tn5_pairs) {
+						foreach $pair (keys %{$ANNOT_Tn5_pairs{$annot}}) {
+							($ix3,$ix1) = split(/,/, $pair);
+							if (defined $opt{'O'}) {
+								print OUT "$ix1$ix2$ix3$ix4\t$annot\n";
+							} else {
+								print "$ix1$ix2$ix3$ix4\t$annot\n";
+							}
+						}
+					}
+				}
+			}
+		}
+	} close IN;
+if (defined $opt{'O'}) {close OUT};
+exit;
+}
+
+if (defined $opt{'D'}) { # dense plate descriptor format
 	open IN, "$opt{'D'}";
 	while ($l = <IN>) {
 		chomp $l;
@@ -259,8 +322,11 @@ if (defined $opt{'D'}) {
 			print STDERR "WARNING! A line was read that has no header associated with it! line: $l\n";
 		}
 	} close IN;
-	
-} elsif (defined $opt{'P'}) {
+	if (defined $opt{'O'}) {close OUT};
+	exit;
+}
+
+if (defined $opt{'P'}) { # plate descriptor, older version
 	%NEX_ID_i5_i7_pair = ();
 	%PCR_ID_i5_i7_pair = ();
 	open IN, "$opt{'P'}";
@@ -326,8 +392,11 @@ if (defined $opt{'D'}) {
 			print STDERR "\nWARNING: Transposase (Nex/Tn5) AND PCR specifications must both be included for each annotation!\nBoth were not found for $annot! - SKIPPING!\n";
 		}
 	}
-	
-} else {
+	if (defined $opt{'O'}) {close OUT};
+	exit;
+}
+
+if (!defined $opt{'U'} && !defined $opt{'D'} && !defined $opt{'P'}) { # Longform annots
 	foreach $annot_descriptor (@ARGV) {
 
 		@DESCRIPTORS = split(/\+/, $annot_descriptor);
@@ -420,9 +489,9 @@ if (defined $opt{'D'}) {
 			}
 		}
 	}
+	if (defined $opt{'O'}) {close OUT};
+	exit;
 }
-
-if (defined $opt{'O'}) {close OUT};
 
 }
 1;
