@@ -105,11 +105,13 @@ df <- data.frame(TSS)
 rownames(df) <- \"bulk_TSS_enrichment\"
 write.table(df,\"$opt{'O'}.bulkTSSenrich.log\",row.names=T,col.names=F,quote=F,sep=\"\t\",)
 
+mainstr=paste(\"Binned Hist of Reads from TSS\\nTSS = \",round(TSS,5),\" with a binsize of $bulk_binsize at bin \",names(TSSwhich),sep=\"\")
+
 png(\"$opt{'O'}.bulkTSSenrich.png\",800,600)
 par(mfrow=c(2,1))
 par(mar=c(5.1,4.1,4.1,2.1))
 plot(rangeR\$V1,rangeR\$V2,pch=16,cex=.5,xlab=\"Distance to TSS (bp)\",ylab=\"Count\",main=\"Plot of Reads from TSS\")
-hist(all,breaks=length(groups),xlab=\"Distance to TSS (bp)\",ylab=\"Count\",main=\"Binned Hist of Reads from TSS\")
+hist(all,breaks=length(groups),xlab=\"Distance to TSS (bp)\",ylab=\"Count\",main=mainstr)
 dev.off()
 ";
 
