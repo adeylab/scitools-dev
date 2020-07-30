@@ -7,9 +7,19 @@ use Exporter "import";
 
 sub fastq_dump_sci_stdchem {
 
+%REVCOMP = ("A" => "T", "C" => "G", "G" => "C", "T" => "A");
+sub revcomp {
+	@INSEQ = split(//, uc($_[0]));
+	$revcomp = "";
+	for ($pos = (@INSEQ-1); $pos >= 0; $pos--) {
+		$revcomp .= $REVCOMP{$INSEQ[$pos]};
+	}
+	return $revcomp;
+}
+
 @ARGV = @_;
 
-getopts("R:F:O:o:1:2:A:i:j:r:N", \%opt);
+getopts("R:F:O:o:1:2:A:i:j:r:NV", \%opt);
 
 # defaults
 $hd_s = 2;
@@ -36,6 +46,9 @@ Options:
                 (max 2, def = $hd_s)
    -d   [INT]   Hamming distance for sci index
                 (max 2, def = $hd_x)
+   -V 	[FLG] 	If flagged will use reverse compliment for index 2 (i5). 
+   				This is used for sequencing platforms NovaSeq 6000,
+				MiSeq, HiSeq 2500, or HiSeq 2000 System. (Default: no)
 
 Defaults:
    -F   [STR]   Fastq directory
@@ -198,6 +211,11 @@ while ($r1tag = <R1>) {
 	$i1seq = <I1>; chomp $i1seq; $i2seq = <I2>; chomp $i2seq;
 	$null = <I1>; $null = <I1>;
 	$null = <I2>; $null = <I2>;
+	
+	if (defined $opt{'V'}) {
+		$rev_i2seq = revcomp($i2seq);
+		$i2seq = $rev_i2seq;
+	}
 	
 	$ix1 = substr($i1seq,0,$POS_length{'1'});
 	$ix2 = substr($i2seq,0,$POS_length{'2'});
