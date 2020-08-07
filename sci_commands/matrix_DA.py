@@ -51,7 +51,7 @@ def main():
 
    # read sparse matrix into coo format
    A = np.loadtxt(args.input)
-   rownames = np.loadtxt(args.peaks,dtype=str)
+   rownames = np.loadtxt(args.peaks,dtype=object)
    colnames = np.loadtxt(args.cells,dtype=str)
    C = sparse.coo_matrix((A[:,2], (A[:,0]-1, A[:,1]-1)), shape=(int(max(A[:,0])), colnames.shape[0]))
    del A
