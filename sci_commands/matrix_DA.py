@@ -53,7 +53,7 @@ def main():
    A = np.loadtxt(args.input)
    rownames = np.loadtxt(args.peaks,dtype=str)
    colnames = np.loadtxt(args.cells,dtype=str)
-   C = sparse.coo_matrix((A[:,2], (A[:,0]-1, A[:,1]-1)), shape=(int(max(A[:,0])), int(max(A[:,1]))))
+   C = sparse.coo_matrix((A[:,2], (A[:,0]-1, A[:,1]-1)), shape=(int(max(A[:,0])), colnames.shape[0]))
    del A
 
    # reorder and potentially subset metadata by matrix colnames
