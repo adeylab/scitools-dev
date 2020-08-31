@@ -8,7 +8,7 @@ use Exporter "import";
 sub annot_compare {
 
 @ARGV = @_;
-getopts("O:S:", \%opt);
+getopts("O:S", \%opt);
 
 $die2 = "
 scitools annot-compare [options] [annot1] [annot2]
