@@ -7,6 +7,9 @@ sub annot_proportions {
 @ARGV = @_;
 getopts("O:", \%opt);
 $die2 = "
+
+DEPRECATED: Use annot-compare '-M' for the same result.
+
 scitools annot-proportions [options] [annot1] [annot2]
    or    proportions-annot
 Will produce a table of the number of cells present
@@ -24,6 +27,8 @@ if (!defined $opt{'O'}) {
 	$opt{'O'} = "$pfx1.$pfx2";
 }
 $opt{'O'} =~ s/\.txt$//; $opt{'O'} =~ s/\.compare$//;
+
+
 $out_header = "#"; @ANNOT1 = ();
 open IN, "$ARGV[0]";
 while ($l = <IN>) {
