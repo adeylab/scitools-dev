@@ -121,7 +121,8 @@ print R "
 library(ggplot2)
 IN<-read.table(header=T,\"$opt{'O'}.compare.txt\")
 PLT<-ggplot() + theme_bw() +
-	geom_col(aes(x=IN\$Annot1,y=IN\$Pct_A2_in_A1,fill=IN\$Annot2))
+	geom_col(aes(x=IN\$Annot1,y=IN\$Pct_A2_in_A1,fill=IN\$Annot2)) +
+	labs(fill=\"Annot 2\") + xlab(\"Annot 1\") + ylab(\"Percent Annot 2\")
 ggsave(plot=PLT,filename=\"$opt{'O'}.compare.png\")
 ggsave(plot=PLT,filename=\"$opt{'O'}.compare.pdf\")
 ";
