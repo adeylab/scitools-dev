@@ -116,6 +116,17 @@ foreach $annot1 (keys %ANNOT1_ANNOT2_ct) {
 
 # plotting?
 
+open R, ">$opt{'O'}.compare.plot.r";
+print R "
+library(ggplot2)
+IN<-read.table(header=T,\"$opt{'O'}.compare.txt\")
+PLT<-ggplot() + theme_bw() +
+	geom_col(aes(x=IN\$Annot1,y=IN\$Pct_A2_in_A1,fill=IN\$Annot2))
+ggsave(plot=PLT,filename=\"$opt{'O'}.compare.png\")
+ggsave(plot=PLT,filename=\"$opt{'O'}.compare.pdf\")
+";
+close R;
+system("Rscript $opt{'O'}.compare.plot.r && rm -f $opt{'O'}.compare.plot.r");
 
 } # end regular
 
