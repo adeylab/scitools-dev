@@ -8,7 +8,7 @@ use Exporter "import";
 sub annot_compare {
 
 @ARGV = @_;
-getopts("O:", \%opt);
+getopts("O:S:", \%opt);
 
 $die2 = "
 scitools annot-compare [options] [annot1] [annot2]
@@ -20,6 +20,7 @@ CellIDs must be the same (will take the intersect only)
 Options:
    -O   [STR]   Output prefix (def = annot1.annot2)
                 Adds .compare.txt suffix
+   -S           Only print proportions of Annot2 within Annot1 (instead of all)
 
 ";
 
@@ -48,7 +49,9 @@ while ($l = <IN>) {
 		$annot1 = $CELLID_annot1{$cellID};
 		$cell_match_ct++;
 		$ANNOT1_ANNOT2_ct{$annot1}{$annot2}++;
-		$ANNOT1_ANNOT2_ct{$annot2}{$annot1}++;
+		if (!defined $opt{'S'}) {
+			$ANNOT1_ANNOT2_ct{$annot2}{$annot1}++;
+		}
 	}
 } close IN;
 
