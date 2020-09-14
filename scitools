@@ -127,6 +127,7 @@ if (defined $ARGV[0]) {
 			if ($COMMAND_NAMES{$command} =~ /pm/) {
 				require "sci_commands/$command.pm";
 				import "sci_commands::$command", "$command";
+				if ($command eq "defaults") {push @ARGV, $SCITOOLS_DEFAULTS};
 				\&$command(@ARGV);
 			} elsif ($COMMAND_NAMES{$command} =~ /py/) {
 				$args = join(" ", @ARGV);
