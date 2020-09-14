@@ -8,7 +8,7 @@ use Exporter "import";
 sub annot_make {
 
 @ARGV = @_;
-getopts("O:I:P:phD:dxuU:", \%opt);
+getopts("O:I:P:phD:dxuU:C:", \%opt);
 
 # DEFAULTS
 @LETTERS = ("0", "A", "B", "C", "D", "E", "F", "G", "H");
@@ -32,6 +32,13 @@ Options:
    -U   [STR]   Unique Dual Index Tn5 (UDI-Tn5) setup
    -u           Print example UDI-Tn5 sample sheet file
                 (Example_UDI_Tn5_Sample_Sheet.csv)
+
+   -C   [STR]   iCell8 PCR index file or set ID - specifies iCell8 PCR
+                Only compatible with -D (dense) plate descriptors
+                When specifying PCR index set, state the sample well
+                (e.g. #PCR,A1 would specify all barcodes that go to the
+                PCR nanowells that were sourced from sample well A1)
+
    -h           More detailed description of plate / combo specification
 
 ";

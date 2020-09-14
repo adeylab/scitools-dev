@@ -13,6 +13,7 @@ print "
 scitools defaults (or check-defaults, defaults-check)
 Run at $ts
 Scitools location: $RealBin
+Config file: $SCITOOLS_DEFAULTS
 
 Default command executable calls:
    gzip:        $gzip
