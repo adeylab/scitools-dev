@@ -33,6 +33,11 @@ foreach $refID (sort keys %REF) {
 	print "   $refID = $REF{$refID}\n";
 }
 print "
+iCell8 index sets:\n";
+foreach $set (sort keys %ICELL8) {
+	print "   $set = $ICELL8{$set}\n";
+}
+print "
 Other defaults:\n";
 foreach $var (sort keys %VAR) {
 	print "   $var = $VAR{$var}\n";
