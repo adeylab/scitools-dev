@@ -102,6 +102,8 @@ print OUT "#INFO, This is the dense format for 'sci' plate descriptions.
 #INFO, 'all' for all wells of the plate, in which case no further lines are
 #INFO, needed in the section, OR 'partial' and then 8 more rows with 12
 #INFO, columns each, with a '0' for empty wells and '1' for used wells.
+#INFO, For NEX plates if a plate is only one sample, it can be listed as:
+#INFO, #NEX,[i5i7 for set],all,sampleID
 #INFO,
 #NEX,AA
 sample1,sample2,sample3,sample4,sample1,sample2,sample3,sample4
@@ -292,19 +294,33 @@ if (defined $opt{'D'}) { # dense plate descriptor format
 					$PCR_read = 0;
 				} 
 				($i5_set,$i7_set) = split(//, $P[1]);
-				for ($rowNum = 1; $rowNum <= 8; $rowNum++) {
-					$row = <IN>; chomp $row; $rowLetter = $LETTERS[$rowNum];
-					@ROW_COLS = split(/,/, $row); unshift @ROW_COLS, "0";
-					for ($colNum = 1; $colNum <= 12; $colNum++) {
-						$annot = $ROW_COLS[$colNum];
-						if ($annot ne "empty" && $annot ne "null" && $annot ne "0" && $annot ne "") {
+				if ($P[2] =~ /all/i) {
+					$annot = $P[3];
+					for ($rowNum = 1; $rowNum <= 8; $rowNum++) {
+						$rowLetter = $LETTERS[$rowNum];
+						for ($colNum = 1; $colNum <= 12; $colNum++) {
 							$pair = "$TN5SET_i5WELLS_seq{$i5_set}{$rowLetter},$TN5SET_i7WELLS_seq{$i7_set}{$colNum}";
 							$ANNOT_Tn5_pairs{$annot}{$pair} = 1;
 							if (defined $opt{'x'}) {
 								print STDERR "DEBUG: Row: $rowLetter, Col: $colNum, included as annot $annot\n";
 							}
-						} elsif (defined $opt{'x'}) {
-							print STDERR "DEBUG: Row: $rowLetter, Col: $colNum, EXCLUDED ($annot)\n";
+						}
+					}
+				} else {
+					for ($rowNum = 1; $rowNum <= 8; $rowNum++) {
+						$row = <IN>; chomp $row; $rowLetter = $LETTERS[$rowNum];
+						@ROW_COLS = split(/,/, $row); unshift @ROW_COLS, "0";
+						for ($colNum = 1; $colNum <= 12; $colNum++) {
+							$annot = $ROW_COLS[$colNum];
+							if ($annot ne "empty" && $annot ne "null" && $annot ne "0" && $annot ne "") {
+								$pair = "$TN5SET_i5WELLS_seq{$i5_set}{$rowLetter},$TN5SET_i7WELLS_seq{$i7_set}{$colNum}";
+								$ANNOT_Tn5_pairs{$annot}{$pair} = 1;
+								if (defined $opt{'x'}) {
+									print STDERR "DEBUG: Row: $rowLetter, Col: $colNum, included as annot $annot\n";
+								}
+							} elsif (defined $opt{'x'}) {
+								print STDERR "DEBUG: Row: $rowLetter, Col: $colNum, EXCLUDED ($annot)\n";
+							}
 						}
 					}
 				}
