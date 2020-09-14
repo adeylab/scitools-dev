@@ -8,7 +8,7 @@ use Exporter "import";
 	"load_defaults",
 		qw($color_mapping),qw($ref_shortcuts),qw(@BASES),qw(%REF),qw(%VAR),qw($gzip),qw($zcat),
 		qw($bwa),qw($samtools),qw($scitools),qw($macs2),qw($bedtools),qw($Rscript),qw($Pscript),
-		qw($bismark),qw($bowtie2),qw($log_check),qw(%LOG_DIR),qw($snap_aligner),
+		qw($bismark),qw($bowtie2),qw($log_check),qw(%LOG_DIR),qw($snap_aligner),qw(%ICELL8),
 	"read_annot",
 		qw(%CELLID_annot),qw(%ANNOT_count),qw($annot_count),qw(@ANNOT_FILES),
 	"read_complexity",
@@ -50,7 +50,7 @@ sub load_defaults {
 	$ref_shortcuts = "";
 	$log_check = "F";
 	@BASES = ("A", "C", "G", "T", "N");
-	%REF; %VAR; %LOG_DIR;
+	%REF; %VAR; %LOG_DIR; %ICELL8;
 	if (-e "$_[0]") {
 		open DEF, "$_[0]";
 		while ($def = <DEF>) {
@@ -65,7 +65,10 @@ sub load_defaults {
 					$log_check = "T";
 					($projectID,$path) = split(/,/, $val);
 					$LOG_DIR{$path} = $projectID;
-				} else {
+				} elsif ($var =~ /^ICELL8/) {
+					($null,$set_name) = split(/_/, $var);
+					$ICELL8{$set_name} = $val;
+				} else { # software calls
 					if ($var eq "gzip") {$gzip = $val}
 					elsif ($var eq "zcat") {$zcat = $val}
 					elsif ($var eq "bwa") {$bwa = $val}

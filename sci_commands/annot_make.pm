@@ -14,6 +14,11 @@ getopts("O:I:P:phD:dxuU:C:", \%opt);
 @LETTERS = ("0", "A", "B", "C", "D", "E", "F", "G", "H");
 %LETTER_NUM = ("A"=>"1", "B"=>"2", "C"=>"3", "D"=>"4", "E"=>"5", "F"=>"6", "G"=>"7", "H"=>"8");
 
+$icell8_sets = "";
+foreach $set (keys %ICELL8) {
+	$icell8_sets .= "$set,";
+} $icell8_sets =~ s/,$//;
+
 $die2 = "
 scitools annot-make [options] [annotation_description_1] [annotaiton_description_2] ...
    or    make-annot
@@ -35,9 +40,11 @@ Options:
 
    -C   [STR]   iCell8 PCR index file or set ID - specifies iCell8 PCR
                 Only compatible with -D (dense) plate descriptors
-                When specifying PCR index set, state the sample well
+                When specifying PCR index set, state the sample well(s)
                 (e.g. #PCR,A1 would specify all barcodes that go to the
                 PCR nanowells that were sourced from sample well A1)
+                Multiple sample wells can be specified separated by commas
+                Loaded set IDs from defaults: $icell8_sets
 
    -h           More detailed description of plate / combo specification
 
@@ -259,12 +266,31 @@ exit;
 }
 
 if (defined $opt{'D'}) { # dense plate descriptor format
+	if (defined $opt{'C'}) {
+		if (defined $ICELL8{$opt{'C'}}) {
+			print STDERR "iCell8 index set detected: $ICELL8{$opt{'C'}}\n";
+			open ICELL8, "$ICELL8{$opt{'C'}}";
+		} elsif (-e "$opt{'C'}") {
+			print STDERR "Assuming $opt{'C'} is an iCell8 index file.\n";
+			open ICELL8, "$opt{'C'}";
+		}
+		while ($l = <ICELL8>) {
+			chomp $l;
+			($wellID,$sampleWell,$indexPos,$indexSeq) = split(/\t/, $l);
+			push @{$ICELL8_IndexPos_SampleWell_seq{$indexPos}{$sampleWell}}, $indexSeq;
+		}
+	}
 	open IN, "$opt{'D'}";
+	$PCR_read = 0;
 	while ($l = <IN>) {
 		chomp $l;
 		if ($l =~ /^#/) {
 			@P = split(/,/, $l);		
-			if ($P[0] =~ /(Tn5|Nex)/i) {
+			if ($P[0] =~ /(Tn5|Nex)/i) { # reset ANNOT mappings for the next set
+				if ($PCR_read > 0) {
+					%ANNOT_Tn5_pairs = ();
+					$PCR_read = 0;
+				} 
 				($i5_set,$i7_set) = split(//, $P[1]);
 				for ($rowNum = 1; $rowNum <= 8; $rowNum++) {
 					$row = <IN>; chomp $row; $rowLetter = $LETTERS[$rowNum];
@@ -283,36 +309,60 @@ if (defined $opt{'D'}) { # dense plate descriptor format
 					}
 				}
 			} elsif ($P[0] =~ /pcr/i) {
-				($i5_set,$i7_set) = split(//, $P[1]);
-				if ($P[2] =~ /^a/i) { # all PCR wells
-					for ($rowNum = 1; $rowNum <= 8; $rowNum++) {
-						$rowLetter = $LETTERS[$rowNum];
-						for ($colNum = 1; $colNum <= 12; $colNum++) {
-							$ix4 = $PCRSET_i5WELLS_seq{$i5_set}{$rowLetter};
-							$ix2 = $PCRSET_i7WELLS_seq{$i7_set}{$colNum};
-							foreach $annot (keys %ANNOT_Tn5_pairs) {
-								foreach $pair (keys %{$ANNOT_Tn5_pairs{$annot}}) {
-									($ix3,$ix1) = split(/,/, $pair);
-									if (defined $opt{'O'}) {
-										print OUT "$ix1$ix2$ix3$ix4\t$annot\n";
-									} else {
-										print "$ix1$ix2$ix3$ix4\t$annot\n";
-									}
-								}
-							}
-						}
-					}
-				} else { # partial PCR wells
-					for ($rowNum = 1; $rowNum <= 8; $rowNum++) {
-						$row = <IN>; chomp $row; $rowLetter = $LETTERS[$rowNum];
-						@ROW_COLS = split(/,/, $row); unshift @ROW_COLS, "0";
-						for ($colNum = 1; $colNum <= 12; $colNum++) {
-							if ($ROW_COLS[$colNum]>0) {
+				$PCR_read = 1;
+				if (!defined $opt{'C'}) {
+					($i5_set,$i7_set) = split(//, $P[1]);
+					if ($P[2] =~ /^a/i) { # all PCR wells
+						for ($rowNum = 1; $rowNum <= 8; $rowNum++) {
+							$rowLetter = $LETTERS[$rowNum];
+							for ($colNum = 1; $colNum <= 12; $colNum++) {
 								$ix4 = $PCRSET_i5WELLS_seq{$i5_set}{$rowLetter};
 								$ix2 = $PCRSET_i7WELLS_seq{$i7_set}{$colNum};
 								foreach $annot (keys %ANNOT_Tn5_pairs) {
 									foreach $pair (keys %{$ANNOT_Tn5_pairs{$annot}}) {
 										($ix3,$ix1) = split(/,/, $pair);
+										if (defined $opt{'O'}) {
+											print OUT "$ix1$ix2$ix3$ix4\t$annot\n";
+										} else {
+											print "$ix1$ix2$ix3$ix4\t$annot\n";
+										}
+									}
+								}
+							}
+						}
+					} else { # partial PCR wells
+						for ($rowNum = 1; $rowNum <= 8; $rowNum++) {
+							$row = <IN>; chomp $row; $rowLetter = $LETTERS[$rowNum];
+							@ROW_COLS = split(/,/, $row); unshift @ROW_COLS, "0";
+							for ($colNum = 1; $colNum <= 12; $colNum++) {
+								if ($ROW_COLS[$colNum]>0) {
+									$ix4 = $PCRSET_i5WELLS_seq{$i5_set}{$rowLetter};
+									$ix2 = $PCRSET_i7WELLS_seq{$i7_set}{$colNum};
+									foreach $annot (keys %ANNOT_Tn5_pairs) {
+										foreach $pair (keys %{$ANNOT_Tn5_pairs{$annot}}) {
+											($ix3,$ix1) = split(/,/, $pair);
+											if (defined $opt{'O'}) {
+												print OUT "$ix1$ix2$ix3$ix4\t$annot\n";
+											} else {
+												print "$ix1$ix2$ix3$ix4\t$annot\n";
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				} else { # iCell8 indexes
+					for ($SWell = 1; $SWell < @P; $SWell++) {
+						$sampleWell = $P[$SWell];
+						foreach $annot (keys %ANNOT_Tn5_pairs) {
+							foreach $pair (keys %{$ANNOT_Tn5_pairs{$annot}}) {
+								($ix3,$ix1) = split(/,/, $pair);
+								if (!defined $ICELL8_IndexPos_SampleWell_seq{'2'}{$sampleWell}[0]) {
+									die "ERROR: Cannot find a sample well matching $sampleWell!\n";
+								}
+								foreach $ix2 (@{$ICELL8_IndexPos_SampleWell_seq{'2'}{$sampleWell}}) {
+									foreach $ix4 (@{$ICELL8_IndexPos_SampleWell_seq{'4'}{$sampleWell}}) {
 										if (defined $opt{'O'}) {
 											print OUT "$ix1$ix2$ix3$ix4\t$annot\n";
 										} else {
