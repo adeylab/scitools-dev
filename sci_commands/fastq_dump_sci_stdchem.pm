@@ -322,9 +322,9 @@ while ($r1tag = <R1>) {
 		$totalCT++;
 		
 		if (defined $opt{'r'}) {
-			$r1out = "\@$barc:$totalCT.$opt{'r'}#0/1\n$r1seq\n\+\n$r1qual";
+			$r1out = "\@$barc:UMI=$umi.$totalCT.$opt{'r'}#0/1\n$r1seq\n\+\n$r1qual";
 		} else {
-			$r1out = "\@$barc:$totalCT#0/1\n$r1seq\n\+\n$r1qual";;
+			$r1out = "\@$barc:UMI=$umi.$totalCT#0/1\n$r1seq\n\+\n$r1qual";
 		}
 		
 		print RNAOUT "$r1out\n";
