@@ -19,7 +19,7 @@ sub revcomp {
 
 @ARGV = @_;
 
-getopts("R:F:O:o:1:2:A:i:j:r:NVI:Cc:U:v", \%opt);
+getopts("R:F:O:o:1:2:A:i:j:r:NVI:Cc:U:vX", \%opt);
 
 # defaults
 $hd_s = 2;
@@ -60,6 +60,7 @@ Options:
                 MiSeq, HiSeq 2500, or HiSeq 2000 System. (Default: no)
    -v           If flagged will take reverse compliment for the
                 coassay RNA index (def = no)
+   -X           Debug
 
 Defaults:
    -F   [STR]   Fastq directory
@@ -71,7 +72,7 @@ Defaults:
 
 Specify Index Sets:
    -I   [STR]   Sci index file (def = $VAR{'SCI_stdchem_index_file'})
-   -c   [STR]   RNA index file for coassay (def = $VAR{'RNA_Indexes'}
+   -c   [STR]   RNA index file for coassay (def = $VAR{'RNA_Indexes'})
 
 To specify specific fastq files instead of defaults:
    (can be comma sep for multiple)
@@ -272,6 +273,9 @@ while ($r1tag = <R1>) {
 		if (defined $opt{'v'}) {
 			$rev_ixR = revcomp($ixR);
 			$ixR = $rev_ixR;
+		}
+		if (defined $opt{'X'}) {
+			print STDERR "DEBUG: -C flag, Read 2 = $r2seq\nDEBUG:    UMI = $umi\nDEBUG:    ixR = $ixR\n";
 		}
 	}
 	
