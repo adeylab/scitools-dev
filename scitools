@@ -228,6 +228,9 @@ sub load_aliases {
 	foreach $alias ("matrix_sparse", "make_sparse", "sparse") {$COMMAND_ALIAS{$alias} = "matrix_sparse"};
 	foreach $alias ("matrix_unsparse", "make_unsparse", "unsparse") {$COMMAND_ALIAS{$alias} = "matrix_unsparse"};
 	
+	# Values
+	foreach $alias ("values_split", "split_values", "split_vals", "vals_split") {$COMMAND_ALIAS{$alias} = "values_split"};
+	
 	# Dimensions Commands
 	foreach $alias ("dims_kmeans", "kmeans") {$COMMAND_ALIAS{$alias} = "dims_kmeans"};
 	foreach $alias ("dims_dbscan", "dbscan") {$COMMAND_ALIAS{$alias} = "dims_dbscan"};
@@ -372,5 +375,6 @@ sub load_descriptions {
 	$COMMAND_DESCRIPTOR{"da_enrichment"} = "Analyze Diff Accessible Peaks with HOMER and LOLA";
 	$COMMAND_DESCRIPTOR{"atac_genehancer"} = "Overlap peaks bed file with Genehancer database";
 	$COMMAND_DESCRIPTOR{"atac_refcount"} = "Generate Counts Matrix with bbrd bam and reference bed file";
+	$COMMAND_DESCRIPTOR{"values_split"} = "Split a values file or other tab delimited file by annotation";
 
 }
