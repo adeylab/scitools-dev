@@ -7,7 +7,7 @@ use Exporter "import";
 
 sub fastq_dump_sci_stdchem {
 
-%REVCOMP = ("A" => "T", "C" => "G", "G" => "C", "T" => "A");
+%REVCOMP = ("A" => "T", "C" => "G", "G" => "C", "T" => "A", "N" => "N");
 sub revcomp {
 	@INSEQ = split(//, uc($_[0]));
 	$revcomp = "";
@@ -275,7 +275,7 @@ while ($r1tag = <R1>) {
 			$ixR = $rev_ixR;
 		}
 		if (defined $opt{'X'}) {
-			print STDERR "DEBUG: -C flag, Read 2 = $r2seq\nDEBUG:    UMI = $umi\nDEBUG:    ixR = $ixR\n";
+			print STDERR "DEBUG: -C flag, umi length = $opt{'U'}, ixR length = $POS_length{'R'}\nDEBUG:    Read 2 = $r2seq\nDEBUG:    UMI = $umi\nDEBUG:    ixR = $ixR\n";
 		}
 	}
 	
