@@ -87,7 +87,7 @@ if (!defined $opt{'F'}) {$opt{'F'} = $VAR{'fastq_input_directory'}};
 if (!defined $opt{'O'}) {$opt{'O'} = $VAR{'SCI_fastq_directory'}};
 if (!defined $opt{'o'}) {$opt{'o'} = $opt{'R'}};
 if (!defined $opt{'I'}) {$opt{'I'} = $VAR{'SCI_stdchem_index_file'}};
-if (!defined $opt{'c'}) {$opt{'c'} = $VAR{'RNA_Indexes'};
+if (!defined $opt{'c'}) {$opt{'c'} = $VAR{'RNA_Indexes'}};
 if (defined $opt{'N'} && defined $opt{'C'}) {
 	die "ERROR: Coassay demultiplexing (-C) is not compatible with non combinatorial indexing splitting (-N)\n";
 }
@@ -339,6 +339,8 @@ while ($r1tag = <R1>) {
 
 }
 
+# ADD IN RNA FILE CLOSING
+
 close R1; close R2; close I1; close I2;
 
 if (defined $opt{'A'}) {
@@ -352,4 +354,5 @@ if (defined $opt{'A'}) {
 
 close R1FAIL; close R2FAIL;
 }
+
 1;
