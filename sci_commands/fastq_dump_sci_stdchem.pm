@@ -19,36 +19,47 @@ sub revcomp {
 
 @ARGV = @_;
 
-getopts("R:F:O:o:1:2:A:i:j:r:NV", \%opt);
+getopts("R:F:O:o:1:2:A:i:j:r:NVI:Cc:U:v", \%opt);
 
 # defaults
 $hd_s = 2;
 $hd_x = 1;
+$umi_len = 6;
 
 $die2 = "
 scitools fastq-dump-sci-stdchem [options]
    or    dump-fastq-sci-stdchem
+   or    fastq-dump-std
+   or    fastq-std
 
-Takes sequencer fastq files (from bcl2fastq) and will format
-them into fastq files with matched barcodes.
+Takes sequencer fastq files (from bcl2fastq) and will format them into
+fastq files with matched barcodes.
 
-NOTE: This is an alternative fastq dump mode for standard chemistry sci libraries wherein the sci index is included in R2 rather than the multi index layout.
-This works for the current version of sciWGS and sciMET/NOME
+NOTE: This is an alternative fastq dump mode for standard chemistry sci
+libraries wherein the sci index is included in R2 rather than the multi
+index layout. This works for the current version of sciWGS and sciMET/NOME
+and s3 s4 chemistries.
 
 Options:
    -R   [STR]   Run name (preferred mode)
    -r   [STR]   Run ID (if additional sequencing for some
                 libraries. Will add .[ID] to end of read
                 names; optional)
-   -A   [STR]   Annotation file (will split fastqs)
-   -N           Run is not combinatorial indexing. (def = run is treated as combinatorial indexing)
+   -A   [STR]   Annotation file (will split fastqs)                           # NOTE: RNA component for coassay will not split out properly yet - in development!
+   -N           Run is not combinatorial indexing.
+                (def = run is treated as combinatorial indexing)
    -D   [INT]   Hamming distance for sample & sci indexes
                 (max 2, def = $hd_s)
    -d   [INT]   Hamming distance for sci index
                 (max 2, def = $hd_x)
-   -V 	[FLG] 	If flagged will use reverse compliment for index 2 (i5). 
-   				This is used for sequencing platforms NovaSeq 6000,
-				MiSeq, HiSeq 2500, or HiSeq 2000 System. (Default: no)
+   -C           Coassay - also look for RNA reads (read 2 index)
+                Also uses -D as hamming distance
+   -U   [INT]   UMI length (preceeds RNA index on Read 2, def = $umi_len)
+   -V 	        If flagged will use reverse compliment for index 2 (i5). 
+                This is used for sequencing platforms NovaSeq 6000,
+                MiSeq, HiSeq 2500, or HiSeq 2000 System. (Default: no)
+   -v           If flagged will take reverse compliment for the
+                coassay RNA index (def = no)
 
 Defaults:
    -F   [STR]   Fastq directory
@@ -58,6 +69,9 @@ Defaults:
    -o   [STR]   Output prefix
          (def = run name)
 
+Specify Index Sets:
+   -I   [STR]   Sci index file (def = $VAR{'SCI_stdchem_index_file'})
+   -c   [STR]   RNA index file for coassay (def = $VAR{'RNA_Indexes'}
 
 To specify specific fastq files instead of defaults:
    (can be comma sep for multiple)
@@ -73,7 +87,11 @@ if (!defined $opt{'F'}) {$opt{'F'} = $VAR{'fastq_input_directory'}};
 if (!defined $opt{'O'}) {$opt{'O'} = $VAR{'SCI_fastq_directory'}};
 if (!defined $opt{'o'}) {$opt{'o'} = $opt{'R'}};
 if (!defined $opt{'I'}) {$opt{'I'} = $VAR{'SCI_stdchem_index_file'}};
-
+if (!defined $opt{'c'}) {$opt{'c'} = $VAR{'RNA_Indexes'};
+if (defined $opt{'N'} && defined $opt{'C'}) {
+	die "ERROR: Coassay demultiplexing (-C) is not compatible with non combinatorial indexing splitting (-N)\n";
+}
+if (!defined $opt{'U'}) {$opt{'U'} = $umi_len};
 
 open IN, "$opt{'I'}";
 while ($l = <IN>) {
@@ -83,6 +101,17 @@ while ($l = <IN>) {
 	$POS_length{$pos} = length($seq);
 } close IN;
 if (defined $opt{'N'}) {$POS_SEQ_seq{'3'}{'null'} = ""};
+
+if (defined $opt{'C'}) { # also look for RNA component
+	open IN, "$opt{'c'}";
+	while ($l = <IN>) {
+		chomp $l;
+		($id,$pos,$seq) = split(/\t/, $l);
+		$pos = "R";
+		$POS_SEQ_seq{$pos}{$seq} = $seq;
+		$POS_length{$pos} = length($seq);
+	} close IN;
+}
 
 # make all-1-away hash
 foreach $pos (keys %POS_SEQ_seq) {
@@ -149,7 +178,6 @@ foreach $pos (keys %POS_SEQ_seq) {
 	}
 }
 
-
 if (!defined $opt{'1'}) {
 	if (-e "$opt{'F'}/$opt{'R'}/Undetermined_S0_L001_R1_001.fastq.gz") {
 		$r1 = "$opt{'F'}/$opt{'R'}/Undetermined_S0_L001_R1_001.fastq.gz $opt{'F'}/$opt{'R'}/Undetermined_S0_L002_R1_001.fastq.gz $opt{'F'}/$opt{'R'}/Undetermined_S0_L003_R1_001.fastq.gz $opt{'F'}/$opt{'R'}/Undetermined_S0_L004_R1_001.fastq.gz";
@@ -180,6 +208,11 @@ if (defined $opt{'A'}) {
 		$out2_handle = "$annot.2";
 		open $out2_handle, "| $gzip > $opt{'O'}/$opt{'o'}/$opt{'o'}.$annot.2.fq.gz";
 		$HANDLE2{$annot} = $out2_handle;
+		if (defined $opt{'C'}) { # open read 1 only for RNA
+			$outR_handle = "$annot.R";
+			open $outR_handle, "| $gzip > $opt{'O'}/$opt{'o'}/$opt{'o'}.$annot.RNA.fq.gz";
+			$HANDLER{$annot} = $outR_handle;
+		}
 	}
 	open O1, "| $gzip > $opt{'O'}/$opt{'o'}/$opt{'o'}.unassigned.1.fq.gz";
 	open O2, "| $gzip > $opt{'O'}/$opt{'o'}/$opt{'o'}.unassigned.2.fq.gz";
@@ -187,10 +220,15 @@ if (defined $opt{'A'}) {
 } else {
 	open R1OUT, "| $gzip > $opt{'O'}/$opt{'o'}/$opt{'o'}.1.fq.gz";
 	open R2OUT, "| $gzip > $opt{'O'}/$opt{'o'}/$opt{'o'}.2.fq.gz";
+	if (defined $opt{'C'}) { # open read 1 only for RNA
+		open RNAOUT, "| $gzip > $opt{'O'}/$opt{'o'}/$opt{'o'}.RNA.fq.gz";
+	}
 }
 
 open R1FAIL, "| $gzip > $opt{'O'}/$opt{'o'}/$opt{'o'}.fail.1.fq.gz";
 open R2FAIL, "| $gzip > $opt{'O'}/$opt{'o'}/$opt{'o'}.fail.2.fq.gz";
+open I1FAIL, "| $gzip > $opt{'O'}/$opt{'o'}/$opt{'o'}.fail.I1.fq.gz";
+open I2FAIL, "| $gzip > $opt{'O'}/$opt{'o'}/$opt{'o'}.fail.I2.fq.gz";
 
 $totalCT = 0; $failCT = 0;
 
@@ -209,8 +247,8 @@ while ($r1tag = <R1>) {
 	
 	$i1tag = <I1>; chomp $i1tag; $i2tag = <I2>; chomp $i2tag;
 	$i1seq = <I1>; chomp $i1seq; $i2seq = <I2>; chomp $i2seq;
-	$null = <I1>; $null = <I1>;
-	$null = <I2>; $null = <I2>;
+	$null = <I1>; $null = <I2>;
+	$i1qual = <I1>; $i2qual = <I2>; chomp $i1qual; chomp $i2qual;
 	
 	if (defined $opt{'V'}) {
 		$rev_i2seq = revcomp($i2seq);
@@ -227,7 +265,14 @@ while ($r1tag = <R1>) {
 	} else {
 		$ix3 = "null";
 		$r2dna = $r2seq;
-		
+	}
+	if (defined $opt{'C'}) { # Pull RNA index and UMI
+		$umi = substr($r2seq,0,$opt{'U'});
+		$ixR = substr($r2seq,$opt{'U'},$POS_length{'R'});
+		if (defined $opt{'v'}) {
+			$rev_ixR = revcomp($ixR);
+			$ixR = $rev_ixR;
+		}
 	}
 	
 	if (defined $POS_SEQ_seq{'1'}{$ix1} &&
@@ -263,20 +308,35 @@ while ($r1tag = <R1>) {
 			}
 		}
 		
-	} else {
-	
-		$barc = $ix1.$ix2.$ix3;
+	} elsif (defined $opt{'C'} &&             # RNA coassay check
+		defined $POS_SEQ_seq{'1'}{$ix1} &&
+		defined $POS_SEQ_seq{'2'}{$ix2} &&
+		defined $POS_SEQ_seq{'R'}{$ixR}) {
+		
+		$barc = $POS_SEQ_seq{'1'}{$ix1}.$POS_SEQ_seq{'2'}{$ix2}.$POS_SEQ_seq{'R'}{$ixR};
+		
+		$totalCT++;
 		
 		if (defined $opt{'r'}) {
-			print R1FAIL "\@$barc:F_$failCT.$opt{'r'}#0/1\n$r1seq\n\+\n$r1qual\n";
-			print R2FAIL "\@$barc:F_$failCT.$opt{'r'}#0/1\n$r2dna\n\+\n$r2qual\n";
+			$r1out = "\@$barc:$totalCT.$opt{'r'}#0/1\n$r1seq\n\+\n$r1qual";
 		} else {
-			print R1FAIL "\@$barc:F_$failCT#0/1\n$r1seq\n\+\n$r1qual\n";
-			print R2FAIL "\@$barc:F_$failCT#0/1\n$r2dna\n\+\n$r2qual\n";
+			$r1out = "\@$barc:$totalCT#0/1\n$r1seq\n\+\n$r1qual";;
 		}
+		
+		print RNAOUT "$r1out\n";
+		
+		# ADD IN ANNOT SUPPORT HERE!
+		
+	} else { # flag as failed
+		$r1tag =~ s/\#.+$//;
+		print R1FAIL "$r1tag#0/1\n$r1seq\n\+\n$r1qual\n";
+		print R2FAIL "$r1tag#0/4\n$r2seq\n\+\n$r2qual\n";
+		print I1FAIL "$r1tag#0/2\n$i1seq\n\+\n$i1qual\n";
+		print I2FAIL "$r1tag#0/3\n$i2seq\n\+\n$i2qual\n";
 		
 		$failCT++;
 	}
+
 }
 
 close R1; close R2; close I1; close I2;

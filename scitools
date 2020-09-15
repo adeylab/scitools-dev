@@ -164,7 +164,8 @@ sub load_aliases {
 	# Fastq Commands
 	foreach $alias ("fastq_dump", "dump_fastq") {$COMMAND_ALIAS{$alias} = "fastq_dump"};
 	foreach $alias ("fastq_dump_10x", "dump_fastq_10x", "10x_fastq_dump", "10x_dump_fastq") {$COMMAND_ALIAS{$alias} = "fastq_dump_10x"};
-	foreach $alias ("fastq_dump_sci_stdchem", "dump_fastq_sci_stdchem", "sci_stdchem_fastq_dump", "sci_stdchem_dump_fastq") {$COMMAND_ALIAS{$alias} = "fastq_dump_sci_stdchem"};
+	foreach $alias ("fastq_dump_sci_stdchem", "dump_fastq_sci_stdchem", "sci_stdchem_fastq_dump", "sci_stdchem_dump_fastq",
+	                "fastq_std", "fastq_dump_std") {$COMMAND_ALIAS{$alias} = "fastq_dump_sci_stdchem"};
 	foreach $alias ("fastq_split", "split_fastq") {$COMMAND_ALIAS{$alias} = "fastq_split"};
 	foreach $alias ("fastq_merge", "merge_fastq") {$COMMAND_ALIAS{$alias} = "fastq_merge"};
 	foreach $alias ("fastq_align", "align_fastq", "align") {$COMMAND_ALIAS{$alias} = "fastq_align"};
