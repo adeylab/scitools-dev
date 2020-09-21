@@ -185,7 +185,10 @@ sample1,sample2,sample3,sample4,sample5,sample6,sample7,sample8
 #Nex,BB
 sample9,sample10,sample11,empty,empty,empty,empty,empty
 #PCR,CD
-A1,A2\n";
+A1,A2
+#NEX,AA
+#INFO: info for next set of samples here, will reset the
+# NEXT index->sample mapping for the set of PCR indexes\n";
 close OUT;
 exit;
 }
@@ -226,11 +229,16 @@ if (defined $opt{'O'}) {open OUT, ">$opt{'O'}"};
 
 if (defined $opt{'U'}) { # Tn5-UDI format
 	open IN, "$opt{'U'}";
+	$pcr_read = 0;
 	while ($l = <IN>) {
 		chomp $l;
 		if ($l =~ /^#/) {
 			@P = split(/,/, $l);		
 			if ($P[0] =~ /(Tn5|Nex)/i) {
+				if ($pcr_read > 0) {
+					@SAMPLES = ();
+					$pcr_read = 0;
+				}
 				($i5_set,$i7_set) = split(//, $P[1]);
 				$l = <IN>; chomp $l;
 				@SAMPLES = split(/,/, $l); unshift @SAMPLES, "0";
@@ -243,6 +251,7 @@ if (defined $opt{'U'}) { # Tn5-UDI format
 					}
 				}
 			} elsif ($P[0] =~ /pcr/i) {
+				$pcr_read = 1;
 				($i5_set,$i7_set) = split(//, $P[1]);
 				$l = <IN>; chomp $l;
 				@PCR_SET = split(/,/, $l);
