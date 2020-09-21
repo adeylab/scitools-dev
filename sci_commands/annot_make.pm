@@ -236,8 +236,8 @@ if (defined $opt{'U'}) { # Tn5-UDI format
 			@P = split(/,/, $l);		
 			if ($P[0] =~ /(Tn5|Nex)/i) {
 				if ($pcr_read > 0) {
-					@SAMPLES = ();
 					$pcr_read = 0;
+					%ANNOT_Tn5_pairs = ();
 				}
 				($i5_set,$i7_set) = split(//, $P[1]);
 				$l = <IN>; chomp $l;
