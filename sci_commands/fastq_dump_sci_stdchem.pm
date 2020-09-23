@@ -19,7 +19,7 @@ sub revcomp {
 
 @ARGV = @_;
 
-getopts("R:F:O:o:1:2:A:i:j:r:NVI:Cc:U:vX", \%opt);
+getopts("R:F:O:o:1:2:A:i:j:r:NVI:Cc:U:vXs", \%opt);
 
 # defaults
 $hd_s = 2;
@@ -54,6 +54,7 @@ Options:
                 (max 2, def = $hd_x)
    -C           Coassay - also look for RNA reads (read 2 index)
                 Also uses -D as hamming distance
+   -s           Single-channel RNA (ie just do RNA split, forces -C)
    -U   [INT]   UMI length (preceeds RNA index on Read 2, def = $umi_len)
    -V 	        If flagged will use reverse compliment for index 2 (i5). 
                 This is used for sequencing platforms NovaSeq 6000,
@@ -89,6 +90,7 @@ if (!defined $opt{'O'}) {$opt{'O'} = $VAR{'SCI_fastq_directory'}};
 if (!defined $opt{'o'}) {$opt{'o'} = $opt{'R'}};
 if (!defined $opt{'I'}) {$opt{'I'} = $VAR{'SCI_stdchem_index_file'}};
 if (!defined $opt{'c'}) {$opt{'c'} = $VAR{'RNA_Indexes'}};
+if (defined $opt{'s'} && !defined $opt{'C'}) {$opt{'C'} = 1};
 if (defined $opt{'N'} && defined $opt{'C'}) {
 	die "ERROR: Coassay demultiplexing (-C) is not compatible with non combinatorial indexing splitting (-N)\n";
 }
@@ -203,24 +205,30 @@ system("mkdir $opt{'O'}/$opt{'o'}");
 if (defined $opt{'A'}) {
 	read_annot($opt{'A'});
 	foreach $annot (keys %ANNOT_count) {
-		$out1_handle = "$annot.1";
-		open $out1_handle, "| $gzip > $opt{'O'}/$opt{'o'}/$opt{'o'}.$annot.1.fq.gz";
-		$HANDLE1{$annot} = $out1_handle;
-		$out2_handle = "$annot.2";
-		open $out2_handle, "| $gzip > $opt{'O'}/$opt{'o'}/$opt{'o'}.$annot.2.fq.gz";
-		$HANDLE2{$annot} = $out2_handle;
+		if (!defined $opt{'s'}) {
+			$out1_handle = "$annot.1";
+			open $out1_handle, "| $gzip > $opt{'O'}/$opt{'o'}/$opt{'o'}.$annot.1.fq.gz";
+			$HANDLE1{$annot} = $out1_handle;
+			$out2_handle = "$annot.2";
+			open $out2_handle, "| $gzip > $opt{'O'}/$opt{'o'}/$opt{'o'}.$annot.2.fq.gz";
+			$HANDLE2{$annot} = $out2_handle;
+		}
 		if (defined $opt{'C'}) { # open read 1 only for RNA
 			$outR_handle = "$annot.R";
 			open $outR_handle, "| $gzip > $opt{'O'}/$opt{'o'}/$opt{'o'}.$annot.RNA.fq.gz";
 			$HANDLER{$annot} = $outR_handle;
 		}
 	}
-	open O1, "| $gzip > $opt{'O'}/$opt{'o'}/$opt{'o'}.unassigned.1.fq.gz";
-	open O2, "| $gzip > $opt{'O'}/$opt{'o'}/$opt{'o'}.unassigned.2.fq.gz";
+	if (!defined $opt{'s'}) {
+		open O1, "| $gzip > $opt{'O'}/$opt{'o'}/$opt{'o'}.unassigned.1.fq.gz";
+		open O2, "| $gzip > $opt{'O'}/$opt{'o'}/$opt{'o'}.unassigned.2.fq.gz";
+	}
 	system("cp $opt{'A'} $opt{'O'}/$opt{'o'}/$opt{'o'}.split.annot");
 } else {
-	open R1OUT, "| $gzip > $opt{'O'}/$opt{'o'}/$opt{'o'}.1.fq.gz";
-	open R2OUT, "| $gzip > $opt{'O'}/$opt{'o'}/$opt{'o'}.2.fq.gz";
+	if (!defined $opt{'s'}) {
+		open R1OUT, "| $gzip > $opt{'O'}/$opt{'o'}/$opt{'o'}.1.fq.gz";
+		open R2OUT, "| $gzip > $opt{'O'}/$opt{'o'}/$opt{'o'}.2.fq.gz";
+	}
 	if (defined $opt{'C'}) { # open read 1 only for RNA
 		open RNAOUT, "| $gzip > $opt{'O'}/$opt{'o'}/$opt{'o'}.RNA.fq.gz";
 	}
@@ -251,21 +259,22 @@ while ($r1tag = <R1>) {
 	$null = <I1>; $null = <I2>;
 	$i1qual = <I1>; $i2qual = <I2>; chomp $i1qual; chomp $i2qual;
 	
-	if (defined $opt{'V'}) {
-		$rev_i2seq = revcomp($i2seq);
-		$i2seq = $rev_i2seq;
-	}
-	
-	$ix1 = substr($i1seq,0,$POS_length{'1'});
-	$ix2 = substr($i2seq,0,$POS_length{'2'});
-	if (!defined $opt{'N'}) {
-		$ix3 = substr($r2seq,0,$POS_length{'3'});
-		$r2dna = substr($r2seq,($POS_length{'3'}+20));
-		$r2qtrm = substr($r2qual,($POS_length{'3'}+20));
-		$r2qual = $r2qtrm;
-	} else {
-		$ix3 = "null";
-		$r2dna = $r2seq;
+	if (!defined $opt{'s'}) {
+		if (defined $opt{'V'}) {
+			$rev_i2seq = revcomp($i2seq);
+			$i2seq = $rev_i2seq;
+		}
+		$ix1 = substr($i1seq,0,$POS_length{'1'});
+		$ix2 = substr($i2seq,0,$POS_length{'2'});
+		if (!defined $opt{'N'}) {
+			$ix3 = substr($r2seq,0,$POS_length{'3'});
+			$r2dna = substr($r2seq,($POS_length{'3'}+20));
+			$r2qtrm = substr($r2qual,($POS_length{'3'}+20));
+			$r2qual = $r2qtrm;
+		} else {
+			$ix3 = "null";
+			$r2dna = $r2seq;
+		}
 	}
 	if (defined $opt{'C'}) { # Pull RNA index and UMI
 		$umi = substr($r2seq,0,$opt{'U'});
@@ -279,7 +288,8 @@ while ($r1tag = <R1>) {
 		}
 	}
 	
-	if (defined $POS_SEQ_seq{'1'}{$ix1} &&
+	if (!defined $opt{'s'} &&
+		defined $POS_SEQ_seq{'1'}{$ix1} &&
 		defined $POS_SEQ_seq{'2'}{$ix2} &&
 		defined $POS_SEQ_seq{'3'}{$ix3}) {
 		
