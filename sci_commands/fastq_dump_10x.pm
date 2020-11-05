@@ -5,11 +5,22 @@ use Getopt::Std; %opt = ();
 use Exporter "import";
 @EXPORT = "fastq_dump_10x";
 
+
+%REVCOMP = ("A" => "T", "C" => "G", "G" => "C", "T" => "A", "N" => "N");
+sub revcomp {
+        @INSEQ = split(//, uc($_[0]));
+        $revcomp = "";
+        for ($pos = (@INSEQ-1); $pos >= 0; $pos--) {
+                $revcomp .= $REVCOMP{$INSEQ[$pos]};
+        }
+        return $revcomp;
+}
+
 sub fastq_dump_10x {
 
 @ARGV = @_;
 
-getopts("R:F:O:o:I:1:2:A:i:j:r:Nd:D:b", \%opt);
+getopts("R:F:O:o:I:1:2:A:i:j:r:Nd:D:bV", \%opt);
 
 # defaults
 $hd_s = 2;
@@ -38,6 +49,9 @@ Options:
                 (max 2, def = $hd_s)
    -d   [INT]   Hamming distance for 10X index
                 (max 2, def = $hd_x)
+   -V           If flagged will use reverse compliment for index 2 (i5).
+                This is used for sequencing platforms NovaSeq 6000,
+                MiSeq, HiSeq 2500, or HiSeq 2000 System. (Default: no)
 
 Defaults:
    -F   [STR]   Fastq directory
@@ -218,7 +232,10 @@ while ($r1tag = <R1>) {
 	} else {
 		$ix2 = $i2seq;
 	}
-	
+    if (defined $opt{'V'}) {
+            $rev_i2seq = revcomp($i2seq);
+            $ix2 = $rev_i2seq;
+    }
 	if (!defined $opt{'N'}) {
 		$ix3 = substr($r2seq,0,$POS_length{'3'});
 		$r2dna = substr($r2seq,($POS_length{'3'}+20));
