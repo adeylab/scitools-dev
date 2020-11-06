@@ -36,12 +36,6 @@ Options:
    -m   [MEM]   Samtools sort max memory K/M/G (def = $memory)
                  (only for multiple bams)
    -t   [INT]   Threads for sorting (def = $sort_threads)
-   -C           By chromosome (for large files)
-                 Bams must be idnexed (if not will make index)
-                 Will ignore -e and just use chroms in list -c
-   -c   [STR]   List chr to include:
-                 def is chr1 to chr22 and chrX
-                 provide as a comma sep list, eg: chr1,chr2,...
    -n           Perform name-sorted rmdup
                  Requires a name sorted bam for a single bam file
                  or multiple bam files in any sort.
@@ -55,6 +49,15 @@ Options:
    -s   [STR]   Samtools call (def = $samtools)
 
 ";
+
+# deprecated options:
+
+#   -C           By chromosome (for large files)
+#                 Bams must be idnexed (if not will make index)
+#                 Will ignore -e and just use chroms in list -c
+#   -c   [STR]   List chr to include:
+#                 def is chr1 to chr22 and chrX
+#                 provide as a comma sep list, eg: chr1,chr2,...
 
 if (!defined $ARGV[0]) {die $die2};
 if (!defined $opt{'O'}) {$opt{'O'} = $ARGV[0]; $opt{'O'} =~ s/\.bam$//};
