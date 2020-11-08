@@ -164,7 +164,7 @@ if (defined $opt{'C'}) { # by chromosome
 			} close OUT;
 			open IN, "$samtools view -q 10 $opt{'O'}.merged.nsrt.bam |";
 		} else {
-			system("$samtools sort -@ $sort_threads -m $memory -T $opt{'O'}.nsrt.TMP -n - > $opt{'O'}.nsrt.bam");
+			system("$samtools sort -@ $sort_threads -m $memory -T $opt{'O'}.nsrt.TMP -n $ARGV[0] > $opt{'O'}.nsrt.bam");
 			open IN, "$samtools view -q 10 $opt{'O'}.nsrt.bam |";
 		}
 	} else { # single bam
