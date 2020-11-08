@@ -143,25 +143,30 @@ if (defined $opt{'C'}) { # by chromosome
 } elsif (defined $opt{'n'}) { # by namesort
 	$opt{'O'} =~ s/\.nsrt//;
 	if (defined $ARGV[1] || defined $opt{'N'}) { # multiple bams - qfilt, add bamID and nsort
-		open OUT, "| $samtools sort -@ $sort_threads -m $memory -T $opt{'O'}.merged.nsrt.TMP -n - > $opt{'O'}.merged.nsrt.bam";
-		open HEAD, "$samtools view -H $ARGV[0] |";
-		while ($l = <HEAD>){print OUT "$l"};
-		close HEAD;
-		for ($bamID = 0; $bamID < @ARGV; $bamID++) {
-			open IN, "$samtools view -q 10 $ARGV[$bamID] |";
-			while ($l = <IN>) {
-				chomp $l;
-				@P = split(/\t/, $l);
-				if (!defined $opt{'x'}) {
-					$P[0] =~ s/#.+$//;
-					$P[0] .= ":BAMID=$bamID";
-					$l = join("\t", @P);
+		if (defined $ARGV[1]) {
+			open OUT, "| $samtools sort -@ $sort_threads -m $memory -T $opt{'O'}.merged.nsrt.TMP -n - > $opt{'O'}.merged.nsrt.bam";
+			open HEAD, "$samtools view -H $ARGV[0] |";
+			while ($l = <HEAD>){print OUT "$l"};
+			close HEAD;
+			for ($bamID = 0; $bamID < @ARGV; $bamID++) {
+				open IN, "$samtools view -q 10 $ARGV[$bamID] |";
+				while ($l = <IN>) {
+					chomp $l;
+					@P = split(/\t/, $l);
+					if (!defined $opt{'x'}) {
+						$P[0] =~ s/#.+$//;
+						$P[0] .= ":BAMID=$bamID";
+						$l = join("\t", @P);
+					}
+					print OUT "$l\n";
 				}
-				print OUT "$l\n";
-			}
-			close IN;
-		} close OUT;
-		open IN, "$samtools view -q 10 $opt{'O'}.merged.nsrt.bam |";
+				close IN;
+			} close OUT;
+			open IN, "$samtools view -q 10 $opt{'O'}.merged.nsrt.bam |";
+		} else {
+			system("$samtools sort -@ $sort_threads -m $memory -T $opt{'O'}.nsrt.TMP -n - > $opt{'O'}.nsrt.bam");
+			open IN, "$samtools view -q 10 $opt{'O'}.nsrt.bam |";
+		}
 	} else { # single bam
 		open IN, "$samtools view -q 10 $ARGV[0] |";
 	}
