@@ -228,6 +228,7 @@ sub load_aliases {
 	foreach $alias ("matrix_da", "da_matrix", "atac_da", "da_atac", "diff_access") {$COMMAND_ALIAS{$alias} = "matrix_DA"};
 	foreach $alias ("matrix_sparse", "make_sparse", "sparse") {$COMMAND_ALIAS{$alias} = "matrix_sparse"};
 	foreach $alias ("matrix_unsparse", "make_unsparse", "unsparse") {$COMMAND_ALIAS{$alias} = "matrix_unsparse"};
+	foreach $alias ("matrix_scrublet", "scrublet") {$COMMAND_ALIAS{$alias} = "matrix_scrublet"};
 	
 	# Values
 	foreach $alias ("values_split", "split_values", "split_vals", "vals_split") {$COMMAND_ALIAS{$alias} = "values_split"};
@@ -331,6 +332,7 @@ sub load_descriptions {
 	$COMMAND_DESCRIPTOR{"matrix_lsi"} = "Perform Latent Semantic Indexing on matrix";
 	$COMMAND_DESCRIPTOR{"matrix_tsne"} = "tSNE on matrix or dims file";
 	$COMMAND_DESCRIPTOR{"matrix_pca"} = "PCA on matrix";
+	$COMMAND_DESCRIPTOR{"matrix_scrublet"} = "Perform scrublet on a matrix";
 	$COMMAND_DESCRIPTOR{"matrix_irlba"} = "IRLBA on matrix - good for big matrices";
 	$COMMAND_DESCRIPTOR{"matrix_aggregate"} = "Aggregate cells in counts matrix by annotation";
 	$COMMAND_DESCRIPTOR{"matrix_merge"} = "Merge matrices, no overlap in cell names assumed";
