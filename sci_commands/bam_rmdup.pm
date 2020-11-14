@@ -8,7 +8,7 @@ use Exporter "import";
 sub bam_rmdup {
 
 @ARGV = @_;
-getopts("s:O:xm:H:e:c:Cnrt:XNS", \%opt);
+getopts("s:O:xm:H:e:c:Cnrt:XNSM", \%opt);
 
 $memory = "2G";
 $sort_threads = 1;
@@ -44,7 +44,8 @@ Options:
    -r           If -n, retain name sort (def = chr/pos sort)
    -S           Discard reads with the same coordinates but
                  opposite strands (def = retain)
-   -X           Retain intermediate merged nsrt bam
+   -M           Mixed paired and single end reads (experimental)
+                 Preferentially retains paired reads. (-n only)
    -H   [BAM]   Use header from this bam instead.
    -s   [STR]   Samtools call (def = $samtools)
 
@@ -58,6 +59,7 @@ Options:
 #   -c   [STR]   List chr to include:
 #                 def is chr1 to chr22 and chrX
 #                 provide as a comma sep list, eg: chr1,chr2,...
+#   -X           Retain intermediate merged nsrt bam
 
 if (!defined $ARGV[0]) {die $die2};
 if (!defined $opt{'O'}) {$opt{'O'} = $ARGV[0]; $opt{'O'} =~ s/\.bam$//};
@@ -68,6 +70,12 @@ if (defined $opt{'e'}) {@CHR_FILT = split(/,/, $opt{'e'})};
 if (defined $opt{'c'}) {$chr_list = $opt{'c'}};
 if (defined $opt{'t'}) {$sort_threads = $opt{'t'}};
 if (defined $opt{'N'}) {$opt{'n'} = 1};
+if (defined $opt{'M'} && !defined $opt{'n'}) {
+	die "-M mode is currently only compatible with name sorted input.
+	Run on a name-sorted bam and use -n, or
+	Run with -N and -n along with -M to name sort first and then peform rmdup.
+";
+}
 
 if (!defined $opt{'n'}) {
 	if (!defined $ARGV[1]) {
@@ -143,7 +151,8 @@ if (defined $opt{'C'}) { # by chromosome
 } elsif (defined $opt{'n'}) { # by namesort
 	$opt{'O'} =~ s/\.nsrt//;
 	if (defined $ARGV[1] || defined $opt{'N'}) { # multiple bams - qfilt, add bamID and nsort
-		if (defined $ARGV[1]) {
+		if (defined $ARGV[1] && defined $opt{'N'}) {
+			print STDERR "INFO: Running as if input is multiple bams with one or more that is not name sorted. Will name sort and merge first.\n";
 			open OUT, "| $samtools sort -@ $sort_threads -m $memory -T $opt{'O'}.merged.nsrt.TMP -n - > $opt{'O'}.merged.nsrt.bam";
 			open HEAD, "$samtools view -H $ARGV[0] |";
 			while ($l = <HEAD>){print OUT "$l"};
@@ -163,16 +172,25 @@ if (defined $opt{'C'}) { # by chromosome
 				close IN;
 			} close OUT;
 			open IN, "$samtools view -q 10 $opt{'O'}.merged.nsrt.bam |";
-		} else {
+		} elsif (!defined $ARGV[1] && defined $opt{'N'}) {
+			print STDERR "INFO: Running as if input is a single bam that is not name sorted. Will name sort first.\n";
 			system("$samtools sort -@ $sort_threads -m $memory -T $opt{'O'}.nsrt.TMP -n $ARGV[0] > $opt{'O'}.nsrt.bam");
 			open IN, "$samtools view -q 10 $opt{'O'}.nsrt.bam |";
+		} elsif (defined $ARGV[1] && !defined $opt{'N'}) {
+			print STDERR "INFO: Running as if input is multiple name sorted bams. Will merge first.\n";
+			system("$samtools merge -n -@ $sort_threads $opt{'O'}.merged.nsrt.bam $ARGV[0] $ARGV[1] 2>/dev/null >/dev/null");
+			open IN, "$samtools view -q 10 $opt{'O'}.merged.nsrt.bam |";
 		}
-	} else { # single bam
+	} else { # single bam, name sorted
 		open IN, "$samtools view -q 10 $ARGV[0] |";
 	}
 	
 	if (defined $opt{'r'}) {
-		open OUT, "| $samtools view -bS - > $opt{'O'}.bbrd.q10.nsrt.bam";
+		if (defined $opt{'M'}) {
+			open OUT, "| $samtools view -bSu - | $samtools sort -n -@ $sort_threads -m $memory -T $opt{'O'}.TMP - > $opt{'O'}.bbrd.q10.nsrt.bam";
+		} else {
+			open OUT, "| $samtools view -bS - > $opt{'O'}.bbrd.q10.nsrt.bam";
+		}
 	} else {
 		open OUT, "| $samtools view -bSu - | $samtools sort -@ $sort_threads -m $memory -T $opt{'O'}.TMP - > $opt{'O'}.bbrd.q10.bam";
 	}
@@ -180,63 +198,159 @@ if (defined $opt{'C'}) { # by chromosome
 	open HEAD, "$samtools view -H $ARGV[0] |";
 	while ($l = <HEAD>){print OUT "$l"};
 	close HEAD;
-	
-	$currentBarc = "null";
-	while ($l = <IN>) {
-		$q10_reads++;
-		chomp $l;
-		@P = split(/\t/, $l);
-		$barc = $P[0]; $barc =~ s/:.+$//;
-		if ($currentBarc ne $barc) {
-			# set hashes
-			%KEEP = (); %OBSERVED = (); %POS_ISIZE = ();
-			$currentBarc = $barc;
-		}
-		# process read
-		if (defined $KEEP{$P[0]}) {
-			print OUT "$l\n";
-			$BARC_total{$barc}++;
-			$BARC_kept{$barc}++;
-			$total_kept++;
-		} elsif ($P[1] & 4) {} else {
-			$filt_chrom = 0;
-			if (!defined $opt{'e'} && $P[2] =~ /chrM|chrY|chrUn|random|alt/) {
-				$filt_chrom+=10;
-			} elsif ($opt{'e'} ne "none") {
-				foreach $pattern (@CHR_FILT) {
-					if ($P[2] =~ /$pattern/) {
-						$filt_chrom+=10;
+	if (!defined $opt{'M'}) { # normal mode - all paired or all single end reads
+		$currentBarc = "null";
+		while ($l = <IN>) {
+			$q10_reads++;
+			chomp $l;
+			@P = split(/\t/, $l);
+			$barc = $P[0]; $barc =~ s/:.+$//;
+			if ($currentBarc ne $barc) {
+				# set hashes
+				%KEEP = (); %OBSERVED = (); %POS_ISIZE = ();
+				$currentBarc = $barc;
+			}
+			# process read
+			if (defined $KEEP{$P[0]}) {
+				print OUT "$l\n";
+				$BARC_total{$barc}++;
+				$BARC_kept{$barc}++;
+				$total_kept++;
+			} elsif ($P[1] & 4) {} else {
+				$filt_chrom = 0;
+				if (!defined $opt{'e'} && $P[2] =~ /chrM|chrY|chrUn|random|alt/) {
+					$filt_chrom+=10;
+				} elsif ($opt{'e'} ne "none") {
+					foreach $pattern (@CHR_FILT) {
+						if ($P[2] =~ /$pattern/) {
+							$filt_chrom+=10;
+						}
 					}
 				}
+				
+				if ($filt_chrom < 1) {
+					$BARC_total{$barc}++;
+					if (defined $opt{'S'}) {
+						$pos_isize = "$P[2]:$P[3]:$P[8]";
+					} else {
+						if ($P[1] & 16) {
+							$pos_isize = "$P[2]:$P[3]:$P[8]:r";
+						} else {
+							$pos_isize = "$P[2]:$P[3]:$P[8]:f";
+						}
+					}
+					if (!defined $POS_ISIZE{$pos_isize} && !defined $OBSERVED{$P[0]}) {
+						$POS_ISIZE{$pos_isize} = 1;
+						$KEEP{$P[0]} = 1;
+						print OUT "$l\n";
+						$BARC_kept{$barc}++;
+						$total_kept++;
+					}
+					$OBSERVED{$P[0]} = 1;
+				} else {
+					$reads_q10_to_other_chr++;
+				}
+			}
+		}
+	} else { # mixed mode - both paired and single end - preferentially retain paired reads
+		$currentBarc = "null";
+		while ($l = <IN>) {
+			$q10_reads++;
+			chomp $l;
+			@P = split(/\t/, $l);
+			$barc = $P[0]; $barc =~ s/:.+$//;
+			
+			if ($currentBarc ne $barc) {
+				# process previos barcode set and output all unique SE reads
+				if ($currentBarc ne "null") {
+					# process stored single end reads
+					foreach $r1_pos (keys %SINGLE_R1_POS_save) {
+						if (!defined $R1_POS{$r1_pos}) { # never was observed in PE
+							print OUT "$l\n";
+							$BARC_kept{$barc}++;
+							$total_kept++;
+						}
+					}
+				}
+				# reset hashes & set barc
+				$currentBarc = $barc;
+				%KEEP = (); %OBSERVED = (); %POS_ISIZE = ();
+				%R1_POS = (); %SINGLE_R1_POS_save = (); # clear SE store and check hashes
 			}
 			
-			if ($filt_chrom < 1) {
+			# process read & store SE reads
+			if (defined $KEEP{$P[0]}) { # must be PE -> print it
+				print OUT "$l\n";
 				$BARC_total{$barc}++;
-				if (defined $opt{'S'}) {
-					$pos_isize = "$P[2]:$P[3]:$P[8]";
-				} else {
-					if ($P[1] & 16) {
-						$pos_isize = "$P[2]:$P[3]:$P[8]:r";
-					} else {
-						$pos_isize = "$P[2]:$P[3]:$P[8]:f";
+				$BARC_kept{$barc}++;
+				$total_kept++;
+			} elsif ($P[1] & 4) {} else {
+				$filt_chrom = 0;
+				if (!defined $opt{'e'} && $P[2] =~ /chrM|chrY|chrUn|random|alt/) {
+					$filt_chrom+=10;
+				} elsif ($opt{'e'} ne "none") {
+					foreach $pattern (@CHR_FILT) {
+						if ($P[2] =~ /$pattern/) {
+							$filt_chrom+=10;
+						}
 					}
 				}
-				if (!defined $POS_ISIZE{$pos_isize} && !defined $OBSERVED{$P[0]}) {
-					$POS_ISIZE{$pos_isize} = 1;
-					$KEEP{$P[0]} = 1;
-					print OUT "$l\n";
-					$BARC_kept{$barc}++;
-					$total_kept++;
-					$BAMID_included{$bamID}++;
+				if ($filt_chrom < 1) {
+					$BARC_total{$barc}++;
+					if ($P[1] & 1) { # paired end -> process
+						if (defined $opt{'S'}) {
+							$pos_isize = "$P[2]:$P[3]:$P[8]";
+						} else {
+							if ($P[1] & 16) {
+								$pos_isize = "$P[2]:$P[3]:$P[8]:r";
+							} else {
+								$pos_isize = "$P[2]:$P[3]:$P[8]:f";
+							}
+						}
+						if (!defined $POS_ISIZE{$pos_isize} && !defined $OBSERVED{$P[0]}) {
+							if ($P[1] & 64) { # first in pair -> R1
+								if (defined $opt{'S'}) {
+									$r1_pos = "$P[2]:$P[3]";
+								} else {
+									if ($P[1] & 16) {
+										$r1_pos = "$P[2]:$P[3]:r";
+									} else {
+										$r1_pos = "$P[2]:$P[3]:f";
+									}
+								}
+								$R1_POS{$r1_pos} = 1;
+							}
+							$POS_ISIZE{$pos_isize} = 1;
+							$KEEP{$P[0]} = 1;
+							print OUT "$l\n";
+							$BARC_kept{$barc}++;
+							$total_kept++;
+						}
+						$OBSERVED{$P[0]} = 1;
+					} else { # single end -> check & store
+						if (defined $opt{'S'}) {
+							$r1_pos = "$P[2]:$P[3]";
+						} else {
+							if ($P[1] & 16) {
+								$r1_pos = "$P[2]:$P[3]:r";
+							} else {
+								$r1_pos = "$P[2]:$P[3]:f";
+							}
+						}
+						if (!defined $R1_POS{$r1_pos}) { # not yet observed in PE reads
+							$SINGLE_R1_POS_save{$r1_pos} = $l;
+						}
+					}
+				} else {
+					$reads_q10_to_other_chr++;
 				}
-				$OBSERVED{$P[0]} = 1;
-			} else {
-				$reads_q10_to_other_chr++;
 			}
 		}
-	} close IN;
-	
-	if (defined $ARGV[1] && !defined $opt{'X'}) {system("rm -f $opt{'O'}.merged.nsrt.bam")};
+	}
+	close IN;
+
+#   Default is to retain intermediate in all cases now. Can be manually deleted after
+#	if (defined $ARGV[1] && !defined $opt{'X'}) {system("rm -f $opt{'O'}.merged.nsrt.bam")};
 	
 } else { # standard
 	for ($bamID = 0; $bamID < @ARGV; $bamID++) {
