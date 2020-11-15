@@ -266,7 +266,7 @@ if (defined $opt{'C'}) { # by chromosome
 					# process stored single end reads
 					foreach $r1_pos (keys %SINGLE_R1_POS_save) {
 						if (!defined $R1_POS{$r1_pos}) { # never was observed in PE
-							print OUT "$l\n";
+							print OUT "$SINGLE_R1_POS_save{$r1_pos}\n";
 							$BARC_kept{$barc}++;
 							$total_kept++;
 						}
