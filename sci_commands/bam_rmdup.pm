@@ -150,8 +150,8 @@ if (defined $opt{'C'}) { # by chromosome
 	}
 } elsif (defined $opt{'n'}) { # by namesort
 	$opt{'O'} =~ s/\.nsrt//;
-	if (defined $ARGV[1] || defined $opt{'N'}) { # multiple bams - qfilt, add bamID and nsort
-		if (defined $ARGV[1] && defined $opt{'N'}) {
+	if (defined $ARGV[1] || defined $opt{'N'}) { # multiple bams OR needs name sorting - qfilt, add bamID and nsort
+		if (defined $ARGV[1] && defined $opt{'N'}) { # mutliple bams and needs name sorting
 			print STDERR "INFO: Running as if input is multiple bams with one or more that is not name sorted. Will name sort and merge first.\n";
 			open OUT, "| $samtools sort -@ $sort_threads -m $memory -T $opt{'O'}.merged.nsrt.TMP -n - > $opt{'O'}.merged.nsrt.bam";
 			open HEAD, "$samtools view -H $ARGV[0] |";
@@ -172,16 +172,16 @@ if (defined $opt{'C'}) { # by chromosome
 				close IN;
 			} close OUT;
 			open IN, "$samtools view -q 10 $opt{'O'}.merged.nsrt.bam |";
-		} elsif (!defined $ARGV[1] && defined $opt{'N'}) {
+		} elsif (!defined $ARGV[1] && defined $opt{'N'}) { # single bam and needs name sorting
 			print STDERR "INFO: Running as if input is a single bam that is not name sorted. Will name sort first.\n";
 			system("$samtools sort -@ $sort_threads -m $memory -T $opt{'O'}.nsrt.TMP -n $ARGV[0] > $opt{'O'}.nsrt.bam");
 			open IN, "$samtools view -q 10 $opt{'O'}.nsrt.bam |";
-		} elsif (defined $ARGV[1] && !defined $opt{'N'}) {
+		} elsif (defined $ARGV[1] && !defined $opt{'N'}) { # multiple bams - but are already name sorted
 			print STDERR "INFO: Running as if input is multiple name sorted bams. Will merge first.\n";
 			system("$samtools merge -n -@ $sort_threads $opt{'O'}.merged.nsrt.bam $ARGV[0] $ARGV[1] 2>/dev/null >/dev/null");
 			open IN, "$samtools view -q 10 $opt{'O'}.merged.nsrt.bam |";
 		}
-	} else { # single bam, name sorted
+	} else { # single bam, already name sorted
 		open IN, "$samtools view -q 10 $ARGV[0] |";
 	}
 	
