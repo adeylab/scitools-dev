@@ -8,9 +8,10 @@ use Exporter "import";
 sub plot_complexity {
 
 @ARGV = @_;
-getopts("O:A:a:C:c:R:Mf:p:k:h:w:T:K:y:t:D", \%opt);
+getopts("O:A:a:C:c:R:Mf:p:k:h:w:T:K:m:y:t:D", \%opt);
 
 #defaults
+$kmean_centers = 3;
 $alpha = 0.3;
 $ptSize = 1;
 $height = 6;
@@ -24,6 +25,7 @@ scitools plot-complexity [options] [complexity file(s) can be comma separated]
 Options:
    -O   [STR]   Output prefix (default is complexity file 1 prefix)
    -M           Run mixed model to determine read count cutoff for cells (def = no)
+   -m   [INT]   Number of k-means clusters to use. (def=3)
    -K 	[INT] 	Force a minimum number of cells to be called by the knee analysis. (def=500)
    -A   [STR]   Annotation file (to color code points)
    -a   [STR]   Comma separated list of annoations to include in plot
@@ -60,6 +62,7 @@ if (defined $opt{'a'}) {
 }
 if (defined $opt{'C'}) {read_color_file($opt{'C'})};
 if (defined $opt{'c'}) {read_color_string($opt{'c'})};
+if (defined $opt{'m'}) {$kmean_centers = $opt{'m'}};
 if (defined $opt{'p'}) {$ptSize = $opt{'p'}};
 if (defined $opt{'f'}) {$alpha = $opt{'f'}};
 if (defined $opt{'k'}) {
@@ -95,6 +98,8 @@ foreach $cellID (keys %CELLID_complexity) {
 
 open R, ">$opt{'O'}.plot.r";
 print R "
+library(MASS)
+library(mixtools)
 library(ggplot2)
 IN<-read.table(\"$opt{'O'}.plot.txt\")
 PLT<-ggplot(data=subset(IN,V4<100&V4>0)) + theme_bw() +
@@ -141,7 +146,7 @@ IN_sub\$unique_aligned<-IN_sub\$V3
 x1 <- IN_sub\$unique_aligned[IN_sub\$unique_aligned != 0]
 
 # trimodal fit
-km <- kmeans(log10(x1),centers=3)
+km <- kmeans(log10(x1),centers=$kmean_centers)
 clustr <- as.factor(km\$cluster)
 data_1<-data.frame(\"val\"=log10(x1),\"km\"=clustr)
 highest_cluster<-which.max(km\$centers)

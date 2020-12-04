@@ -27,6 +27,7 @@ Default command executable calls:
    Py scripts:  $Pscript
    bowtie2:     $bowtie2
    bismark:     $bismark
+   bedops:      $bedops
 
 Reference genomes:\n";
 foreach $refID (sort keys %REF) {
