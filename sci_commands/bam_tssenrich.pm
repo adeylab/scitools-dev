@@ -75,6 +75,7 @@ Options:
 
 	open R, ">$opt{'O'}.bulkTSSenrich.r";
 	print R "
+library(ggplot2)
 rangeR <- read.table(\"$opt{'O'}.bulkTSSdist_$bulk_range.txt\")
 bins <- seq(from=min(as.numeric(rangeR\$V1)),to=max(as.numeric(rangeR\$V1)),by=as.numeric($bulk_binsize))
 
@@ -105,13 +106,18 @@ df <- data.frame(TSS)
 rownames(df) <- \"bulk_TSS_enrichment\"
 write.table(df,\"$opt{'O'}.bulkTSSenrich.log\",row.names=T,col.names=F,quote=F,sep=\"\t\",)
 
-mainstr=paste(\"Binned Hist of Reads from TSS\\nTSS = \",round(TSS,5),\" with a binsize of $bulk_binsize at bin \",names(TSSwhich),sep=\"\")
+mainstr=paste(\"Binned Hist of Read Distances from TSS\\nTSS = \",round(TSS,5),\" with a binsize of $bulk_binsize at bin \",names(TSSwhich),sep=\"\")
+binpos <- as.numeric(gsub(\"]\",\"\",gsub(\".*,\",\"\",names(TSSwhich))))
+results <- hist(all,breaks=length(groups),plot=FALSE)
+results_df <- data.frame(counts=as.numeric(results\$counts)/1000, mids=as.numeric(results\$mids))
 
-png(\"$opt{'O'}.bulkTSSenrich.png\",800,600)
-par(mfrow=c(2,1))
-par(mar=c(5.1,4.1,4.1,2.1))
-plot(rangeR\$V1,rangeR\$V2,pch=16,cex=.5,xlab=\"Distance to TSS (bp)\",ylab=\"Count\",main=\"Plot of Reads from TSS\")
-hist(all,breaks=length(groups),xlab=\"Distance to TSS (bp)\",ylab=\"Count\",main=mainstr)
+png(\"$opt{'O'}.bulkTSSenrich.png\", width = 7, height = 4, units = \"in\", res = 300)
+p <- ggplot(results_df, aes(x=mids,y=counts)) + geom_bar(stat=\"identity\",color=\"lightgrey\")
+p + geom_vline(aes(xintercept=binpos), color=\"mediumorchid\", linetype=\"dashed\", size=1) + 
+  geom_vline(aes(xintercept=0), color=\"black\", size=.1) + 
+  theme_bw() + theme(panel.background = element_blank()) + 
+  ggtitle(mainstr) + xlab(\"Distance to TSS (bp)\") + ylab(\"Counts in Thousands\") +
+  theme(plot.title = element_text(face=\"bold\",size=14))
 dev.off()
 ";
 
