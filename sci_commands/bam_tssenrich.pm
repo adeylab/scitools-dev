@@ -43,7 +43,7 @@ Options:
 	$tss_signal = "/home/groups/oroaklab/refs/mm10/ensembl_tss/ensembl.mm10.tss.chr100bpWINDOW.bed";
         $bg_signal = "/home/groups/oroaklab/refs/mm10/ensembl_tss/ensembl.mm10.tss.chr.b1_b2.bed";
     } elsif ($ARGV[1] eq "dm6") {
-        $tss_list = "/home/groups/oroaklab/refs/dm6/ensembl_tss/ensembl.hg38.uniqtss.chr.bed";
+        $tss_list = "/home/groups/oroaklab/refs/dm6/ensembl_tss/ensembl.dm6.uniqtss.chr.bed";
 	$tss_signal = "/home/groups/oroaklab/refs/dm6/ensembl_tss/ensembl.dm6.tss.chr100bpWINDOW.bed";
         $bg_signal = "/home/groups/oroaklab/refs/dm6/ensembl_tss/ensembl.dm6.tss.chr.b1_b2.bed";
     } else {
