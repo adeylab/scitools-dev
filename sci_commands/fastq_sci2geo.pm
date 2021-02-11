@@ -11,7 +11,7 @@ sub fastq_sci2geo {
 
 # defaults
 
-getopts("O:A:", \%opt);
+getopts("O:A:m", \%opt);
 
 $die2 = "
 scitools fastq-sci2geo -O [output prefix] read1.fq.gz read2.fq.gz
@@ -21,6 +21,7 @@ scitools fastq-sci2geo -O [output prefix] read1.fq.gz read2.fq.gz
 Options:
    -O   [STR]   Output prefix
    -A   [STR]   Annot file (only output cells in annot file)
+   -m           Do not perform md5sum (def = yes)
 
 ";
 
@@ -59,6 +60,12 @@ while ($r1tag = <IN1>) {
 		$read++;
 	}
 } close IN1; close IN2; close R1; close R2; close IX;
+
+if (!defined $opt{'m'}) {
+	system("md5sum $opt{'O'}.1.fq.gz > $opt{'O'}.1.fq.gz.md5sum &");
+	system("md5sum $opt{'O'}.2.fq.gz > $opt{'O'}.2.fq.gz.md5sum &");
+	system("md5sum $opt{'O'}.ix.fq.gz > $opt{'O'}.ix.fq.gz.md5sum &");
+}
 
 exit;
 
