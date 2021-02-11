@@ -41,7 +41,7 @@ open IN2, "$zcat $ARGV[0] |";
 
 while ($r1tag = <IN1>) {
 	chomp $r1tag; $r2tag = <IN2>; chomp $r2tag;
-	$r1seq = <IN1>; chomp $r2seq; $r2seq = <IN2>; comp $r2seq;
+	$r1seq = <IN1>; chomp $r2seq; $r2seq = <IN2>; chomp $r2seq;
 	$null = <IN1>; $null = <IN2>;
 	$r1qual = <IN1>; chomp $r1qual; $r2qual = <IN2>; chomp $r2qual;
 	$barc = $r1tag; $barc =~ s/:.+$//; $barc =~ s/^\@//;
