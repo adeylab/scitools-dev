@@ -25,7 +25,7 @@ Options:
 ";
 
 if (!defined $ARGV[1] || !defined $opt{'O'}) {
-	die $die;
+	die $die2;
 }
 
 if (defined $opt{'A'}) {read_annot($opt{'A'})};
@@ -45,7 +45,7 @@ while ($r1tag = <IN1>) {
 	$null = <IN1>; $null = <IN2>;
 	$r1qual = <IN1>; chomp $r1qual; $r2qual = <IN2>; chomp $r2qual;
 	$barc = $r1tag; $barc =~ s/:.+$//; $barc =~ s/^\@//;
-	$new_tag = "\@read_$read";
+	$new_tag = "\@"."read_$barc";
 	if (!defined $ixqual) {
 		$ixqual = "";
 		for ($i = 0; $i < length($barc); $i++) {
