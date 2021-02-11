@@ -172,6 +172,7 @@ sub load_aliases {
 	foreach $alias ("fastq_barcode_collapse", "fastq_collapse", "barcode_collapse") {$COMMAND_ALIAS{$alias} = "fastq_barcode_collapse"};
 	foreach $alias ("fastq_from_geo", "geo2fastq", "fastq_geo", "geo_fastq",
 	                "fastq_from_sra", "sra2fastq", "fastq_sra", "sra_fastq") {$COMMAND_ALIAS{$alias} = "fastq_from_geo"};
+	foreach $alias ("fastq_sci2geo", "sci2geo", "fastq_sci2sra", "sci2sra") {$COMMAND_ALIAS{$alias} = "fastq_sci2geo"};
 	
 	# Bam Commands
 	foreach $alias ("bam_bulk2sci", "bulk2sci") {$COMMAND_ALIAS{$alias} = "bam_bulk2sci"};
@@ -297,6 +298,7 @@ sub load_descriptions {
 	$COMMAND_DESCRIPTOR{"fastq_merge"} = "Merge fastq files that have the same barcodes";
 	$COMMAND_DESCRIPTOR{"fastq_align"} = "Align fastq files and sort resulting bam file";
 	$COMMAND_DESCRIPTOR{"fastq_from_geo"} = "Convert GEO or SRA fqs w/ barcodes to scitools fq";
+	$COMMAND_DESCRIPTOR{"fastq_sci2geo"} = "Convert scitools fq to GEO/SRA fastq 1, 2, and ix";
 	$COMMAND_DESCRIPTOR{"fastq_barcode_collapse"} = "Collapse barcodes in a fastq set -> sci format";
 	$COMMAND_DESCRIPTOR{"bam_bulk2sci"} = "Merge multiple bulk bam files to one SCI bam";
 	$COMMAND_DESCRIPTOR{"bam_addrg"} = "Add RG lines to bam";
