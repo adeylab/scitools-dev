@@ -41,11 +41,11 @@ open IN2, "$zcat $ARGV[0] |";
 
 while ($r1tag = <IN1>) {
 	chomp $r1tag; $r2tag = <IN2>; chomp $r2tag;
-	$r1seq = <IN1>; chomp $r2seq; $r2seq = <IN2>; chomp $r2seq;
+	$r1seq = <IN1>; chomp $r1seq; $r2seq = <IN2>; chomp $r2seq;
 	$null = <IN1>; $null = <IN2>;
 	$r1qual = <IN1>; chomp $r1qual; $r2qual = <IN2>; chomp $r2qual;
 	$barc = $r1tag; $barc =~ s/:.+$//; $barc =~ s/^\@//;
-	$new_tag = "\@"."read_$barc";
+	$new_tag = "\@"."read_$read";
 	if (!defined $ixqual) {
 		$ixqual = "";
 		for ($i = 0; $i < length($barc); $i++) {
@@ -56,6 +56,7 @@ while ($r1tag = <IN1>) {
 		print R1 "$new_tag\#0/1\n$r1seq\n\+\n$r1qual\n";
 		print R2 "$new_tag\#0/2\n$r2seq\n\+\n$r2qual\n";
 		print IX "$new_tag\#0/3\n$barc\n\+\n$ixqual\n";
+		$read++;
 	}
 } close IN1; close IN2; close R1; close R2; close IX;
 
