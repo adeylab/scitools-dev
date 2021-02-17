@@ -22,6 +22,7 @@ Default command executable calls:
    samtools:    $samtools
    scitools:    $scitools
    macs2:       $macs2
+   macs3:       $macs3
    bedtools:    $bedtools
    R scripts:   $Rscript
    Py scripts:  $Pscript
