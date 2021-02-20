@@ -19,7 +19,7 @@ sub revcomp {
 
 @ARGV = @_;
 
-getopts("R:F:O:o:I:1:2:A:i:j:r:N:xnH:Vm", \%opt);
+getopts("R:F:O:o:I:1:2:A:i:j:r:N:xnH:V:m", \%opt);
 
 $die2 = "
 scitools fastq-dump-ddscale [options]
@@ -48,7 +48,9 @@ Options:
    -r   [STR]   Run ID (if additional sequencing for some
                 libraries. Will add .[ID] to end of read
                 names; optional)
-   -V   (not implemented)
+   -V   [STR]   List of index numbers (in order of seq) to
+                use reverse complement (comma separated)
+                can list as '0' to exclude (def = none)
 
 Defaults:
    -F   [STR]   Fastq directory (where -R directory lives)
@@ -84,6 +86,16 @@ if (!defined $opt{'o'}) {$opt{'o'} = $opt{'R'}};
 if (!defined $opt{'I'}) {$opt{'I'} = $VAR{'ddscale_index_file'}};
 if (defined $opt{'H'} && $opt{'H'} > 2) {die "ERROR: A max hamming distance of 2 is allowed.\n"};
 if (!defined $opt{'H'}) {$opt{'H'} = 2};
+
+if (defined $opt{'V'}) {
+	$make_rev = "FALSE";
+	@IX_to_rc = split(/,/, $opt{'V'});
+	foreach $rc_ix (@IX_to_rc) {
+		$RC_INDEXES{$rc_ix} = 1;
+		if ($rc_ix > 0) {$make_rev = "TRUE"};
+		# allows for either toggling -V 0 to do no rev comp OR not toggle -V at all
+	}
+}
 
 open IN, "$opt{'I'}";
 while ($l = <IN>) {
@@ -280,6 +292,13 @@ while ($r1tag = <R1>) {
 	$ix3 = substr($i2seq,$POS_length{'2'},$POS_length{'3'});
 	$ix4 = substr($r2seq,0,$POS_length{'4'});
 	$r2read = substr($r2seq,$POS_length{'4'});
+	
+	if ($make_rev eq "TRUE") {
+		if (defined $RC_INDEXES{'1'}) {$rev = revcomp($ix1); $ix1 = $rev};
+		if (defined $RC_INDEXES{'2'}) {$rev = revcomp($ix2); $ix2 = $rev};
+		if (defined $RC_INDEXES{'3'}) {$rev = revcomp($ix3); $ix3 = $rev};
+		if (defined $RC_INDEXES{'4'}) {$rev = revcomp($ix4); $ix4 = $rev};
+	}
 	
 	if ((defined $POS_SEQ_seq{'1'}{$ix1} && $POS_SEQ_seq{'1'}{$ix1} ne "NA") &&
 		(defined $POS_SEQ_seq{'2'}{$ix2} && $POS_SEQ_seq{'2'}{$ix2} ne "NA") &&
