@@ -292,6 +292,7 @@ while ($r1tag = <R1>) {
 	$ix3 = substr($i2seq,$POS_length{'2'},$POS_length{'3'});
 	$ix4 = substr($r2seq,0,$POS_length{'4'});
 	$r2read = substr($r2seq,$POS_length{'4'});
+	$r2qual_out = substr($r2qual,$POS_length{'4'});
 	
 	if ($make_rev eq "TRUE") {
 		if (defined $RC_INDEXES{'1'}) {$rev = revcomp($ix1); $ix1 = $rev};
@@ -326,10 +327,10 @@ while ($r1tag = <R1>) {
 		
 		if (defined $opt{'r'}) {
 			$r1out = "$out_name#0/1\n$r1seq\n\+\n$r1qual";
-			$r2out = "$out_name#0/2\n$r2read\n\+\n$r2qual";
+			$r2out = "$out_name#0/2\n$r2read\n\+\n$r2qual_out";
 		} else {
 			$r1out = "$out_name#0/1\n$r1seq\n\+\n$r1qual";
-			$r2out = "$out_name#0/2\n$r2read\n\+\n$r2qual";
+			$r2out = "$out_name#0/2\n$r2read\n\+\n$r2qual_out";
 		}
 		
 		if (!defined $opt{'A'}) {
