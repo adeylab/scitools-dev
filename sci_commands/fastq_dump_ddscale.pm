@@ -246,7 +246,7 @@ while ($r1tag = <R1>) {
 	if (!defined $opt{'m'}) {
 		$i1tag = <I1>; chomp $i1tag; $i2tag = <I2>; chomp $i2tag;
 		$i1seq = <I1>; chomp $i1seq; $i2seq = <I2>; chomp $i2seq;
-		$null = <I1>; $null = <I1>;
+		$null = <I1>; $null = <I2>;
 		$i1qual = <I1>; chomp $i1qual; $i2qual = <I2>; chomp $i2qual;
 	} else {
 		$i1tag = $r1tag;
