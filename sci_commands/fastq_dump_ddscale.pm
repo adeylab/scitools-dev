@@ -19,7 +19,15 @@ sub revcomp {
 
 @ARGV = @_;
 
-getopts("R:F:O:o:I:1:2:A:i:j:r:N:xnH:V:m", \%opt);
+# TO DO: PIGZ
+#   -p   [INT]   Use pigz instead of gzip; INT is number of
+#                threads. For output only (zcat for input).
+#                Will not be used if -A is specified.
+#                Threads used will be for each output; that
+#                includes two reads, two unassigned, and
+#                four fail output files.
+
+getopts("R:F:O:o:I:1:2:A:i:j:r:N:xnH:V:mp:", \%opt);
 
 $die2 = "
 scitools fastq-dump-ddscale [options]
@@ -175,25 +183,19 @@ if (!defined $opt{'1'}) {
 	if (-e "$opt{'F'}/$opt{'R'}/Undetermined_S0_L001_R1_001.fastq.gz") {
 		$r1 = "$opt{'F'}/$opt{'R'}/Undetermined_S0_L001_R1_001.fastq.gz $opt{'F'}/$opt{'R'}/Undetermined_S0_L002_R1_001.fastq.gz $opt{'F'}/$opt{'R'}/Undetermined_S0_L003_R1_001.fastq.gz $opt{'F'}/$opt{'R'}/Undetermined_S0_L004_R1_001.fastq.gz";
 		$r2 = "$opt{'F'}/$opt{'R'}/Undetermined_S0_L001_R2_001.fastq.gz $opt{'F'}/$opt{'R'}/Undetermined_S0_L002_R2_001.fastq.gz $opt{'F'}/$opt{'R'}/Undetermined_S0_L003_R2_001.fastq.gz $opt{'F'}/$opt{'R'}/Undetermined_S0_L004_R2_001.fastq.gz";
-		if (!defined $opt{'m'}) {
-			$i1 = "$opt{'F'}/$opt{'R'}/Undetermined_S0_L001_I1_001.fastq.gz $opt{'F'}/$opt{'R'}/Undetermined_S0_L002_I1_001.fastq.gz $opt{'F'}/$opt{'R'}/Undetermined_S0_L003_I1_001.fastq.gz $opt{'F'}/$opt{'R'}/Undetermined_S0_L004_I1_001.fastq.gz";
-			$i2 = "$opt{'F'}/$opt{'R'}/Undetermined_S0_L001_I2_001.fastq.gz $opt{'F'}/$opt{'R'}/Undetermined_S0_L002_I2_001.fastq.gz $opt{'F'}/$opt{'R'}/Undetermined_S0_L003_I2_001.fastq.gz $opt{'F'}/$opt{'R'}/Undetermined_S0_L004_I2_001.fastq.gz";
-		}
+		$i1 = "$opt{'F'}/$opt{'R'}/Undetermined_S0_L001_I1_001.fastq.gz $opt{'F'}/$opt{'R'}/Undetermined_S0_L002_I1_001.fastq.gz $opt{'F'}/$opt{'R'}/Undetermined_S0_L003_I1_001.fastq.gz $opt{'F'}/$opt{'R'}/Undetermined_S0_L004_I1_001.fastq.gz";
+		$i2 = "$opt{'F'}/$opt{'R'}/Undetermined_S0_L001_I2_001.fastq.gz $opt{'F'}/$opt{'R'}/Undetermined_S0_L002_I2_001.fastq.gz $opt{'F'}/$opt{'R'}/Undetermined_S0_L003_I2_001.fastq.gz $opt{'F'}/$opt{'R'}/Undetermined_S0_L004_I2_001.fastq.gz";
 	} elsif (-e "$opt{'F'}/$opt{'R'}/Undetermined_S0_R1_001.fastq.gz") {
 		$r1 = "$opt{'F'}/$opt{'R'}/Undetermined_S0_R1_001.fastq.gz";
 		$r2 = "$opt{'F'}/$opt{'R'}/Undetermined_S0_R2_001.fastq.gz";
-		if (!defined $opt{'m'}) {
-			$i1 = "$opt{'F'}/$opt{'R'}/Undetermined_S0_I1_001.fastq.gz";
-			$i2 = "$opt{'F'}/$opt{'R'}/Undetermined_S0_I2_001.fastq.gz";
-		}
+		$i1 = "$opt{'F'}/$opt{'R'}/Undetermined_S0_I1_001.fastq.gz";
+		$i2 = "$opt{'F'}/$opt{'R'}/Undetermined_S0_I2_001.fastq.gz";
 	}
 } else {
 	$r1 = "$opt{'1'}";
 	$r2 = "$opt{'2'}";
-	if (!defined $opt{'m'}) {
-		$i1 = "$opt{'i'}";
-		$i2 = "$opt{'j'}";
-	}
+	$i1 = "$opt{'i'}";
+	$i2 = "$opt{'j'}";
 }
 
 system("mkdir $opt{'O'}/$opt{'o'}");
@@ -225,10 +227,8 @@ $totalCT = 0; $failCT = 0; $reads_processed = 0;
 
 open R1, "$zcat $r1 |";
 open R2, "$zcat $r2 |";
-if (!defined $opt{'m'}) {
-	open I1, "$zcat $i1 |";
-	open I2, "$zcat $i2 |";
-}
+open I1, "$zcat $i1 |";
+open I2, "$zcat $i2 |";
 	
 while ($r1tag = <R1>) {
 	
