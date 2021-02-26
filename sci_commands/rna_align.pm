@@ -80,12 +80,11 @@ while ($l = <SAM>) {
 	if ($l =~ /^\@/) {
 		print OUT "$l\n";
 	} else {
-		@P = split(/\t/, $l) {
-			$barc = $P[0]; $barc =~ s/:.+$//;
-			$umi = $P[0]; $umi =~ s/^.+:UMI=//; $umi =~ s/\..+$//;
-			$l .= "\tCB:Z:$barc\tUB:Z:$umi";
-			print OUT "$l\n";
-		}
+		@P = split(/\t/, $l);
+		$barc = $P[0]; $barc =~ s/:.+$//;
+		$umi = $P[0]; $umi =~ s/^.+:UMI=//; $umi =~ s/\..+$//;
+		$l .= "\tCB:Z:$barc\tUB:Z:$umi";
+		print OUT "$l\n";
 	}
 } close SAM; close OUT;
 
