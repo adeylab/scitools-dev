@@ -77,7 +77,7 @@ if (!defined $opt{'p'}) {
 open OUT, "| $samtools sort -@ $sort_threads -m $opt{'m'} -T $out_prefix.TMP - 2>> $out_prefix.bam";
 while ($l = <SAM>) {
 	chomp $l;
-	if ($l ~ /^\@/) {
+	if ($l =~ /^\@/) {
 		print OUT "$l\n";
 	} else {
 		@P = split(/\t/, $l) {
