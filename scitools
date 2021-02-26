@@ -280,6 +280,9 @@ sub load_aliases {
 	foreach $alias ("atac_genehancer","atac-genehancer","genehancer","genehancer_atac","genehancer-atac") {$COMMAND_ALIAS{$alias} = "atac_genehancer"};
 	foreach $alias ("atac_refcount","refcount","refcount_atac") {$COMMAND_ALIAS{$alias} = "atac_refcount"};
 
+	# RNA
+	foreach $alias ("rna_align", "align_rna") {$COMMAND_ALIAS{$alias} = "rna_align"};
+
 }
 
 sub load_descriptions {
@@ -381,5 +384,6 @@ sub load_descriptions {
 	$COMMAND_DESCRIPTOR{"atac_genehancer"} = "Overlap peaks bed file with Genehancer database";
 	$COMMAND_DESCRIPTOR{"atac_refcount"} = "Generate Counts Matrix with bbrd bam and reference bed file";
 	$COMMAND_DESCRIPTOR{"values_split"} = "Split a values file or other tab delimited file by annotation";
+	$COMMAND_DESCRIPTOR{"rna_align"} = "Use the STAR aligner to align RNA reads";
 
 }
