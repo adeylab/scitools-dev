@@ -54,9 +54,14 @@ if (!defined $opt{'p'}) {
 if (defined $opt{'O'}) {
 	$out_prefix = $opt{'O'};
 } else {
-	$out_prefix = $ARGV[1];	
+	if (!defined $opt{'p'}) {
+		$out_prefix = $ARGV[1];
+		$out_prefix =~ s/\.bam$//;
+	} else {
+		$out_prefix = $ARGV[0];
+		$out_prefix =~ s/\.sam$//;
+	}
 }
-$out_prefix =~ s/\.bam$//;
 $out_prefix =~ s/\.$//;
 
 if (defined $opt{'S'}) {$STAR = $opt{'S'}};
