@@ -30,8 +30,9 @@ $pause = 10;
 $gif_height = 600;
 $gif_width = 600;
 $panel_nrow = 2;
+$hexBins = 250;
 
-getopts("O:A:a:C:c:R:x:y:T:V:M:XS:s:G:p:f:Bb:k:w:h:m:Wr:N:F:j:zu:d", \%opt);
+getopts("O:A:a:C:c:R:x:y:T:V:M:XS:s:G:p:f:Bb:k:w:h:m:Wr:N:F:j:zu:HdD:", \%opt);
 
 $die2 = "
 scitools plot-dims [options] [dimensions file(s), comma sep]
@@ -47,6 +48,8 @@ Options - general:
    -f   [FLT]   Alpha for plotting points (def = $alpha)
    -w   [FLT]   Plot width (inches, def = $width)
    -h   [FLT]   Plot height (inches, def = $height)
+   -H           Plot as hexbin plot instead of points (In Dev)
+   -D   [INT]   Number of hexbind (def=$hexBins)
    -z           Z-score the dimensions (def = no)
 
 Plotting by annotations:
@@ -120,6 +123,7 @@ if (defined $opt{'p'}) {$ptSize = $opt{'p'}};
 if (defined $opt{'f'}) {$alpha = $opt{'f'}};
 if (defined $opt{'h'}) {$height = $opt{'h'}};
 if (defined $opt{'w'}) {$width = $opt{'w'}};
+if (defined $opt{'D'}) {$hexBins = $opt{'D'}; $opt{'H'} = 1};
 if (defined $opt{'M'} && defined $opt{'W'}) {die "\nERROR: Panel wrapping and matrix plotting are not currently compatible.\n"};
 if (defined $opt{'W'} && !defined $opt{'A'}) {die "\nERROR: An annotaiton file must be provided for panel wrapping.\n"};
 if (defined $opt{'W'} && defined $opt{'N'}) {die "\nERROR: Panel wrapping and animation plotting are not currently compatible.\n"};
@@ -154,6 +158,7 @@ if (defined $opt{'M'} && !defined $opt{'N'}) { # matrix plotting
 	if (defined $opt{'S'}) {$common_opts .= "-S $opt{'S'} "};
 	if (defined $opt{'R'}) {$common_opts .= "-R $opt{'R'} "};
 	if (defined $opt{'p'}) {$common_opts .= "-p $opt{'p'} "};
+	if (defined $opt{'D'}) {$common_opts .= "-D $opt{'D'} "};
 	if (defined $opt{'f'}) {$common_opts .= "-f $opt{'f'} "};
 	if (defined $opt{'k'}) {$common_opts .= "-k $opt{'k'} "};
 	if (defined $opt{'b'}) {$common_opts .= "-b $opt{'b'} "};
@@ -517,27 +522,52 @@ print R "
 geom_segment(aes(x=branch\$source_prin_graph_dim_1,y=branch\$source_prin_graph_dim_2,xend=branch\$target_prin_graph_dim_1,yend=branch\$target_prin_graph_dim_2)) +";
 }
 
-if (!defined $opt{'c'} && !defined $opt{'C'} && !defined $opt{'A'} && !defined $opt{'V'}) { # no special mode specified
-	print R "
-	geom_point(aes(xdim,ydim),color=\"lightsteelblue4\",size=$ptSize,alpha=$alpha,shape=16) +";
-} elsif (!defined $opt{'V'}) { # annotation specified
-	print R "
-	geom_point(aes(xdim,ydim,color=annot),size=$ptSize,alpha=$alpha,shape=16) +
-	guides(colour = guide_legend(override.aes = list(size=4,alpha=1))) +";
-} else { # values file specified
-	if (!defined $opt{'B'}) {
-	print R "
-	geom_point(aes(xdim,ydim,color=value),size=$ptSize,alpha=$alpha,shape=16) +";
-	} else { # NEED TO VERIFY THIS WITH ADDING THE data=IN IN PLOT INITIALIZATION!
-	print R "
-	geom_point(aes(fail\$xdim,fail\$ydim),color=$binary_fail_color,size=$ptSize,alpha=$alpha,shape=16) +
-	geom_point(aes(pass\$xdim,pass\$ydim),color=$binary_pass_color,size=$ptSize,alpha=$alpha,shape=16) +";
+if (!defined $opt{'H'}) {
+	if (!defined $opt{'c'} && !defined $opt{'C'} && !defined $opt{'A'} && !defined $opt{'V'}) { # no special mode specified
+		print R "
+		geom_point(aes(xdim,ydim),color=\"lightsteelblue4\",size=$ptSize,alpha=$alpha,shape=16) +";
+	} elsif (!defined $opt{'V'}) { # annotation specified
+		print R "
+		geom_point(aes(xdim,ydim,color=annot),size=$ptSize,alpha=$alpha,shape=16) +
+		guides(colour = guide_legend(override.aes = list(size=4,alpha=1))) +";
+	} else { # values file specified
+		if (!defined $opt{'B'}) {
+		print R "
+		geom_point(aes(xdim,ydim,color=value),size=$ptSize,alpha=$alpha,shape=16) +";
+		} else { # NEED TO VERIFY THIS WITH ADDING THE data=IN IN PLOT INITIALIZATION!
+		print R "
+		geom_point(aes(fail\$xdim,fail\$ydim),color=$binary_fail_color,size=$ptSize,alpha=$alpha,shape=16) +
+		geom_point(aes(pass\$xdim,pass\$ydim),color=$binary_pass_color,size=$ptSize,alpha=$alpha,shape=16) +";
+		}
+	}
+} else {
+	if (!defined $opt{'c'} && !defined $opt{'C'} && !defined $opt{'A'} && !defined $opt{'V'}) { # no special mode specified
+		print R "
+		geom_hex(aes(xdim,ydim),color=\"lightsteelblue4\"),bins=$hexBins) +";
+	} elsif (!defined $opt{'V'}) { # annotation specified
+		print R "
+		geom_hex(aes(xdim,ydim,fill=annot),bins=$hexBins) +
+		guides(colour = guide_legend(override.aes = list(size=4,alpha=1))) +";
+	} else { # values file specified
+		if (!defined $opt{'B'}) {
+		print R "
+		geom_hex(aes(xdim,ydim,fill=value)) +";
+		} else { # NEED TO VERIFY THIS WITH ADDING THE data=IN IN PLOT INITIALIZATION!
+		print R "
+		geom_hex(aes(fail\$xdim,fail\$ydim),color=$binary_fail_color,bins=$hexBins) +
+		geom_hex(aes(pass\$xdim,pass\$ydim),color=$binary_pass_color,bins=$hexBins) +";
+		}
 	}
 }
 
 if ($color_mapping !~ /none/i && !defined $opt{'V'}) {
-	print R "
-	scale_colour_manual(values = c($color_mapping)) +";
+	if (!defined $opt{'H'}) {
+		print R "
+		scale_colour_manual(values = c($color_mapping)) +";
+	} else {
+		print R "
+		scale_fill_manual(values = c($color_mapping)) +";
+	}
 } elsif (defined $opt{'V'} && !defined $opt{'B'}) {
 	print R "
 	scale_colour_gradientn(colours=gradient_funct(21),limits=c($minV,$maxV)) +";
