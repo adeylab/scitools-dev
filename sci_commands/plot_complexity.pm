@@ -121,7 +121,7 @@ guides(colour = guide_legend(override.aes = list(size=4))) +\n";
 	}
 } else {
 	if (!defined $opt{'c'} && !defined $opt{'C'} && !defined $opt{'A'}) {
-		print R "   geom_hex(aes(V4,log10(V3)),color=\"lightsteelblue4\",bins=$hexBins) +\n";
+		print R "   geom_hex(aes(V4,log10(V3)),fill=\"lightsteelblue4\",bins=$hexBins) +\n";
 	} else {
 		print R "	geom_hex(aes(V4,log10(V3),fill=annot),bins=$hexBins) +
 	guides(colour = guide_legend(override.aes = list(size=4))) +\n";
