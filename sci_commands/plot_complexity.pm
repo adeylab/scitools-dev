@@ -15,6 +15,7 @@ $kmean_centers = 3;
 $alpha = 0.3;
 $ptSize = 1;
 $height = 6;
+$hexBins = 300;
 $width = 7;
 $max = 6;
 $title = "Library Complexity";
@@ -28,6 +29,8 @@ Options:
    -m   [INT]   Number of k-means clusters to use. (def=3)
    -K 	[INT] 	Force a minimum number of cells to be called by the knee analysis. (def=500)
    -N           Generate knee plot (def = no)
+   -H           Plot as hexplot (will not plot contours)
+   -D   [INT]   Number of hexbind (def=$hexBins)
    -A   [STR]   Annotation file (to color code points)
    -a   [STR]   Comma separated list of annoations to include in plot
                  (requires -A to be specified)
@@ -118,7 +121,7 @@ guides(colour = guide_legend(override.aes = list(size=4))) +\n";
 	}
 } else {
 	if (!defined $opt{'c'} && !defined $opt{'C'} && !defined $opt{'A'}) {
-		print R "   geom_hex(aes(V4,log10(V3)),color=\"lightsteelblue4\"),bins=$hexBins) +\n";
+		print R "   geom_hex(aes(V4,log10(V3)),color=\"lightsteelblue4\",bins=$hexBins) +\n";
 	} else {
 		print R "	geom_hex(aes(V4,log10(V3),fill=annot),bins=$hexBins) +
 	guides(colour = guide_legend(override.aes = list(size=4))) +\n";
