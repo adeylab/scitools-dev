@@ -8,7 +8,7 @@ use Exporter "import";
 sub plot_complexity {
 
 @ARGV = @_;
-getopts("O:A:a:C:c:R:Mf:p:k:h:w:T:K:m:y:t:D", \%opt);
+getopts("O:A:a:C:c:R:Mf:p:k:h:w:T:K:m:y:t:D:HN", \%opt);
 
 #defaults
 $kmean_centers = 3;
@@ -27,6 +27,7 @@ Options:
    -M           Run mixed model to determine read count cutoff for cells (def = no)
    -m   [INT]   Number of k-means clusters to use. (def=3)
    -K 	[INT] 	Force a minimum number of cells to be called by the knee analysis. (def=500)
+   -N           Generate knee plot (def = no)
    -A   [STR]   Annotation file (to color code points)
    -a   [STR]   Comma separated list of annoations to include in plot
                  (requires -A to be specified)
@@ -38,7 +39,6 @@ Options:
    -k   [STR]   If defined will color density lines the specified color (def = same as points)
                  either #hexcolor, or colorName
    -t   [INT]   Number of contours for 2d density (def = $contourCT)
-   -D           Do not plot points and just the density contours
    -w   [FLT]   Plot width (def = $width)
    -h   [FLT]   Plot height (def = $height)
    -y   [INT]   Max scale for plot in log10 unique reads (def = $max)
@@ -76,6 +76,7 @@ if (!defined $opt{'O'}) {$opt{'O'} = $ARGV[0]};
 if (!defined $opt{'K'}) {$opt{'K'} = 500};
 if (defined $opt{'y'}) {$max = $opt{'y'}};
 if (defined $opt{'t'}) {$contourCT = $opt{'t'}};
+if (defined $opt{'D'}) {$hexBins = $opt{'D'}; $opt{'H'} = 1};
 
 if (!defined $opt{'O'}) {$opt{'O'} = $ARGV[0]};
 $opt{'O'} =~ s/\.txt$//;
@@ -104,21 +105,30 @@ library(ggplot2)
 IN<-read.table(\"$opt{'O'}.plot.txt\")
 PLT<-ggplot(data=subset(IN,V4<100&V4>0)) + theme_bw() +
 ";
-if (!defined $opt{'D'}) {
-	print R "   geom_point(aes(V4,log10(V3),color=V2),size=$ptSize,alpha=$alpha,shape=16) +
-";
-}
-if (defined $opt{'k'}) {
-print R "   geom_density2d(aes(V4,log10(V3),color=$cont_col,bins=$contourCT),size=0.3) +
-";
-} else {
-print R "   geom_density2d(aes(V4,log10(V3),color=V2,bins=$contourCT),size=0.3) +
-";
-}
-if (defined $opt{'C'} || defined $opt{'c'}) {
+if (!defined $opt{'H'}) {
+	print R "   geom_point(aes(V4,log10(V3),color=V2),size=$ptSize,alpha=$alpha,shape=16) +\n";
+	if (defined $opt{'k'}) {
+		print R "   geom_density2d(aes(V4,log10(V3),color=$cont_col,bins=$contourCT),size=0.3) +\n";
+		} else {
+		print R "   geom_density2d(aes(V4,log10(V3),color=V2,bins=$contourCT),size=0.3) +\n";
+	}
+	if (defined $opt{'C'} || defined $opt{'c'}) {
 	print R "   scale_colour_manual(values = c($color_mapping)) +
-	guides(colour = guide_legend(override.aes = list(size=4))) +";
+guides(colour = guide_legend(override.aes = list(size=4))) +\n";
+	}
+} else {
+	if (!defined $opt{'c'} && !defined $opt{'C'} && !defined $opt{'A'}) {
+		print R "   geom_hex(aes(V4,log10(V3)),color=\"lightsteelblue4\"),bins=$hexBins) +\n";
+	} else {
+		print R "	geom_hex(aes(V4,log10(V3),fill=annot),bins=$hexBins) +
+	guides(colour = guide_legend(override.aes = list(size=4))) +\n";
+		if (defined $opt{'C'} || defined $opt{'c'}) {
+				print R "	scale_fill_manual(values = c($color_mapping)) +\n";
+		}
+	}
 }
+
+
 print R "
    scale_x_continuous(limits=c(0,100)) +
    scale_y_continuous(limits=c(0,$max)) +
@@ -206,8 +216,10 @@ ggsave(plot=PLT,filename=\"$opt{'O'}.hist.png\",width=$width,height=$height)
 ggsave(plot=PLT,filename=\"$opt{'O'}.hist.pdf\",width=$width,height=$height)
 ";
 
-# knee plotting
-print R "
+if (defined $opt{'N'}) {
+
+	# knee plotting
+	print R "
 library(inflection)
 IN_sub<-subset(IN,V4<100&V4>0)
 IN_sub\$cell_order<-NA
@@ -227,24 +239,25 @@ PLT<-ggplot(data=IN_sub) + theme_bw() +
 	geom_text(aes(label=paste(\"Cells:\",cell_count_cutoff,\"\\n Read Cutoff:\",read_cutoff),x=max(log10(IN_sub\$cell_order))-0.5,y=max(log10(IN_sub\$V3))-0.5)) +
 ";
 
-if (defined $opt{'C'} || defined $opt{'c'}) {
-	print R "   scale_colour_manual(values = c($color_mapping)) +";
-}
-print R "
+	if (defined $opt{'C'} || defined $opt{'c'}) {
+		print R "   scale_colour_manual(values = c($color_mapping)) +";
+	}
+	print R "
 	xlab(\"log10 Cell Order\") +
 	ylab(\"log10 Passing Reads\") +
 	ggtitle(\"$title\") +";
-if (defined $opt{'A'}) {
-print R "
+	if (defined $opt{'A'}) {
+	print R "
 	theme(legend.background=element_blank(),legend.title=element_blank())";
-} else {
-print R "
+	} else {
+	print R "
 	theme(legend.position=\"none\")";
-}
-print R "
+	}
+	print R "
 ggsave(plot=PLT,filename=\"$opt{'O'}.knee.png\",width=$width,height=$height)
 ggsave(plot=PLT,filename=\"$opt{'O'}.knee.pdf\",width=$width,height=$height)
-";
+	";
+}
 
 close R;
 
