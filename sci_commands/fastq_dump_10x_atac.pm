@@ -1,9 +1,9 @@
-package sci_commands::fastq_dump_10x_std;
+package sci_commands::fastq_dump_10x_atac;
 
 use sci_utils::general;
 use Getopt::Std; %opt = ();
 use Exporter "import";
-@EXPORT = "fastq_dump_10x_std";
+@EXPORT = "fastq_dump_10x_atac";
 
 
 %REVCOMP = ("A" => "T", "C" => "G", "G" => "C", "T" => "A", "N" => "N");
@@ -16,7 +16,7 @@ sub revcomp {
         return $revcomp;
 }
 
-sub fastq_dump_10x_std {
+sub fastq_dump_10x_atac {
 
 @ARGV = @_;
 
@@ -27,15 +27,17 @@ $hd_s = 2;
 $hd_x = 1;
 
 $die2 = "
-scitools fastq-dump-10x-std [options]
+scitools fastq-dump-10x-atac [options]
 
 Takes sequencer fastq files (from bcl2fastq) and will format
 them into fastq files with matched barcodes.
 
-Read 1 = 10x index (16 bp), UMI (12 bp) - (Index ID 2)
+This is for the standard 10x ATAC or Multiome ATAC without sci
+
+Read 1 = ATAC DNA
 Index 1 = i7 Nextera index from PCR (10bp) - (Index ID 1)
-Index 2 = i5 TruSeq index from PCR (10bp) - (Index ID 3)
-Read 2 = RNA
+Index 2 = i5 16bp 10x Cell Barcode (Index ID 2)
+Read 2 = ATAC DNA
 
 Options:
    -R   [STR]   Run name (preferred mode)
@@ -191,7 +193,8 @@ if (defined $opt{'A'}) {
 	open O2, "| $gzip > $opt{'O'}/$opt{'o'}/$opt{'o'}.unassigned.2.fq.gz";
 	system("cp $opt{'A'} $opt{'O'}/$opt{'o'}/$opt{'o'}.split.annot");
 } else {
-	open R1OUT, "| $gzip > $opt{'O'}/$opt{'o'}/$opt{'o'}.RNA.fq.gz";
+	open R1OUT, "| $gzip > $opt{'O'}/$opt{'o'}/$opt{'o'}.1.fq.gz";
+	open R2OUT, "| $gzip > $opt{'O'}/$opt{'o'}/$opt{'o'}.2.fq.gz";
 }
 
 open R1FAIL, "| $gzip > $opt{'O'}/$opt{'o'}/$opt{'o'}.fail.R1.fq.gz";
@@ -221,18 +224,11 @@ while ($r1tag = <R1>) {
 	$null = <I1>; $null = <I2>;
 	$i1qual = <I1>; $i2qual = <I2>; chomp $i1qual; chomp $i2qual;
 	
-	# fix for RNA
-	#Read 1 = 10x index (16 bp), UMI (12 bp) - (Index ID 2)
-	#Index 1 = i7 Nextera index from PCR (10bp) - (Index ID 1)
-	#Index 2 = i5 TruSeq index from PCR (10bp) - (Index ID 3)
-	#Read 2 = RNA
-	
-	$ix2 = substr($r1seq,0,16);
+	$ix2 = $i2seq;
 	if (defined $opt{'V'}) {
-            $rev_i2seq = revcomp(substr($r1seq,0,16));
+            $rev_i2seq = revcomp($i2seq);
             $ix2 = $rev_i2seq;
     }
-	$umi = substr($r1seq,16,12);
 	
 	if (length($i1seq ) > $POS_length{'1'}) {
 		$ix1 = substr($i1seq,0,$POS_length{'1'});
@@ -240,30 +236,26 @@ while ($r1tag = <R1>) {
 		$ix1 = $i1seq;
 	}
 	
-	if (length($i2seq ) > $POS_length{'3'}) {
-		$ix3 = substr($i2seq,0,$POS_length{'3'});
-	} else {
-		$ix3 = $i2seq;
-	}
-	
-	if (defined $opt{'b'}) {print DEBUG "READ $raw_count Index1 = $ix1, Index2 = $ix2, Index3 = $ix3\n"};
+	if (defined $opt{'b'}) {print DEBUG "READ $raw_count Index1 = $ix1, Index2 = $ix2\n"};
 	
 	if ((defined $POS_SEQ_seq{'1'}{$ix1} && $POS_SEQ_seq{'1'}{$ix1} ne "NA") &&
-		(defined $POS_SEQ_seq{'2'}{$ix2} && $POS_SEQ_seq{'2'}{$ix2} ne "NA") &&
-		(defined $POS_SEQ_seq{'3'}{$ix3} && $POS_SEQ_seq{'3'}{$ix3} ne "NA")) {
+		(defined $POS_SEQ_seq{'2'}{$ix2} && $POS_SEQ_seq{'2'}{$ix2} ne "NA")) {
 		
-		$barc = $POS_SEQ_seq{'1'}{$ix1}.$POS_SEQ_seq{'2'}{$ix2}.$POS_SEQ_seq{'3'}{$ix3};
+		$barc = $POS_SEQ_seq{'1'}{$ix1}.$POS_SEQ_seq{'2'}{$ix2};
 		
 		$totalCT++;
 		
 		if (defined $opt{'r'}) {
-			$r1out = "\@$barc:UMI=$umi:$totalCT.$opt{'r'}#0/1\n$r2seq\n\+\n$r2qual";
+			$r1out = "\@$barc:$totalCT.$opt{'r'}#0/1\n$r1seq\n\+\n$r1qual";
+			$r2out = "\@$barc:$totalCT.$opt{'r'}#0/2\n$r2seq\n\+\n$r2qual";
 		} else {
-			$r1out = "\@$barc:UMI=$umi:$totalCT#0/1\n$r2seq\n\+\n$r2qual";
+			$r1out = "\@$barc:$totalCT#0/1\n$r1seq\n\+\n$r1qual";
+			$r2out = "\@$barc:$totalCT#0/1\n$r2seq\n\+\n$r2qual";
 		}
 		
 		if (!defined $opt{'A'}) {
 			print R1OUT "$r1out\n";
+			print R2OUT "$r2out\n";
 		} else {
 			if (defined $CELLID_annot{$barc}) {
 				$annot = $CELLID_annot{$barc};
