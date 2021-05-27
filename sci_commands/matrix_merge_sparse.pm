@@ -12,24 +12,21 @@ sub matrix_merge_sparse {
 
 $die2 = "
 
-scitools matrix-merge-sparse (options) [matrix1 values file] [matrix2 values file]
+scitools matrix-merge-sparse (options) [matrix1.sparseMatrix.values.gz] [matrix2.sparseMatrix.values.gz]
 
 Options:
-   -O   [STR]   Output prefix (def = matrix prefix)
+   -O   [STR]   Output prefix (def = combination of two prefixes)
    -z           Turn off gzip output (default: output is gzipped)
 
 ";
 
     if (!defined $ARGV[0]) {die $die2};
     if (!defined $ARGV[1]) {die $die2};
-
     my $name1 = $ARGV[0];
     my $name2 = $ARGV[1];
-    if (!defined $opt{'O'}) {
-	$name1 =~ s/\.sparseMatrix\.values\.gz//;
-	$name2 =~ s/\.sparseMatrix\.values\.gz//;
-	$opt{'O'} = $name1 . "_" . $name2;
-    }
+    $name1 =~ s/\.sparseMatrix\.values\.gz//;
+    $name2 =~ s/\.sparseMatrix\.values\.gz//;
+    if (!defined $opt{'O'}) { $opt{'O'} = $name1 . "_" . $name2; }
 
 # infer file names from input
     my $mat1_row = $name1 . ".sparseMatrix.rows.gz";

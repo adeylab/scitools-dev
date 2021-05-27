@@ -34,7 +34,7 @@ Options:
    -G   [MIN,MAX] Min and max values to include from values file (required if -V)
    -M   [STR]   Comma separated list of chromosomes to exclude (eg chrX,chr3)
                  Only works if row names are chr_start_end formatted.
-   -z           Gzip output (def = no)
+   -z           Gzip output (def = yes)
    -b   [STR]   Bedtools call (for -B filtering; def = $bedtools)
 
 Note: -C and -R filters are applied after all other filtering.
@@ -280,7 +280,7 @@ while ($l = <MATRIX>) {
 } close MATRIX;
 
 if ($sparse < 0.5) {
-	if (defined $opt{'z'}) {
+	if (! defined $opt{'z'}) {
 		open OUT, "| $gzip > $opt{'O'}.matrix.gz";
 	} else {
 		open OUT, ">$opt{'O'}.matrix";
@@ -319,7 +319,7 @@ if ($sparse < 0.5) {
 		}
 	} close MATRIX; close OUT;
 } else {
-	if (defined $opt{'z'}) {
+	if (! defined $opt{'z'}) {
 		open OUT, "| $gzip > $opt{'O'}.sparseMatrix.rows.gz";
 	} else {
 		open OUT, ">$opt{'O'}.sparseMatrix.rows";
@@ -346,7 +346,7 @@ if ($sparse < 0.5) {
 	}
 	close OUT; close ROWS;
 	
-	if (defined $opt{'z'}) {
+	if (! defined $opt{'z'}) {
 		open OUT, "| $gzip > $opt{'O'}.sparseMatrix.cols.gz";
 	} else {
 		open OUT, ">$opt{'O'}.sparseMatrix.cols";
@@ -370,7 +370,7 @@ if ($sparse < 0.5) {
 	}
 	close OUT; close COLS;
 	
-	if (defined $opt{'z'}) {
+	if (! defined $opt{'z'}) {
 		open OUT, "| $gzip > $opt{'O'}.sparseMatrix.values.gz";
 	} else {
 		open OUT, ">$opt{'O'}.sparseMatrix.values";
