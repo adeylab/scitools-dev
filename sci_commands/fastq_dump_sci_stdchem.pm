@@ -291,7 +291,10 @@ while ($r1tag = <R1>) {
 	if (!defined $opt{'s'} &&
 		defined $POS_SEQ_seq{'1'}{$ix1} &&
 		defined $POS_SEQ_seq{'2'}{$ix2} &&
-		defined $POS_SEQ_seq{'3'}{$ix3}) {
+		defined $POS_SEQ_seq{'3'}{$ix3} &&
+		$POS_SEQ_seq{'1'}{$ix1} ne "NA" &&
+		$POS_SEQ_seq{'2'}{$ix2} ne "NA" &&
+		$POS_SEQ_seq{'3'}{$ix3} ne "NA") {
 		
 		$barc = $POS_SEQ_seq{'1'}{$ix1}.$POS_SEQ_seq{'2'}{$ix2}.$POS_SEQ_seq{'3'}{$ix3};
 		
@@ -325,7 +328,10 @@ while ($r1tag = <R1>) {
 	} elsif (defined $opt{'C'} &&             # RNA coassay check
 		defined $POS_SEQ_seq{'1'}{$ix1} &&
 		defined $POS_SEQ_seq{'2'}{$ix2} &&
-		defined $POS_SEQ_seq{'R'}{$ixR}) {
+		defined $POS_SEQ_seq{'R'}{$ixR} &&             # RNA coassay check
+		$POS_SEQ_seq{'1'}{$ix1} ne "NA" &&
+		$POS_SEQ_seq{'2'}{$ix2} ne "NA" &&
+		$POS_SEQ_seq{'R'}{$ixR} ne "NA") {
 		
 		$barc = $POS_SEQ_seq{'1'}{$ix1}.$POS_SEQ_seq{'2'}{$ix2}.$POS_SEQ_seq{'R'}{$ixR};
 		
