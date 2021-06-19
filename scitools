@@ -89,7 +89,20 @@ if (defined $ARGV[0]) {
 		}
 		die "$die\n";
 	} else {
+		
 		$called_command = (shift(@ARGV));
+		
+		if ($called_command =~ /fastq/ && $called_command =~ /dump/) { # WARNING
+			print STDERR "
+WARNING: scitools fastq-dump commands are deprecated!
+         This likely includes: $called_command.
+         These functions have been replaced by the new tool 'unidex'
+         a universal demultiplexing tool that has all of the funcitonality
+         of all of the fastq-dump commands and many additional features.
+		 
+";
+		}
+		
 		$called_command =~ s/-/_/g;
 		
 		if (defined $COMMAND_ALIAS{$called_command}) {
