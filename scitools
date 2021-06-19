@@ -92,11 +92,16 @@ if (defined $ARGV[0]) {
 		
 		if ($ARGV[0] =~ /fastq/i && $ARGV[0] =~ /dump/i) { # WARNING
 		print STDERR "
-WARNING: scitools fastq-dump commands are deprecated!
-         This likely includes: $called_command.
-         These functions have been replaced by the new tool 'unidex',
-         a universal demultiplexing tool that has all of the funcitonality
-         of all of the fastq-dump commands and many additional features.
+
+##############################################################################
+#                                                                            #
+# WARNING: scitools fastq-dump commands are deprecated!                      #
+#          This likely includes: $called_command.                            #
+#          These functions have been replaced by the new tool 'unidex',      #
+#          a universal demultiplexing tool that has all of the funcitonality #
+#          of all of the fastq-dump commands and many additional features.   #
+#                                                                            #
+##############################################################################
 		 
 ";
 		}
