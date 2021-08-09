@@ -63,9 +63,9 @@ MIX<-subset(IN,V5<$minF&V5>$maxF)
 
 if (defined $opt{'H'}) {
 print R "PLT<-ggplot() + theme_bw() +
-	geom_hex(aes(MIX\$V3,MIX\$V4),color=\"$mix_color\",bins=$hexBins) +
-	geom_hex(aes(HUM\$V3,HUM\$V4),color=\"$human_color\",bins=$hexBins) +
-	geom_hex(aes(MUS\$V3,MUS\$V4),color=\"$mouse_color\",bins=$hexBins) +
+	geom_hex(aes(MIX\$V3,MIX\$V4),fill=\"$mix_color\",bins=$hexBins) +
+	geom_hex(aes(HUM\$V3,HUM\$V4),fill=\"$human_color\",bins=$hexBins) +
+	geom_hex(aes(MUS\$V3,MUS\$V4),fill=\"$mouse_color\",bins=$hexBins) +
 	xlab(\"Human Passing Reads\") +
 	ylab(\"Mouse Passing Reads\")";
 } else {
