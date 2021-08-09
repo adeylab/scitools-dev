@@ -73,7 +73,6 @@ print R "PLT<-ggplot() + theme_bw() +
 	geom_point(aes(MUS\$V3,MUS\$V4),color=\"$mouse_color\",alpha=$alpha,size=$ptSize) +
 	xlab(\"Human Passing Reads\") +
 	ylab(\"Mouse Passing Reads\")";
-}
 
 if (defined $opt{'x'}) {print R " +
 	scale_x_continuous(limits = c(0,$opt{'x'}))";
@@ -81,6 +80,7 @@ if (defined $opt{'x'}) {print R " +
 
 if (defined $opt{'y'}) {print R " +
 	scale_y_continuous(limits = c(0,$opt{'y'}))";
+}
 }
 
 print R "
