@@ -68,7 +68,7 @@ print R "PLT<-ggplot() + theme_bw() +
 	geom_hex(aes(MUS\$V3,MUS\$V4),color=\"$mouse_color\",bins=$hexBins) +
 	xlab(\"Human Passing Reads\") +
 	ylab(\"Mouse Passing Reads\")";
-else {
+} else {
 print R "PLT<-ggplot() + theme_bw() +
 	geom_point(aes(MIX\$V3,MIX\$V4),color=\"$mix_color\",alpha=$alpha,size=$ptSize) +
 	geom_point(aes(HUM\$V3,HUM\$V4),color=\"$human_color\",alpha=$alpha,size=$ptSize) +
