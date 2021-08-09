@@ -28,6 +28,8 @@ Options:
    -a   [FLT]   Alpha for plotting points (def = $alpha)
    -C   [STR]   Colors: human,mouse,mix (def = $colors)
    -H           Plot as hexbin plot instead of points (In Dev)
+                  If selected, you MUST specify -x and -y
+                  It also will not color code properly
    -D   [INT]   Number of hexbins (def=$hexBins)
    -w   [FLT]   Plot width (def = $width)
    -h   [FLT]   Plot height (def = $height)
