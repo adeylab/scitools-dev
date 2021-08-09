@@ -54,20 +54,18 @@ if (defined $opt{'D'}) {$hexBins = $opt{'D'}; $opt{'H'} = 1};
 open R, ">$opt{'O'}.plot.r";
 print R "
 library(ggplot2)
-
-IN<-read.table(\"$ARGV[0]\")
-HUM<-subset(IN,V5>=$minF)
-MUS<-subset(IN,V5<=$maxF)
-MIX<-subset(IN,V5<$minF&V5>$maxF)
 ";
 
 if (defined $opt{'H'}) {
-print R "PLT<-ggplot() + theme_bw() +
-	geom_hex(aes(MIX\$V3,MIX\$V4),fill=\"$mix_color\",bins=$hexBins) +
-	geom_hex(aes(HUM\$V3,HUM\$V4),fill=\"$human_color\",bins=$hexBins) +
-	geom_hex(aes(MUS\$V3,MUS\$V4),fill=\"$mouse_color\",bins=$hexBins) +
+print R "
+IN<-read.table(\"$ARGV[0]\")
+SUB<-subset(IN,V3<=$opt{'x'}&V4<=$opt{'y'})
+
+PLT<-ggplot() + theme_bw() +
+	geom_bin2d(aes(SUB\$V3,SUB\$V4,fill=SUB\$V6),bins=$hexBins) +
 	xlab(\"Human Passing Reads\") +
-	ylab(\"Mouse Passing Reads\")";
+	ylab(\"Mouse Passing Reads\") +
+	theme(legend.position=\"none\")";
 } else {
 print R "PLT<-ggplot() + theme_bw() +
 	geom_point(aes(MIX\$V3,MIX\$V4),color=\"$mix_color\",alpha=$alpha,size=$ptSize) +
