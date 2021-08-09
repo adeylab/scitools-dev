@@ -49,7 +49,7 @@ Options - general:
    -w   [FLT]   Plot width (inches, def = $width)
    -h   [FLT]   Plot height (inches, def = $height)
    -H           Plot as hexbin plot instead of points (In Dev)
-   -D   [INT]   Number of hexbind (def=$hexBins)
+   -D   [INT]   Number of hexbins (def=$hexBins)
    -z           Z-score the dimensions (def = no)
 
 Plotting by annotations:
