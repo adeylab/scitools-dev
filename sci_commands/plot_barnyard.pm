@@ -69,7 +69,12 @@ PLT<-ggplot() + theme_bw() +
 	ylab(\"Mouse Passing Reads\") +
 	theme(legend.position=\"none\")";
 } else {
-print R "PLT<-ggplot() + theme_bw() +
+print R "
+HUM<-subset(IN,\$V6=\"Human\")
+MUS<-subset(IN,\$V6=\"Mouse\")
+MIX<-subset(IN,\$V6=\"Mix\")
+
+PLT<-ggplot() + theme_bw() +
 	geom_point(aes(MIX\$V3,MIX\$V4),color=\"$mix_color\",alpha=$alpha,size=$ptSize) +
 	geom_point(aes(HUM\$V3,HUM\$V4),color=\"$human_color\",alpha=$alpha,size=$ptSize) +
 	geom_point(aes(MUS\$V3,MUS\$V4),color=\"$mouse_color\",alpha=$alpha,size=$ptSize) +
