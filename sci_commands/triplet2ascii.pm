@@ -47,7 +47,7 @@ if ($ARGV[0] =~ /bam$/) { # bam
 			$B[0] = $collapsed;
 			$P[0] = join(":", @B);
 			$l = join("\t", @P);
-			print OUT "\n";
+			print OUT "$l\n";
 		}
 	} close IN; close OUT;
 } elsif ($ARGV[0] =~ /fq.gz$/ || $ARGV[0] =~ /fastq.gz$/) { # fastq
