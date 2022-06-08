@@ -70,6 +70,19 @@ PLT<-ggplot() + theme_bw() +
 	theme(legend.position=\"none\")";
 } else {
 print R "
+<<<<<<< HEAD
+
+IN<-read.table(\"$ARGV[0]\")
+
+HUM<-subset(IN,V6==\"Human\")
+MUS<-subset(IN,V6==\"Mouse\")
+MIX<-subset(IN,V6==\"Mixed\")
+
+PLT<-ggplot() + theme_bw() +
+	geom_point(aes(MIX\$V3,MIX\$V4),color=\"purple3\",alpha=$alpha,size=$ptSize) +
+	geom_point(aes(HUM\$V3,HUM\$V4),color=\"red3\",alpha=$alpha,size=$ptSize) +
+	geom_point(aes(MUS\$V3,MUS\$V4),color=\"blue3\",alpha=$alpha,size=$ptSize) +
+=======
 HUM<-subset(IN,\$V6=\"Human\")
 MUS<-subset(IN,\$V6=\"Mouse\")
 MIX<-subset(IN,\$V6=\"Mix\")
@@ -78,6 +91,7 @@ PLT<-ggplot() + theme_bw() +
 	geom_point(aes(MIX\$V3,MIX\$V4),color=\"$mix_color\",alpha=$alpha,size=$ptSize) +
 	geom_point(aes(HUM\$V3,HUM\$V4),color=\"$human_color\",alpha=$alpha,size=$ptSize) +
 	geom_point(aes(MUS\$V3,MUS\$V4),color=\"$mouse_color\",alpha=$alpha,size=$ptSize) +
+>>>>>>> 493683b095fb9caa3af0b52031c3280c30f8b669
 	xlab(\"Human Passing Reads\") +
 	ylab(\"Mouse Passing Reads\")";
 
