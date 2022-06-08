@@ -88,15 +88,19 @@ read_complexity($ARGV[0]);
 
 open OUT, ">$opt{'O'}.plot.txt";
 foreach $cellID (keys %CELLID_complexity) {
+	$annot_cellID = $cellID;
+	if ($cellID !~ /[ACGTN]/) {
+		$cellID = expand_barcode($annot_cellID);
+	}
 	if (defined $opt{'a'}) {
-		$annot = $CELLID_annot{$cellID};
-		if (defined $ANNOT_include{$annot} && defined $CELLID_annot{$cellID}) {
-			print OUT "$cellID\t$CELLID_annot{$cellID}\t$CELLID_uniq_reads{$cellID}\t$CELLID_complexity{$cellID}\n";
+		$annot = $CELLID_annot{$annot_cellID};
+		if (defined $ANNOT_include{$annot} && defined $CELLID_annot{$annot_cellID}) {
+			print OUT "$cellID\t$CELLID_annot{$annot_cellID}\t$CELLID_uniq_reads{$annot_cellID}\t$CELLID_complexity{$annot_cellID}\n";
 		}
 	} elsif (defined $opt{'A'} && defined $CELLID_annot{$cellID}) {
-		print OUT "$cellID\t$CELLID_annot{$cellID}\t$CELLID_uniq_reads{$cellID}\t$CELLID_complexity{$cellID}\n";
+		print OUT "$cellID\t$CELLID_annot{$annot_cellID}\t$CELLID_uniq_reads{$annot_cellID}\t$CELLID_complexity{$annot_cellID}\n";
 	} else {
-		print OUT "$cellID\tCell\t$CELLID_uniq_reads{$cellID}\t$CELLID_complexity{$cellID}\n";
+		print OUT "$cellID\tCell\t$CELLID_uniq_reads{$annot_cellID}\t$CELLID_complexity{$annot_cellID}\n";
 	}
 } close OUT;
 
