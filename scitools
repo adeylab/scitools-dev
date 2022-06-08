@@ -11,7 +11,8 @@ $version = "0.1.2";
 %version_info = (
 	"0.1.0" => "180215, alpha - initial development",
 	"0.1.1d" => "180418, alpha - dev split",
-	"0.1.2" => "180608, modulization"
+	"0.1.2" => "180608, modulization",
+	"0.1.3" => "220607, ascii fxns & end of life assess"
 );
 
 # LOAD MODULES

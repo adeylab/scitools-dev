@@ -71,8 +71,9 @@ sub load_defaults {
 				} elsif ($var =~ /^ICELL8/) {
 					($null,$set_name) = split(/_/, $var);
 					$ICELL8{$set_name} = $val;
-				} else { # software calls
+				} else { # software calls & others
 					if ($var eq "gzip") {$gzip = $val}
+					elsif ($var eq "triplet2ascii") {$TRIPLET2ASCII_FILE = $val}
 					elsif ($var eq "zcat") {$zcat = $val}
 					elsif ($var eq "bwa") {$bwa = $val}
 					elsif ($var eq "samtools") {$samtools = $val}
