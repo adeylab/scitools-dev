@@ -34,7 +34,7 @@ load_triplet2ascii();
 
 if ($ARGV[0] =~ /bam$/) { # bam
 	open IN, "$samtools view -h $ARGV[0] |";
-	open OUT, "| $samtools view -b - > $ARGV[1] 2>/dev/null";
+	open OUT, "| $samtools view -b - > $ARGV[1]";
 	while ($l = <IN>) {
 		chomp $l;
 		if ($l =~ /^\@/) {
