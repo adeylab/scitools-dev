@@ -37,14 +37,18 @@ if ($ARGV[0] =~ /bam$/) { # bam
 	open OUT, "| $samtools view -b - > $ARGV[1] 2>/dev/null";
 	while ($l = <IN>) {
 		chomp $l;
-		@P = split(/\t/, $l);
-		@B = split(/:/, $P[0]);
-		$collapsed = collapse_barcode($B[0]);
-		$BARCODE_ascii{$B[0]} = $collapsed;
-		$B[0] = $collapsed;
-		$P[0] = join(":", @B);
-		$l = join("\t", @P);
-		print OUT "\n";
+		if ($l =~ /^\@/) {
+			print OUT "$l\n";
+		} else {
+			@P = split(/\t/, $l);
+			@B = split(/:/, $P[0]);
+			$collapsed = collapse_barcode($B[0]);
+			$BARCODE_ascii{$B[0]} = $collapsed;
+			$B[0] = $collapsed;
+			$P[0] = join(":", @B);
+			$l = join("\t", @P);
+			print OUT "\n";
+		}
 	} close IN; close OUT;
 } elsif ($ARGV[0] =~ /fq.gz$/ || $ARGV[0] =~ /fastq.gz$/) { # fastq
 	open IN, "$zcat $ARGV[0] |";
