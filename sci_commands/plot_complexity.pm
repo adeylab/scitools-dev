@@ -85,11 +85,12 @@ if (!defined $opt{'O'}) {$opt{'O'} = $ARGV[0]};
 $opt{'O'} =~ s/\.txt$//;
 
 read_complexity($ARGV[0]);
+load_triplet2ascii();
 
 open OUT, ">$opt{'O'}.plot.txt";
 foreach $cellID (keys %CELLID_complexity) {
 	$annot_cellID = $cellID;
-	if ($cellID !~ /[ACGTN]/) {
+	if ($cellID =~ /[^ACGTN]/i) {
 		$cellID = expand_barcode($annot_cellID);
 	}
 	if (defined $opt{'a'}) {
