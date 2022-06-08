@@ -1,30 +1,27 @@
-package sci_commands::triplet2ascii;
+package sci_commands::ascii2triplet;
 
 use sci_utils::general;
 use Getopt::Std; %opt = ();
 use Exporter "import";
-@EXPORT = ("triplet2ascii");
+@EXPORT = ("ascii2triplet");
 
-sub triplet2ascii {
+sub ascii2triplet {
 
 @ARGV = @_;
 
 # defaults
 
-getopts("D:c:s", \%opt);
+getopts("D:c:", \%opt);
 
 $die2 = "
-scitools triplet2ascii (options) [input_file] [output_file]
+scitools ascii2triplet (options) [input_file] [output_file]
 
-Collapses cell barcodes to ascii code. Will try to auto-detect file type.
+Expands ascii code to sequence index. Will try to auto-detect file type.
 Will only output a file of the same type. (e.g. bam->bam, fq.gz->fq.gz)
 
 Options:
    -D   [STR]   Print all detected barcodes to provided annotation file
    -c   [INT]   1-based column of a flatfile for the cellID
-   -s           Strip all additional info from the read name other than
-                  index and number for bam or fastq files. (def = retain)
-                  The number field must be the second field of read name.
 
 ";
 
@@ -45,15 +42,10 @@ if ($ARGV[0] =~ /bam$/) { # bam
 		} else {
 			@P = split(/\t/, $l);
 			@B = split(/:/, $P[0]);
-			$collapsed = collapse_barcode($B[0]);
-			$BARCODE_ascii{$B[0]} = $collapsed;
-			$B[0] = $collapsed;
-			if (defined $opt{'s'}) {
-				$B[1] =~ s/num=//;
-				$P[0] = "$collapsed:$B[1]";
-			} else {
-				$P[0] = join(":", @B);
-			}
+			$expanded = expand_barcode($B[0]);
+			$BARCODE_ascii{$B[0]} = $expanded;
+			$B[0] = $expanded;
+			$P[0] = join(":", @B);
 			$l = join("\t", @P);
 			print OUT "$l\n";
 		}
@@ -64,17 +56,10 @@ if ($ARGV[0] =~ /bam$/) { # bam
 	while ($tag = <IN>) {
 		chomp $tag;
 		@B = split(/:/, $tag); $B[0] =~ s/^\@//;
-		$last_char = substr($tag, -1);
-		$collapsed = collapse_barcode($B[0]);
-		$BARCODE_ascii{$B[0]} = $collapsed;
-		if (defined $opt{'s'}) {
-			$B[1] =~ s/num=//;
-			$tag = "$collapsed:$B[1]#0/$last_char";
-		} else {
-			$B[0] = $collapsed;
-			$tag = join(":", @B);
-		}
-		
+		$expanded = expand_barcode($B[0]);
+		$BARCODE_ascii{$B[0]} = $expanded;
+		$B[0] = $expanded;
+		$tag = join(":", @B);
 		print OUT "\@$tag\n";
 		$seq = <IN>; print OUT "$seq";
 		$null = <IN>; print OUT "$null";
@@ -90,9 +75,9 @@ if ($ARGV[0] =~ /bam$/) { # bam
 	while ($l = <IN>) {
 		chomp $l;
 		@P = split(/\t/, $l);
-		$collapsed = collapse_barcode($P[$col]);
-		$BARCODE_ascii{$P[$col]} = $collapsed;
-		$P[$col] = $collapsed;
+		$expanded = expand_barcode($P[$col]);
+		$BARCODE_ascii{$P[$col]} = $expanded;
+		$P[$col] = $expanded;
 		$l = join("\t", @P);
 		print OUT "$l\n";
 	} close IN; close OUT;
