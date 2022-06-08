@@ -70,7 +70,6 @@ PLT<-ggplot() + theme_bw() +
 	theme(legend.position=\"none\")";
 } else {
 print R "
-<<<<<<< HEAD
 
 IN<-read.table(\"$ARGV[0]\")
 
@@ -91,7 +90,6 @@ PLT<-ggplot() + theme_bw() +
 	geom_point(aes(MIX\$V3,MIX\$V4),color=\"$mix_color\",alpha=$alpha,size=$ptSize) +
 	geom_point(aes(HUM\$V3,HUM\$V4),color=\"$human_color\",alpha=$alpha,size=$ptSize) +
 	geom_point(aes(MUS\$V3,MUS\$V4),color=\"$mouse_color\",alpha=$alpha,size=$ptSize) +
->>>>>>> 493683b095fb9caa3af0b52031c3280c30f8b669
 	xlab(\"Human Passing Reads\") +
 	ylab(\"Mouse Passing Reads\")";
 
