@@ -25,7 +25,7 @@ Options:
 
 ";
 
-if (!defined $ARGV[1]) {die $die};
+if (!defined $ARGV[1]) {die $die2};
 
 # load key
 load_triplet2ascii();
