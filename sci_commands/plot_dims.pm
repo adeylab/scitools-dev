@@ -211,6 +211,7 @@ if (defined $opt{'W'}) {
 	if ($binary_fail_color !~ /^#/) {$binary_fail_color = "\"".$binary_fail_color."\""};
 	if ($binary_pass_color !~ /^#/) {$binary_pass_color = "\"".$binary_pass_color."\""};
 }
+load_triplet2ascii();
 
 # read 2nd dims for animation & set up the transition frames
 if ($opt{'N'} =~ /^T/i) {
@@ -229,6 +230,9 @@ if ($opt{'N'} =~ /^T/i) {
 		chomp $l;
 		@P = split(/\t/, $l);
 		$cellID = $P[0];
+		if ($cellID =~ /[^ACGTN]/i) {
+			$cellID = expand_barcode($annot_cellID);
+		}
 		@{$CELLID_DIMS_2{$cellID}} = @P;
 	} close IN;
 	
@@ -335,6 +339,9 @@ open DATA, ">$opt{'O'}.plot.txt";
 foreach $cellID (keys %CELLID_include) {
 	$annot = $CELLID_annot{$cellID};
 	$ANNOT_include{$annot} = 1;
+	if ($cellID =~ /[^ACGTN]/i) {
+		$cellID2 = expand_barcode($annot_cellID);
+	} else {$cellID2 = $cellID};
 	
 	if ($opt{'N'} =~ /^T/) {
 	
@@ -355,7 +362,7 @@ foreach $cellID (keys %CELLID_include) {
 			$ypos = ($slope*$xpos) + $y_int;
 			
 			if (!defined $opt{'V'}) { # qualitative annotations
-				print DATA "$cellID\t$frame\t$annot\t$xpos\t$ypos\n";
+				print DATA "$cellID2\t$frame\t$annot\t$xpos\t$ypos\n";
 			} else { # value annotations
 				######################## Value plotting for animations in progress
 				die "ERROR: -V not currently compatible with animation plotting.\n";
@@ -366,7 +373,7 @@ foreach $cellID (keys %CELLID_include) {
 		
 	} else {
 		if (!defined $opt{'V'}) { # qualitative annotations
-			print DATA "$cellID\t$annot\t$CELLID_DIMS{$cellID}[$xdim]\t$CELLID_DIMS{$cellID}[$ydim]\n";
+			print DATA "$cellID2\t$annot\t$CELLID_DIMS{$cellID}[$xdim]\t$CELLID_DIMS{$cellID}[$ydim]\n";
 		} else { # value annotations
 			if (defined $CELLID_value{$cellID}) {
 				if (defined $opt{'B'}) { # binary threshold
@@ -376,7 +383,7 @@ foreach $cellID (keys %CELLID_include) {
 						$annot = "FAIL";
 					}
 				}
-				print DATA "$cellID\t$CELLID_value{$cellID}\t$CELLID_DIMS{$cellID}[$xdim]\t$CELLID_DIMS{$cellID}[$ydim]\t$annot\n";
+				print DATA "$cellID2\t$CELLID_value{$cellID}\t$CELLID_DIMS{$cellID}[$xdim]\t$CELLID_DIMS{$cellID}[$ydim]\t$annot\n";
 			} else {
 				print STDERR "WARNING: $cellID does not have values specified in $opt{'V'}, skipping.\n";
 			}
