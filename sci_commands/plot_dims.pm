@@ -230,9 +230,6 @@ if ($opt{'N'} =~ /^T/i) {
 		chomp $l;
 		@P = split(/\t/, $l);
 		$cellID = $P[0];
-		if ($cellID =~ /[^ACGTN]/i) {
-			$cellID = expand_barcode($annot_cellID);
-		}
 		@{$CELLID_DIMS_2{$cellID}} = @P;
 	} close IN;
 	
@@ -340,7 +337,7 @@ foreach $cellID (keys %CELLID_include) {
 	$annot = $CELLID_annot{$cellID};
 	$ANNOT_include{$annot} = 1;
 	if ($cellID =~ /[^ACGTN]/i) {
-		$cellID2 = expand_barcode($annot_cellID);
+		$cellID2 = expand_barcode($cellID);
 	} else {$cellID2 = $cellID};
 	
 	if ($opt{'N'} =~ /^T/) {
