@@ -8,7 +8,7 @@ use Exporter "import";
 sub barnyard_compare {
 
 @ARGV = @_;
-getopts("O:q:n:f:s:x", \%opt);
+getopts("O:q:n:f:s:xy", \%opt);
 
 $mapQ = 20;
 $minR = 1000;
@@ -29,6 +29,7 @@ Options:
    -f   [FLT]   Max fraction of other species to be considered pure (def = $maxF)
    -s   [STR]   Samtools call (def = $samtools)
    -x           Do not plot
+   -y           Do not calculate CCR
 
 ";
 
@@ -97,6 +98,12 @@ Cells called as mouse: $mouse_cells
 Cells with > $maxF from other species: $mix_cells ($frac_mix)
 Estimated total collision (mix fraction * 2): $est_total_collision
 ";
+
+if (!defined $opt{'y'}) {
+    $call = "$scitools barnyard-ccr -c $opt{'O'}.barnyard_cells.txt";
+    $ccr_out = `$call`;
+    print OUT "$ccr_out\n";
+}
 close OUT;
 
 if (!defined $opt{'x'}) {
