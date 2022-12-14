@@ -37,6 +37,7 @@ read_matrix($ARGV[0]);
 open OUT, ">$opt{'O'}.k$opt{'k'}.phenograph.R";
 print OUT"
 library(Rphenograph)
+library(Rcpp)
 ";
 
 
