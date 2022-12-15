@@ -337,7 +337,9 @@ foreach $cellID (keys %CELLID_include) {
 	$annot = $CELLID_annot{$cellID};
 	$ANNOT_include{$annot} = 1;
 	if ($cellID =~ /[^ACGTN]/i) {
-		$cellID2 = expand_barcode($cellID);
+		#$cellID2 = expand_barcode($cellID);
+		$cellNum++;
+		$cellID2 = "cellID_".$cellNum;
 	} else {$cellID2 = $cellID};
 	
 	if ($opt{'N'} =~ /^T/) {
