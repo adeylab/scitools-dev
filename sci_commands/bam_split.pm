@@ -7,8 +7,11 @@ use Exporter "import";
 
 sub bam_split {
 
+$in_t = 1;
+$out_t = 1;
+
 @ARGV = @_;
-getopts("s:O:A:a:", \%opt);
+getopts("s:O:A:a:t:T:", \%opt);
 
 $die2 = "
 scitools bam-split [options] [input bam]
@@ -20,12 +23,15 @@ Options:
    -a   [STR]   Comma separated list of annotations to include (requires -A)
                 (Default = a seaprate bam for each annotation)
    -s   [STR]   Samtools call (def = $samtools)
-
+   -T   [INT]   Threads for reading input bam (def = $in_t)
+   -t   [INT]   Threads for EACH output (def = $out_t)
 ";
 
 if (!defined $ARGV[0] || !defined $opt{'A'}) {die $die2};
 if (!defined $opt{'O'}) {$opt{'O'} = $ARGV[0]; $opt{'O'} =~ s/\.bam$//};
 if (defined $opt{'s'}) {$samtools = $opt{'s'}};
+if (defined $opt{'T'}) {$in_t = $opt{'T'}};
+if (defined $opt{'t'}) {$out_t = $opt{'t'}};
 
 read_annot($opt{'A'});
 
@@ -45,11 +51,11 @@ if (defined $opt{'a'}) {
 
 foreach $annot (keys %ANNOT_include) { 
 	$file = "$annot\_out";
-	open $file, "| $samtools view -bS - 2>/dev/null > $opt{'O'}.$annot.bam";
+	open $file, "| $samtools view -@ $out_t -bS - 2>/dev/null > $opt{'O'}.$annot.bam";
 	print $file "$header";
 }
 
-open IN, "$samtools view $ARGV[0] 2>/dev/null |";
+open IN, "$samtools view -@ $in_t $ARGV[0] 2>/dev/null |";
 while ($l = <IN>) {
 	chomp $l;
 	@P = split(/\t/, $l);
